@@ -8,12 +8,10 @@ let pretty = require('./pretty')
  * attempts to resolve logical ids for all resources in the given stack
  * then attempts to updateFunctionCode for those resources
  *
- * @param {Array} opts - argument options passed in
  * @param {Function} callback - node style errback
  * @returns {Promise} if no callback is supplied
  */
-module.exports = function dirty(opts, callback) {
-
+module.exports = function dirty(callback) {
   // time the deploy
   let ts = Date.now()
 

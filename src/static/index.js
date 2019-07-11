@@ -6,11 +6,11 @@ let publishToS3 = require('./publish-to-s3')
 /**
  * Upload files to CFN defined bucket
  *
- * @param {Array} opts - option arguments
+ * @param {Object} params - parameters object
  * @param {Function} callback - a node-style errback
- * @returns {Promise} - if not callback is supplied
+ * @returns {Promise} - if no callback is supplied
  */
-module.exports = function dirty(opts, callback) {
+module.exports = function statics({verbose, production}, callback) {
   let promise
   if (!callback) {
     promise = new Promise(function ugh(res, rej) {
@@ -20,10 +20,6 @@ module.exports = function dirty(opts, callback) {
       }
     })
   }
-
-  // flags
-  let verbose = opts.some(opt=> '-v --verbose verbose'.split(' ').includes(opt))
-  let production = opts.some(opt=> '-p --production production prod'.split(' ').includes(opt))
 
   // defaults
   let {arc} = utils.readArc()

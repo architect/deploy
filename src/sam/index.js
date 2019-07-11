@@ -10,12 +10,11 @@ let after = require('./02-after')
 /**
  * Shells out to AWS SAM for package/deploy
  *
- * @param {Array} opts - option arguments
+ * @param {Object} params - parameters object
  * @param {Function} callback - a node-style errback
  * @returns {Promise} - if not callback is supplied
  */
-module.exports = function samDeploy(opts, callback) {
-
+module.exports = function samDeploy({verbose, production}, callback) {
   let ts = Date.now()
 
   let promise
@@ -29,8 +28,6 @@ module.exports = function samDeploy(opts, callback) {
   }
 
   // flags
-  let verbose = opts.some(opt=> '-v --verbose verbose'.split(' ').includes(opt))
-  let production = opts.some(opt=> '-p --production production prod'.split(' ').includes(opt))
   let log = true
   let pretty = print({log, verbose})
 
@@ -44,7 +41,7 @@ module.exports = function samDeploy(opts, callback) {
   series([
     before.bind({}, {sam, nested, bucket, pretty}),
     deploy.bind({}, {appname, stackname, nested, bucket, pretty}),
-    after.bind({}, {ts, arc, opts, pretty, appname, stackname}),
+    after.bind({}, {ts, arc, verbose, production, pretty, appname, stackname}),
   ], callback)
 
   return promise
