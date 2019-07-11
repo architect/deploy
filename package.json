@@ -1,0 +1,49 @@
+{
+  "name": "@architect/deploy",
+  "version": "1.0.0",
+  "description": "deploys @architect projects",
+  "main": "index.js",
+  "scripts": {
+    "test": "npm run lint && npm run test:unit",
+    "test:unit": "tape test/*-tests.js | tap-spec",
+    "coverage": "istanbul cover tape test/*-tests.js",
+    "lint": "eslint . --fix --ignore-pattern node_modules"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/architect/deploy.git"
+  },
+  "keywords": [
+    "arc",
+    "deploy"
+  ],
+  "author": "Small Wins",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/architect/deploy/issues"
+  },
+  "homepage": "https://github.com/architect/deploy#readme",
+  "dependencies": {
+    "@architect/package": "^1.0.30",
+    "@architect/parser": "^1.1.7",
+    "@architect/utils": "^1.0.16",
+    "aws-sdk": "^2.491.0",
+    "chalk": "^2.4.2",
+    "glob": "^7.1.4",
+    "mime-types": "^2.1.24",
+    "path-sort": "^0.1.0",
+    "run-parallel": "^1.1.9",
+    "run-series": "^1.1.8",
+    "run-waterfall": "^1.1.6",
+    "sha": "^3.0.0",
+    "zip-dir": "^1.0.2",
+    "zipit": "^1.0.2"
+  },
+  "devDependencies": {
+    "eslint": "^6.0.1",
+    "istanbul": "^0.4.5",
+    "sinon": "^7.3.2",
+    "tap-spec": "^5.0.0",
+    "tape": "^4.11.0"
+  }
+}
