@@ -13,7 +13,8 @@ module.exports = function patchApiGateway({stackname}, callback) {
         else if (Array.isArray(data.Stacks)) {
           let outs = data.Stacks[0].Outputs
           let restApiId = outs.find(o=> o.OutputKey === 'restApiId')
-          callback(null, restApiId.OutputValue)
+          if (!restApiId) callback(Error('cancel'))
+          else callback(null, restApiId.OutputValue)
         }
         else {
           callback(Error('stack_not_found'))
@@ -46,5 +47,10 @@ module.exports = function patchApiGateway({stackname}, callback) {
         else callback()
       })
     }
-  ], callback)
+  ], 
+  function done(err) {
+    if (err && err.name === 'cancel') callback()
+    else if (err) callback(err)
+    else callback()
+  })
 }
