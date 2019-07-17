@@ -1,13 +1,11 @@
 let aws = require('aws-sdk')
 let chalk = require('chalk')
-let exec = require('child_process').exec
 let fs = require('fs')
+let fingerprinter = require('@architect/utils').fingerprint
 let glob = require('glob')
 let mime = require('mime-types')
 let path = require('path')
-let pathExists = fs.existsSync
 let series = require('run-series')
-let sha = require('sha')
 let sort = require('path-sort')
 let waterfall = require('run-waterfall')
 
@@ -24,21 +22,20 @@ function normalizePath(path) {
   return path.replace(/\\/g, '/')
 }
 
-module.exports = function factory({Bucket, fingerprint, ignore, prune, verbose}, callback) {
+module.exports = function factory(params, callback) {
+  let {Bucket, fingerprint, ignore, prune} = params
   let s3 = new aws.S3({region: process.env.AWS_REGION})
   let publicDir = normalizePath(path.join(process.cwd(), 'public'))
   let staticAssets = path.join(publicDir, '/**/*')
   let files
-  let staticManifest = {}
+  let staticManifest
   waterfall([
     /**
      * Notices
      */
     function notices(callback) {
-      if (verbose) {
-        console.log(chalk.green.dim('✓'), chalk.grey(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`))
-        console.log(chalk.green.dim('✓'), chalk.grey(`Orphaned file pruning ${prune ? 'enabled' : 'disabled'}`))
-      }
+      console.log(chalk.green.dim('✓'), chalk.grey(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`))
+      console.log(chalk.green.dim('✓'), chalk.grey(`Orphaned file pruning ${prune ? 'enabled' : 'disabled'}`))
       callback()
     },
 
@@ -46,7 +43,7 @@ module.exports = function factory({Bucket, fingerprint, ignore, prune, verbose},
      * Scan for files in the public directory
      */
     function globFiles(callback) {
-      glob(staticAssets, {dot:true, nodir:true}, callback)
+      glob(staticAssets, {dot:true, nodir:true, follow:true}, callback)
     },
 
     /**
@@ -75,54 +72,14 @@ module.exports = function factory({Bucket, fingerprint, ignore, prune, verbose},
      * Write (or remove) fingerprinted static asset manifest
      */
     function writeStaticManifest(callback) {
-      if (fingerprint) {
-        // Hash those files
-        let hashFiles = files.map(file => {
-          return (callback) => {
-            sha.get(file, function done(err, hash) {
-              if (err) callback(err)
-              else {
-                hash = hash.substr(0,10)
-                let filename = file.split('.')
-                // This will do weird stuff on multi-ext files (*.tar.gz) ¯\_(ツ)_/¯
-                filename[filename.length - 2] = `${filename[filename.length - 2]}-${hash}`
-                // Target shape: {'foo/bar.jpg': 'foo/bar-6bf1794b4c.jpg'}
-                staticManifest[file.replace(publicDir, '').substr(1)] = filename.join('.').replace(publicDir, '').substr(1)
-                callback()
-              }
-            })
-          }
-        })
-        series(hashFiles, function done(err) {
-          if (err) callback(err)
-          else {
-            // Write out public/static.json
-            // TODO / note: rn this file upload with every build. Perhaps compare data and only upload if changes are detected?
-            fs.writeFile(path.join(publicDir, 'static.json'), JSON.stringify(staticManifest, null, 2), callback)
-          }
-        })
-      }
-      else {
-        if (pathExists(path.join(publicDir, 'static.json'))) {
-          console.log(`${chalk.yellow('Warning')} ${chalk.white(`Found ${publicDir + path.sep}static.json file with fingerprinting disabled, deleting file`)}`)
-          let cmd = 'rm static.json'
-          exec(cmd, {cwd: publicDir}, (err, stdout, stderr) => {
-            if (err) callback(err)
-            else if (stderr) {
-              console.log(`${chalk.yellow('Warning')} ${chalk.gray(`Error removing static.json file, please remove it manually or static asset calls may be broken`)}`)
-              callback()
-            }
-            else callback()
-          })
-        }
-        else callback()
-      }
+      fingerprinter({fingerprint, ignore}, callback)
     },
 
     /**
      * Upload files to S3
      */
-    function uploadFiles(callback) {
+    function uploadFiles(manifest={}, callback) {
+      staticManifest = manifest
       if (fingerprint) {
         // Ensure static.json is uploaded
         files.unshift(path.join(publicDir, 'static.json'))
@@ -133,6 +90,7 @@ module.exports = function factory({Bucket, fingerprint, ignore, prune, verbose},
           // First, let's check to ensure we even need to upload the file
           let stats = fs.lstatSync(file)
           let Key = file.replace(publicDir, '').substr(1)
+          let big = stats.size >= 5750000
           if (fingerprint && Key !== 'static.json') {
             Key = staticManifest[file.replace(publicDir, '').substr(1)]
           }
@@ -156,7 +114,9 @@ module.exports = function factory({Bucket, fingerprint, ignore, prune, verbose},
                   Bucket,
                   Key,
                   Body: fs.readFileSync(file),
-                  ContentType: getContentType(file),
+                }
+                if (getContentType(file)) {
+                  params.ContentType = getContentType(file)
                 }
                 if (fingerprint && Key !== 'static.json') {
                   params.CacheControl = 'max-age=315360000'
@@ -173,14 +133,15 @@ module.exports = function factory({Bucket, fingerprint, ignore, prune, verbose},
                     callback()
                   }
                   else {
-                    console.log(`${chalk.green('Uploaded')} ${chalk.underline.cyan(url)}`)
+                    console.log(`${chalk.blue('[  Uploaded  ]')} ${chalk.underline.cyan(url)}`)
+                    if (big) console.log(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
                     callback()
                   }
                 })
               }
               else {
-                if (verbose)
-                  console.log(`${chalk.gray('Not modified')} ${chalk.underline.cyan(url)}`)
+                console.log(`${chalk.gray('[Not modified]')} ${chalk.underline.cyan(url)}`)
+                if (big) console.log(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
                 callback()
               }
             }
@@ -268,7 +229,7 @@ module.exports = function factory({Bucket, fingerprint, ignore, prune, verbose},
       callback(err)
     }
     else {
-      console.log(`${chalk.green('✓ Success!')} ${chalk.green.dim('Deployed ./public')}`)
+      console.log(`${chalk.green('✓ Success!')} ${chalk.green.dim('Deployed static assets from public' + path.sep)}`)
       callback()
     }
   })

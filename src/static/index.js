@@ -1,4 +1,5 @@
 let aws = require('aws-sdk')
+let fingerprintConfig = require('@architect/utils').fingerprint.config
 let waterfall = require('run-waterfall')
 let utils = require('@architect/utils')
 let publishToS3 = require('./publish-to-s3')
@@ -44,19 +45,10 @@ module.exports = function statics({verbose, production}, callback) {
         })) {prune = true}
 
         // Enable fingerprinting
-        let fingerprint = false
-        if (arc.static.some(s => {
-          if (!s[0])
-            return false
-          if (s.includes('fingerprint') && (s.includes(true) || s.includes('enabled') || s.includes('on')))
-            return true
-          return false
-        })) {fingerprint = true}
+        let fingerprint = fingerprintConfig(arc).fingerprint
 
         // Collect any strings to match against for ignore
-        let ignore = arc.static.find(s => s['ignore'])
-        if (ignore) {ignore = Object.getOwnPropertyNames(ignore.ignore)}
-        else {ignore = []}
+        let ignore = fingerprintConfig(arc).ignore
 
         callback(null, {fingerprint, ignore, prune})
       }
