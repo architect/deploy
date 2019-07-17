@@ -49,7 +49,7 @@ module.exports = function patchApiGateway({stackname}, callback) {
     }
   ],
   function done(err) {
-    if (err && err.name === 'cancel') callback()
+    if (err && err.message === 'cancel') callback()
     else if (err) callback(err)
     else callback()
   })
