@@ -41,6 +41,7 @@
     "zipit": "^1.0.2"
   },
   "devDependencies": {
+    "aws-sdk-mock": "^4.5.0",
     "istanbul": "^0.4.5",
     "proxyquire": "^2.1.1",
     "sinon": "^7.3.2",
