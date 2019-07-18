@@ -29,7 +29,8 @@ test('Deploy/public should exit if public dir has no files to upload', t=> {
   globStub.resetBehavior()
   globStub.callsFake((filepath, options, callback) => callback(null, [path.join(process.cwd(), 'public', 'readme.md')]))
   // S3 operations
-  let headStub = sinon.stub().callsFake((ignoreme, callback) => callback(null, params))
+  // eslint-disable-next-line
+  let headStub = sinon.stub().callsFake(({Bucket, Key}, callback) => callback(null, params))
   let putStub = sinon.stub().callsFake((params, callback) => callback())
   sinon.stub(aws, 'S3').returns({
     headObject: headStub,
@@ -66,7 +67,8 @@ test('Deploy/public uploads to S3, static.json manifest', t=> {
   sinon.stub(fs, 'lstatSync').returns({
     mtime: 2
   })
-  let headStub = sinon.stub().callsFake((ignoreme, callback) => callback(null, params))
+  // eslint-disable-next-line
+  let headStub = sinon.stub().callsFake(({Bucket, Key}, callback) => callback(null, params))
   let putStub = sinon.stub().callsFake((params, callback) => callback())
   sinon.stub(fs, 'readFileSync')
   sinon.stub(aws, 'S3').returns({
