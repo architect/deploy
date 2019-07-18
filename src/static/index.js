@@ -1,7 +1,7 @@
 let aws = require('aws-sdk')
-let fingerprintConfig = require('@architect/utils').fingerprint.config
 let waterfall = require('run-waterfall')
 let utils = require('@architect/utils')
+let fingerprintConfig = utils.fingerprint.config
 let publishToS3 = require('./publish-to-s3')
 
 /**
