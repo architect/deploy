@@ -89,6 +89,9 @@ module.exports = function factory(params, callback) {
         return function _maybeUploadFileToS3(callback) {
           // First, let's check to ensure we even need to upload the file
           let stats = fs.lstatSync(file)
+          // TODO ↓ remove me! ↓
+          console.log(`file`, file)
+          console.log(`publicDir`, publicDir)
           let Key = file.replace(publicDir, '')
           if (Key.startsWith(path.sep)) Key = Key.substr(1)
           let big = stats.size >= 5750000
