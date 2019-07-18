@@ -25,7 +25,7 @@ function normalizePath(path) {
 module.exports = function factory(params, callback) {
   let {Bucket, fingerprint, ignore, prune} = params
   let s3 = new aws.S3({region: process.env.AWS_REGION})
-  let publicDir = normalizePath(path.join(process.cwd(), 'public'))
+  let publicDir = path.join(process.cwd(), 'public')
   let staticAssets = path.join(publicDir, '/**/*')
   let files
   let staticManifest
@@ -43,7 +43,7 @@ module.exports = function factory(params, callback) {
      * Scan for files in the public directory
      */
     function globFiles(callback) {
-      glob(staticAssets, {dot:true, nodir:true, follow:true}, callback)
+      glob(normalizePath(staticAssets), {dot:true, nodir:true, follow:true}, callback)
     },
 
     /**
