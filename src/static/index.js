@@ -50,11 +50,15 @@ module.exports = function statics({verbose, production}, callback) {
         // Collect any strings to match against for ignore
         let ignore = fingerprintConfig(arc).ignore
 
-        callback(null, {fingerprint, ignore, prune})
+        // Allow folder remap
+        let findFolder = t=> Array.isArray(t) && t[0].toLowerCase() === 'folder'
+        let folder = arc.static.some(findFolder)? arc.static.find(findFolder)[1] : 'public'
+
+        callback(null, {fingerprint, ignore, prune, folder})
       }
     },
 
-    function({fingerprint, ignore, prune}, callback) {
+    function({fingerprint, ignore, prune, folder}, callback) {
       // lookup bucket in cloudformation
       let cloudformation = new aws.CloudFormation
       cloudformation.listStackResources({
@@ -65,18 +69,19 @@ module.exports = function statics({verbose, production}, callback) {
         else {
           let find = i=> i.ResourceType === 'AWS::S3::Bucket'
           let Bucket = data.StackResourceSummaries.find(find).PhysicalResourceId
-          callback(null, {Bucket, fingerprint, ignore, prune})
+          callback(null, {Bucket, fingerprint, ignore, prune, folder})
         }
       })
     },
 
-    function({Bucket, fingerprint, ignore, prune}, callback) {
+    function({Bucket, fingerprint, ignore, prune, folder}, callback) {
       publishToS3({
         Bucket,
         fingerprint,
         ignore,
         prune,
         verbose,
+        folder,
       }, callback)
     }
   ],

@@ -23,9 +23,9 @@ function normalizePath(path) {
 }
 
 module.exports = function factory(params, callback) {
-  let {Bucket, fingerprint, ignore, prune} = params
+  let {Bucket, fingerprint, ignore, prune, folder} = params
   let s3 = new aws.S3({region: process.env.AWS_REGION})
-  let publicDir = path.join(process.cwd(), 'public')
+  let publicDir = path.join(process.cwd(), folder)
   let staticAssets = path.join(publicDir, '/**/*')
   let files
   let staticManifest

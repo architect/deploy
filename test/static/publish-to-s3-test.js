@@ -19,6 +19,7 @@ let params = {
   fingerprint: true,
   ignore: [],
   prune: false,
+  folder: 'public'
 }
 
 // Each unit test should follow the order of calls made in the SUT
