@@ -44,7 +44,7 @@ module.exports = function printURL({ts, arc, pretty, stackname}, callback) {
 
       let url = hackyCDN || outs.find(cdn) || outs.find(api) || outs.find(bucket)
       if (url)
-        pretty.url(url.OutputValue || url) //NOTE we expect .OutputValue unless its hackyCDN 
+        pretty.url(url.OutputValue || url) //NOTE we expect .OutputValue unless its hackyCDN
 
       // HACK 2
       let creating = arc.cdn && hackyCDN === false
