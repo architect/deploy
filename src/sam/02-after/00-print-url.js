@@ -48,7 +48,12 @@ module.exports = function printURL({ts, arc, pretty, stackname}, callback) {
       let destroying = arc.hasOwnProperty('cdn') === false && hackyCDN && hackyCDN.status != 'InProgress'
 
       if (creating) {
-        create(arc, callback)
+        let params = {
+          domain: url.replace('/production', '').replace('http://', '').replace('https://', '')
+        }
+        if (url.startsWith('https://'))
+          params.path = '/production'
+        create(params, callback)
       }
       else if (destroying) {
         destroy(cf.find(findDistro), callback)
