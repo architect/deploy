@@ -33,7 +33,9 @@ module.exports = function printURL({ts, arc, pretty, stackname}, callback) {
       function findDistro(distro) {
         let origin = outs.find(api) || outs.find(bucket)
         if (!origin) return false
-        return distro.origin === origin
+        let dist = distro.origin
+        let orig = origin.OutputValue.replace('/production', '').replace('http://', '').replace('https://', '')
+        return dist === orig
       }
 
       let hackyCDN = cf.find(findDistro)? `https://${cf.find(findDistro).domain}` : false
@@ -49,11 +51,12 @@ module.exports = function printURL({ts, arc, pretty, stackname}, callback) {
 
       if (creating) {
         let params = {
-          domain: url.replace('/production', '').replace('http://', '').replace('https://', '')
+          domain: url.OutputValue.replace('/production', '').replace('http://', '').replace('https://', '')
         }
-        if (url.startsWith('https://'))
+        if (url.OutputValue.startsWith('https://'))
           params.path = '/production'
         create(params, callback)
+        callback()
       }
       else if (destroying) {
         destroy(cf.find(findDistro), callback)
