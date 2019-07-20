@@ -6,7 +6,7 @@ let cleanup = require('./03-cleanup')
 
 module.exports = function after({ts, arc, verbose, production, pretty, appname, stackname}, callback) {
   series([
-    printUrl.bind({}, {ts, pretty, stackname}),
+    printUrl.bind({}, {ts, arc, pretty, stackname}),
     staticDeploy.bind({}, {arc, verbose, production}),
     patchApiG.bind({}, {stackname}),
     cleanup.bind({}, {appname}),
