@@ -4,10 +4,10 @@
   "description": "deploys @architect projects",
   "main": "index.js",
   "scripts": {
-    "test": "npm run lint && npm run test:unit",
+    "test": "npm run lint && npm run coverage",
     "test:slow": "tape test/slow/*-test.js | tap-spec",
     "test:unit": "tape test/*-test.js test/static/*-test.js | tap-spec",
-    "coverage": "istanbul cover tape test/*-test.js test/**/*-test.js",
+    "coverage": "nyc --reporter=lcov --reporter=text-summary npm run test:unit",
     "lint": "eslint . --fix"
   },
   "repository": {
@@ -43,7 +43,8 @@
   },
   "devDependencies": {
     "aws-sdk-mock": "^4.5.0",
-    "istanbul": "^0.4.5",
+    "codecov": "^3.5.0",
+    "nyc": "^14.1.1",
     "proxyquire": "^2.1.1",
     "sinon": "^7.3.2",
     "tap-spec": "^5.0.0",
