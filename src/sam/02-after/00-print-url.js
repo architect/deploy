@@ -52,7 +52,7 @@ module.exports = function printURL({ts, arc, pretty, stackname}, callback) {
 
       if (creating) {
         let params = {
-          domain: url.OutputValue.replace('/production', '').replace('http://', '').replace('https://', '')
+          domain: url.OutputValue.replace('/production/', '').replace('http://', '').replace('https://', '')
         }
         if (url.OutputValue.startsWith('https://'))
           params.path = '/production'

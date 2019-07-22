@@ -1,6 +1,7 @@
 let aws = require('aws-sdk')
 
 module.exports = function createCloudFrontDistribution({domain, path}, callback) {
+  console.log('calling create with', {domain, path})
   let cf = new aws.CloudFront
   cf.createDistribution(config({
     DomainName: domain,
