@@ -29,8 +29,8 @@ module.exports = function getAppApex({ts, arc, pretty, stackname}, callback) {
       let creatingApiGateway = arc.http && arc.cdn && apigateway === false
 
       // destroy (to the best of our ability) cdns if cdn is not defined
-      let destroyingS3 = typeof arc.cdn === 'undefined'
-      let destroyingApiGateway = typeof arc.cdn === 'undefined'
+      let destroyingS3 = typeof arc.cdn === 'undefined' && s3
+      let destroyingApiGateway = typeof arc.cdn === 'undefined' && apigateway
 
       series([
         function createS3(callback) {
