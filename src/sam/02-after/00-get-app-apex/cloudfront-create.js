@@ -3,7 +3,7 @@ let aws = require('aws-sdk')
 module.exports = function createCloudFrontDistribution({domain, path}, callback) {
   let cf = new aws.CloudFront
   cf.createDistribution(config({
-    DomainName: domain,
+    DomainName: domain.replace('/production/', '').replace('https://', ''),
     OriginPath: path,
   }), callback)
 }
