@@ -8,7 +8,7 @@ module.exports = function getAppApex({ts, arc, pretty, stackname}, callback) {
   reads({
     stackname
   },
-  function done(err, {url, s3, apigateway}) {
+  function done(err, {url, bucketDomain, apiDomain, s3, apigateway}) {
     if (err) {
       console.log(err)
       callback()
@@ -34,32 +34,34 @@ module.exports = function getAppApex({ts, arc, pretty, stackname}, callback) {
 
       series([
         function createS3(callback) {
-          let domain = url.replace('http://', '').replace('https://', '')
-          if (creatingS3)
-            create({domain}, callback)
-          else
+          if (creatingS3) {
+            create({
+              domain: bucketDomain
+            }, callback)
+          }
+          else {
             callback()
+          }
         },
         function destroyS3(callback) {
-          if (destroyingS3)
-            destroy(s3, callback)
-          else
-            callback()
+          if (destroyingS3) destroy(s3, callback)
+          else callback()
         },
         function createApiGateway(callback) {
-          let domain = url.replace('/production/', '').replace('https://', '')
-          let path = '/production'
-          if (creatingApiGateway)
-            create({domain, path}, callback)
-          else
+          if (creatingApiGateway) {
+            create({
+              domain: apiDomain,
+              path: '/production'
+            }, callback)
+          }
+          else {
             callback()
+          }
         },
         function destroyApiGateway(callback) {
-          if (destroyingApiGateway)
-            destroy(apigateway, callback)
-          else
-            callback()
-        },
+          if (destroyingApiGateway) destroy(apigateway, callback)
+          else callback()
+        }
       ],
       function done(err) {
         if (err) callback(err)

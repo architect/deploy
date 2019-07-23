@@ -46,11 +46,14 @@ module.exports = function reads({stackname}, callback){
         return dist === orig
       }) || false
 
-      let url = outs.find(cdn) || outs.find(api) || outs.find(bucket)
-      if (url)
-        url = url.OutputValue
+      let cdnURL = outs.find(cdn)? outs.find(cdn).OutputValue : false
+      let apiURL = outs.find(api)? outs.find(api).OutputValue : false
+      let bucketURL = outs.find(bucket)? outs.find(bucket).OutputValue : false
+      let url =  cdnURL || apiURL || bucketURL
+      let apiDomain = apiURL? apiURL.replace('/production/', '').replace('https://', '') : false
+      let bucketDomain = bucketURL? bucketURL.replace('http://', '') : false
 
-      callback(null, {url, apigateway, s3})
+      callback(null, {url, apiDomain, bucketDomain, apigateway, s3})
     }
   })
 }
