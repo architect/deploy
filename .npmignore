@@ -2,6 +2,7 @@ test/
 .eslintignore
 .eslintrc.js
 .travis.yml
+.nyc_output
 appveyor.yml
 codecov.yaml
 coverage/

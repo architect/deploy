@@ -21,7 +21,8 @@ module.exports = function listCloudfrontDistributions(callback) {
             id: distro.Id,
             domain: distro.DomainName,
             status: distro.Status,
-            origin: distro.Origins.Items[0].DomainName
+            origin: distro.Origins.Items[0].DomainName,
+            enabled: distro.Enabled
           })
           callback(null, distros.map(fmt))
         }

@@ -1,6 +1,7 @@
 let reads = require('./reads')
 let series = require('run-series')
 let create = require('./cloudfront-create')
+let enable = require('./cloudfront-enable')
 let destroy = require('./cloudfront-destroy')
 
 module.exports = function getAppApex({ts, arc, pretty, stackname}, callback) {
@@ -28,6 +29,10 @@ module.exports = function getAppApex({ts, arc, pretty, stackname}, callback) {
       let creatingS3 = arc.static && arc.cdn && s3 === false
       let creatingApiGateway = arc.http && arc.cdn && apigateway === false
 
+      // enabling (in the event someone destroyed and then changed their mind)
+      let enablingS3 = arc.static && arc.cdn && s3.enabled === false
+      let enablingApiGateway = arc.http && arc.cdn && apigateway.enabled === false
+
       // destroy (to the best of our ability) cdns if cdn is not defined
       let destroyingS3 = typeof arc.cdn === 'undefined' && s3
       let destroyingApiGateway = typeof arc.cdn === 'undefined' && apigateway
@@ -43,6 +48,10 @@ module.exports = function getAppApex({ts, arc, pretty, stackname}, callback) {
             callback()
           }
         },
+        function enableS3(callback) {
+          if (enablingS3) enable(s3, callback)
+          else callback()
+        },
         function destroyS3(callback) {
           if (destroyingS3) destroy(s3, callback)
           else callback()
@@ -57,6 +66,10 @@ module.exports = function getAppApex({ts, arc, pretty, stackname}, callback) {
           else {
             callback()
           }
+        },
+        function enableApiGateway(callback) {
+          if (enablingApiGateway) enable(apigateway, callback)
+          else callback()
         },
         function destroyApiGateway(callback) {
           if (destroyingApiGateway) destroy(apigateway, callback)
