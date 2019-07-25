@@ -3,6 +3,7 @@ let utils = require('@architect/utils')
 let series = require('run-series')
 
 let print = require('./print')
+let macros = require('./macros')
 let before = require('./00-before')
 let deploy = require('./01-deploy')
 let after = require('./02-after')
@@ -35,7 +36,7 @@ module.exports = function samDeploy({verbose, production}, callback) {
   let bucket = arc.aws.find(o=> o[0] === 'bucket')[1]
   let appname = arc.app[0]
   let stackname = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
-  let sam = pkg(arc)
+  let sam = macros(arc, pkg(arc))
   let nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
 
   series([
