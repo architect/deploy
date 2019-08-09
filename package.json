@@ -3,6 +3,9 @@
   "version": "1.0.19",
   "description": "deploys @architect projects",
   "main": "index.js",
+  "bin": {
+    "arc-deploy": "cli.js"
+  },
   "scripts": {
     "test": "npm run lint && npm run coverage",
     "test:slow": "tape test/slow/*-test.js | tap-spec",
