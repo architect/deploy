@@ -25,10 +25,10 @@
   },
   "homepage": "https://github.com/architect/deploy#readme",
   "dependencies": {
-    "@architect/package": "^1.0.30",
+    "@architect/package": "^1.0.35",
     "@architect/parser": "^1.1.7",
-    "@architect/utils": "^1.2.2",
-    "aws-sdk": "^2.491.0",
+    "@architect/utils": "^1.2.3",
+    "aws-sdk": "^2.506.0",
     "chalk": "^2.4.2",
     "eslint": "^5.16.0",
     "glob": "^7.1.4",
@@ -45,8 +45,8 @@
     "aws-sdk-mock": "^4.5.0",
     "codecov": "^3.5.0",
     "nyc": "^14.1.1",
-    "proxyquire": "^2.1.1",
-    "sinon": "^7.3.2",
+    "proxyquire": "^2.1.2",
+    "sinon": "^7.4.1",
     "tap-spec": "^5.0.0",
     "tape": "^4.11.0"
   }

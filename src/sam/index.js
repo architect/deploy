@@ -16,7 +16,19 @@ let after = require('./02-after')
  * @returns {Promise} - if not callback is supplied
  */
 module.exports = function samDeploy({verbose, production}, callback) {
+
   let ts = Date.now()
+  let log = true
+  let pretty = print({log, verbose})
+  let {arc} = utils.readArc()
+  let bucket = arc.aws.find(o=> o[0] === 'bucket')[1]
+  let appname = arc.app[0]
+  let stackname = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
+  let cfn = pkg(arc)
+
+  let region = process.env.AWS_REGION
+  if (!region)
+    throw ReferenceError('AWS region must be configured to deploy')
 
   let promise
   if (!callback) {
@@ -28,26 +40,17 @@ module.exports = function samDeploy({verbose, production}, callback) {
     })
   }
 
-  // flags
-  let log = true
-  let pretty = print({log, verbose})
-
-  let {arc} = utils.readArc()
-  let bucket = arc.aws.find(o=> o[0] === 'bucket')[1]
-  let appname = arc.app[0]
-  let stackname = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
-  let sam = macros(arc, pkg(arc))
-  let nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
-
-  // Assumes either a) utils/banner has been called or b) AWS_REGION has been populated by some other means
-  let region = process.env.AWS_REGION
-  if (!region) throw ReferenceError('AWS region must be configured to deploy')
-
-  series([
-    before.bind({}, {sam, nested, bucket, pretty}),
-    deploy.bind({}, {appname, stackname, nested, bucket, pretty, region}),
-    after.bind({}, {ts, arc, verbose, production, pretty, appname, stackname}),
-  ], callback)
+  macros(arc, cfn, function done(err, sam) {
+    if (err) callback(err)
+    else {
+      let nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
+      series([
+        before.bind({}, {sam, nested, bucket, pretty}),
+        deploy.bind({}, {appname, stackname, nested, bucket, pretty, region}),
+        after.bind({}, {ts, arc, verbose, production, pretty, appname, stackname}),
+      ], callback)
+    }
+  })
 
   return promise
 }

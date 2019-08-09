@@ -31,19 +31,33 @@ let {join} = require('path')
  * }
  * ```
  *
+ * Macros can be async functions (or return a Promise that resolves a CloudFormation template)
+ *
  * The passed in `arc` object allows user defined custom pragmas and config.
  *
  * @param {Object} arc - the parsed .arc file in the current working directory
  * @param {AWS::Serverless} template - the current CloudFormation template
+ * @param {Function} callback - a Node style errback
  *
  */
-module.exports = function macros(arc, template) {
+module.exports = function macros(arc, template, callback) {
+  exec(arc, template).then(cfn=>callback(null, cfn)).catch(callback)
+}
+
+
+/**
+ * @param {Object} arc - the parsed .arc file in the current working directory
+ * @param {AWS::Serverless} template - the current CloudFormation template
+ * @returns {AWS::Serverless}
+ */
+async function exec(arc, template) {
   let transforms = arc.macros || []
-  return transforms.map(path).reduce(function reducer(cfn, macro) {
+  return await transforms.map(path).reduce(async function reducer(current, macro) {
     /* eslint global-require: "off" */
     let run = require(macro)
-    return run(arc, cfn)
-  }, template)
+    let cfn = await current
+    return await run(arc, cfn)
+  }, Promise.resolve(template))
 }
 
 /**
