@@ -39,9 +39,13 @@ module.exports = function samDeploy({verbose, production}, callback) {
   let sam = macros(arc, pkg(arc))
   let nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
 
+  // Assumes either a) utils/banner has been called or b) AWS_REGION has been populated by some other means
+  let region = process.env.AWS_REGION
+  if (!region) throw ReferenceError('AWS region must be configured to deploy')
+
   series([
     before.bind({}, {sam, nested, bucket, pretty}),
-    deploy.bind({}, {appname, stackname, nested, bucket, pretty}),
+    deploy.bind({}, {appname, stackname, nested, bucket, pretty, region}),
     after.bind({}, {ts, arc, verbose, production, pretty, appname, stackname}),
   ], callback)
 
