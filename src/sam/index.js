@@ -17,6 +17,9 @@ let after = require('./02-after')
  */
 module.exports = function samDeploy({verbose, production}, callback) {
 
+  // ensure NODE_ENV so the macros know whats up
+  process.env.NODE_ENV = production? 'production' : 'staging'
+
   let ts = Date.now()
   let log = true
   let pretty = print({log, verbose})

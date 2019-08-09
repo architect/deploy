@@ -52,6 +52,7 @@ module.exports = function macros(arc, template, callback) {
  */
 async function exec(arc, template) {
   let transforms = arc.macros || []
+  transforms.push('arc-env') // always run the internal env macro
   return await transforms.map(path).reduce(async function reducer(current, macro) {
     /* eslint global-require: "off" */
     let run = require(macro)
@@ -61,22 +62,25 @@ async function exec(arc, template) {
 }
 
 /**
- * @macros live in two places
+ * @macros live in these userland places:
  *
  * - src/macros/filename.js
+ * - src/macros/modulename
  * - node_modules/my-macro-name
  *
  * @param {String} name - the macro name
  * @returns {String} path - the path to the macro
  */
 function path(name) {
+  let internal = join(__dirname, 'macros', `${name}.js`)
   let localPath = join(process.cwd(), 'src', 'macros', `${name}.js`)
   let localPath1 = join(process.cwd(), 'src', 'macros', name)
   let modulePath = join(process.cwd(), 'node_modules', name)
   let modulePath1 = join(process.cwd(), 'node_modules', `@${name}`)
+  if (existsSync(internal)) return internal
   if (existsSync(localPath)) return localPath
-  else if (existsSync(localPath1)) return localPath1
-  else if (existsSync(modulePath)) return modulePath
-  else if (existsSync(modulePath1)) return modulePath1
-  else throw ReferenceError(name + ' macro defined in .arc not found')
+  if (existsSync(localPath1)) return localPath1
+  if (existsSync(modulePath)) return modulePath
+  if (existsSync(modulePath1)) return modulePath1
+  throw ReferenceError(name + ' macro defined in .arc not found')
 }
