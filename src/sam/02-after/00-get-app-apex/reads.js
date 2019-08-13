@@ -34,7 +34,7 @@ module.exports = function reads({stackname, stage}, callback){
         let origin = outs.find(api)
         if (!origin) return false
         let dist = distro.origin
-        let orig = origin.OutputValue.replace(`/${stage}/`, '').replace('http://', '').replace('https://', '')
+        let orig = origin.OutputValue.replace(`/${stage}`, '').replace('http://', '').replace('https://', '')
         return dist === orig
       }) || false
 
@@ -42,7 +42,7 @@ module.exports = function reads({stackname, stage}, callback){
         let origin = outs.find(bucket)
         if (!origin) return false
         let dist = distro.origin
-        let orig = origin.OutputValue.replace(`/${stage}/`, '').replace('http://', '').replace('https://', '')
+        let orig = origin.OutputValue.replace(`/${stage}`, '').replace('http://', '').replace('https://', '')
         return dist === orig
       }) || false
 
@@ -50,7 +50,7 @@ module.exports = function reads({stackname, stage}, callback){
       let apiURL = outs.find(api)? outs.find(api).OutputValue : false
       let bucketURL = outs.find(bucket)? outs.find(bucket).OutputValue : false
       let url =  cdnURL || apiURL || bucketURL
-      let apiDomain = apiURL? apiURL.replace(`/${stage}/`, '').replace('https://', '') : false
+      let apiDomain = apiURL? apiURL.replace(`/${stage}`, '').replace('https://', '') : false
       let bucketDomain = bucketURL? bucketURL.replace('http://', '') : false
 
       callback(null, {url, apiDomain, bucketDomain, apigateway, s3})

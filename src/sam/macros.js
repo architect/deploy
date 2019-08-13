@@ -35,7 +35,7 @@ let {join} = require('path')
  *
  * The passed in `arc` object allows user defined custom pragmas and config.
  *
- * @param {Object}
+ * @param {Object} params
  *   @param {Object} arc - the parsed .arc file in the current working directory
  *   @param {AWS::Serverless} template - the current CloudFormation template
  *   @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
@@ -50,7 +50,7 @@ module.exports = function macros(params, callback) {
 
 
 /**
- * @param {Object}
+ * @param {Object} params
  *   @param {Object} arc - the parsed .arc file in the current working directory
  *   @param {AWS::Serverless} template - the current CloudFormation template
  *   @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
