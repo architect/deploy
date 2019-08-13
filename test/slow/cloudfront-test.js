@@ -4,7 +4,7 @@ let create = require('../../src/sam/02-after/cloudfront-create')
 let destroy = require('../../src/sam/02-after/cloudfront-destroy')
 
 let mock = {
-  api: {domain:'brian.io', path:'/production'},
+  api: {domain:'brian.io', path:'/staging'},
   s3: {domain:'arc.codes'}
 }
 

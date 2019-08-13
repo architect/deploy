@@ -1,17 +1,18 @@
 let aws = require('aws-sdk')
 
-module.exports = function createCloudFrontDistribution({domain, path}, callback) {
+module.exports = function createCloudFrontDistribution({domain, path, stage}, callback) {
   let cf = new aws.CloudFront
   cf.createDistribution(config({
-    DomainName: domain.replace('/production/', '').replace('https://', ''),
+    DomainName: domain.replace(`/${stage}/`, '').replace('https://', ''),
     OriginPath: path,
+    stage
   }), callback)
 }
 
-function config({DomainName, OriginPath}) {
+function config({DomainName, OriginPath, stage}) {
 
   let CallerReference = `edge-${Date.now()}`
-  let OriginProtocolPolicy = OriginPath === '/production'? 'https-only' : 'http-only'
+  let OriginProtocolPolicy = OriginPath === `/${stage}`? 'https-only' : 'http-only'
 
   let origin = {
     Id: CallerReference,
@@ -30,7 +31,7 @@ function config({DomainName, OriginPath}) {
     }
   }
 
-  if (OriginPath === '/production')
+  if (OriginPath === `/${stage}`)
     origin.OriginPath = OriginPath
 
   return {

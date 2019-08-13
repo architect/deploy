@@ -1,7 +1,7 @@
 let aws = require('aws-sdk')
 let waterfall = require('run-waterfall')
 
-module.exports = function patchApiGateway({stackname}, callback) {
+module.exports = function patchApiGateway({stackname, stage}, callback) {
   waterfall([
     function(callback) {
       let cloudformation = new aws.CloudFormation
@@ -40,7 +40,7 @@ module.exports = function patchApiGateway({stackname}, callback) {
       let apigateway = new aws.APIGateway
       apigateway.createDeployment({
         restApiId,
-        stageName: 'production'
+        stageName: stage
       },
       function done(err) {
         if (err) callback(err)

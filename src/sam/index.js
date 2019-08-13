@@ -48,7 +48,7 @@ module.exports = function samDeploy({verbose, production}, callback) {
       series([
         before.bind({}, {sam, nested, bucket, pretty}),
         deploy.bind({}, {appname, stackname, nested, bucket, pretty, region}),
-        after.bind({}, {ts, arc, verbose, production, pretty, appname, stackname}),
+        after.bind({}, {ts, arc, verbose, production, pretty, appname, stackname, stage}),
       ], callback)
     }
   })
