@@ -4,15 +4,16 @@ let utils = require('util')
 /**
  * reads SSM for env vars and resets NODE_ENV
  */
-module.exports = async function env(arc, cfn) {
+module.exports = async function env({arc, cfn, stage}) {
+  stage = defaultStage(stage)
   let appname = arc.app[0]
   let getAll = utils.promisify(all)
   let variables = await getAll(appname)
-  let filtered = variables.filter(v=> v.env === process.env.NODE_ENV)
+  let filtered = variables.filter(v=> v.env === stage)
   Object.keys(cfn.Resources).forEach(r=> {
     let isFunction = cfn.Resources[r].Type === 'AWS::Serverless::Function'
     if (isFunction) {
-      cfn.Resources[r].Properties.Environment.Variables.NODE_ENV = process.env.NODE_ENV
+      cfn.Resources[r].Properties.Environment.Variables.NODE_ENV = stage
       filtered.forEach(v=> {
         cfn.Resources[r].Properties.Environment.Variables[v.name] = v.value
       })
@@ -78,4 +79,13 @@ function all(appname, callback) {
       callback(null, result)
     }
   })
+}
+
+// If it's not 'staging' or 'production', then it should be 'staging'
+function defaultStage(stage) {
+  let staging = 'staging'
+  let production = 'production'
+  if (stage !== staging && stage !== production)
+    stage = staging
+  return stage
 }

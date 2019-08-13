@@ -17,9 +17,7 @@ let after = require('./02-after')
  */
 module.exports = function samDeploy({verbose, production}, callback) {
 
-  // ensure NODE_ENV so the macros know whats up
-  process.env.NODE_ENV = production? 'production' : 'staging'
-
+  let stage = production? 'production' : 'staging'
   let ts = Date.now()
   let log = true
   let pretty = print({log, verbose})
@@ -43,7 +41,7 @@ module.exports = function samDeploy({verbose, production}, callback) {
     })
   }
 
-  macros(arc, cfn, function done(err, sam) {
+  macros({arc, cfn, stage}, function done(err, sam) {
     if (err) callback(err)
     else {
       let nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
