@@ -19,7 +19,5 @@ module.exports = function spawn(command, args, pretty, callback) {
     }
     else callback()
   })
-  pkg.on('error', (err) => {
-    callback(err)
-  })
+  pkg.on('error', callback)
 }
