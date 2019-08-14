@@ -28,9 +28,9 @@
   },
   "homepage": "https://github.com/architect/deploy#readme",
   "dependencies": {
-    "@architect/package": "^1.0.35",
+    "@architect/package": "^1.0.36",
     "@architect/parser": "^1.1.7",
-    "@architect/utils": "^1.2.3",
+    "@architect/utils": "^1.2.7",
     "aws-sdk": "^2.506.0",
     "chalk": "^2.4.2",
     "eslint": "^5.16.0",

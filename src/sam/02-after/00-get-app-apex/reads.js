@@ -9,7 +9,7 @@ let list = require('./cloudfront-list')
  * @param {String} params.stackname - the name of the currently deployed stack
  * @param {Function} callback - node errback (err, {url, s3, apigateway})=>
  */
-module.exports = function reads({stackname}, callback){
+module.exports = function reads({stackname, stage}, callback){
   parallel({
     cfn(callback) {
       let cloudformation = new aws.CloudFormation
@@ -34,7 +34,7 @@ module.exports = function reads({stackname}, callback){
         let origin = outs.find(api)
         if (!origin) return false
         let dist = distro.origin
-        let orig = origin.OutputValue.replace('/production/', '').replace('http://', '').replace('https://', '')
+        let orig = origin.OutputValue.replace(`/${stage}`, '').replace('http://', '').replace('https://', '')
         return dist === orig
       }) || false
 
@@ -42,7 +42,7 @@ module.exports = function reads({stackname}, callback){
         let origin = outs.find(bucket)
         if (!origin) return false
         let dist = distro.origin
-        let orig = origin.OutputValue.replace('/production/', '').replace('http://', '').replace('https://', '')
+        let orig = origin.OutputValue.replace(`/${stage}`, '').replace('http://', '').replace('https://', '')
         return dist === orig
       }) || false
 
@@ -50,7 +50,7 @@ module.exports = function reads({stackname}, callback){
       let apiURL = outs.find(api)? outs.find(api).OutputValue : false
       let bucketURL = outs.find(bucket)? outs.find(bucket).OutputValue : false
       let url =  cdnURL || apiURL || bucketURL
-      let apiDomain = apiURL? apiURL.replace('/production/', '').replace('https://', '') : false
+      let apiDomain = apiURL? apiURL.replace(`/${stage}`, '').replace('https://', '') : false
       let bucketDomain = bucketURL? bucketURL.replace('http://', '') : false
 
       callback(null, {url, apiDomain, bucketDomain, apigateway, s3})

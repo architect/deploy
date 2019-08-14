@@ -35,30 +35,40 @@ let {join} = require('path')
  *
  * The passed in `arc` object allows user defined custom pragmas and config.
  *
- * @param {Object} arc - the parsed .arc file in the current working directory
- * @param {AWS::Serverless} template - the current CloudFormation template
+ * @param {Object} params
+ *   @param {Object} arc - the parsed .arc file in the current working directory
+ *   @param {AWS::Serverless} template - the current CloudFormation template
+ *   @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
  * @param {Function} callback - a Node style errback
  *
  */
-module.exports = function macros(arc, template, callback) {
-  exec(arc, template).then(cfn=>callback(null, cfn)).catch(callback)
+module.exports = function macros(params, callback) {
+  exec(params)
+    .then(cfn=> callback(null, cfn))
+    .catch(callback)
 }
 
 
 /**
- * @param {Object} arc - the parsed .arc file in the current working directory
- * @param {AWS::Serverless} template - the current CloudFormation template
+ * @param {Object} params
+ *   @param {Object} arc - the parsed .arc file in the current working directory
+ *   @param {AWS::Serverless} template - the current CloudFormation template
+ *   @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
  * @returns {AWS::Serverless}
  */
-async function exec(arc, template) {
+async function exec({arc, cfn, stage}) {
   let transforms = arc.macros || []
-  transforms.push('arc-env') // always run the internal env macro
-  return await transforms.map(path).reduce(async function reducer(current, macro) {
-    /* eslint global-require: "off" */
-    let run = require(macro)
-    let cfn = await current
-    return await run(arc, cfn)
-  }, Promise.resolve(template))
+  // always run the following internal macros:
+  transforms.push('set-stage')  // Sets cfn stage name for all resources
+  transforms.push('api-path')   // Updates @cdn, @http, @ws stage URL paths
+  transforms.push('arc-env')    // Gets and sets env vars for functions
+  return await transforms.map(path)
+    .reduce(async function reducer(current, macro) {
+      // eslint-disable-next-line
+      let run = require(macro)
+      let cfn = await current
+      return await run({arc, cfn, stage})
+    }, Promise.resolve(cfn))
 }
 
 /**

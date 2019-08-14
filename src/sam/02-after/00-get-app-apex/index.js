@@ -4,10 +4,11 @@ let create = require('./cloudfront-create')
 let enable = require('./cloudfront-enable')
 let destroy = require('./cloudfront-destroy')
 
-module.exports = function getAppApex({ts, arc, pretty, stackname}, callback) {
+module.exports = function getAppApex({ts, arc, pretty, stackname, stage}, callback) {
   pretty.success(ts)
   reads({
-    stackname
+    stackname,
+    stage
   },
   function done(err, {url, bucketDomain, apiDomain, s3, apigateway}) {
     if (err) {
@@ -42,6 +43,7 @@ module.exports = function getAppApex({ts, arc, pretty, stackname}, callback) {
           if (creatingS3) {
             create({
               domain: bucketDomain
+              // FIXME: create requires 'path' param
             }, callback)
           }
           else {
@@ -60,7 +62,8 @@ module.exports = function getAppApex({ts, arc, pretty, stackname}, callback) {
           if (creatingApiGateway) {
             create({
               domain: apiDomain,
-              path: '/production'
+              path: `/${stage}`,
+              stage
             }, callback)
           }
           else {
