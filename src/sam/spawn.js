@@ -4,8 +4,20 @@ let child = require('child_process')
 module.exports = function spawn(command, args, pretty, callback) {
   let pkg = child.spawn(command, args, {shell: true})
   pretty.spawn(command, args)
-  pkg.stdout.on('data', pretty.stdout)
-  pkg.stderr.on('data', pretty.stderr)
-  pkg.on('close', ()=> callback())
+  let output = []
+  pkg.stdout.on('data', data => {
+    output.push(data)
+    pretty.stdout(data)
+  })
+  pkg.stderr.on('data', data => {
+    output.push(data)
+    pretty.stderr(data)
+  })
+  pkg.on('close', (code)=> {
+    if (code !== 0) {
+      callback(Error(output.join('')))
+    }
+    else callback()
+  })
   pkg.on('error', callback)
 }

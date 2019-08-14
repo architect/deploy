@@ -1,11 +1,12 @@
 let utils = require('@architect/utils')
+let {initAWS} = require('@architect/utils')
 let chalk = require('chalk')
 let path = require('path')
 let fs = require('fs')
 
 let messages = {
   missing_aws_cli: 'missing aws from PATH please install the aws-cli',
-  missing_aws: 'missing aws in .arc',
+  missing_aws: 'missing @aws in .arc',
   missing_bucket: 'missing @aws bucket in .arc for cloudformation deploy',
   missing_region: 'missing AWS_REGION',
   missing_profile: 'missing AWS_PROFILE',
@@ -23,6 +24,7 @@ let pretty = {
 
 module.exports = function validate(/*opts*/) {
   try {
+    initAWS() // Load AWS creds
     let {arc} = utils.readArc()
 
     if (!binExists('aws'))

@@ -28,11 +28,11 @@ module.exports = function samDeploy({verbose, production}, callback) {
   let stackname = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
   let cfn = pkg(arc)
 
+  initAWS() // Load AWS creds
+
   let region = process.env.AWS_REGION
   if (!region)
     throw ReferenceError('AWS region must be configured to deploy')
-
-  initAWS() // Load AWS creds
 
   let promise
   if (!callback) {
