@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 let deploy = require('.')
+let utils = require('@architect/utils')
 let validate = require('./src/validate')
 
 /**
@@ -21,6 +22,8 @@ let isVerbose = opt=> opt === 'verbose' || opt === '--verbose' || opt === '-v'
 async function cmd(opts=[]) {
 
   validate(opts)
+
+  await utils.init()
 
   let args = { verbose: opts.some(isVerbose), production: opts.some(isProd) }
 

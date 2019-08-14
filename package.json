@@ -31,7 +31,7 @@
     "@architect/package": "^1.0.37",
     "@architect/parser": "^1.1.7",
     "@architect/utils": "^1.2.7",
-    "aws-sdk": "^2.506.0",
+    "aws-sdk": "^2.509.0",
     "chalk": "^2.4.2",
     "eslint": "^5.16.0",
     "glob": "^7.1.4",
@@ -48,7 +48,7 @@
     "aws-sdk-mock": "^4.5.0",
     "codecov": "^3.5.0",
     "nyc": "^14.1.1",
-    "proxyquire": "^2.1.2",
+    "proxyquire": "^2.1.3",
     "sinon": "^7.4.1",
     "tap-spec": "^5.0.0",
     "tape": "^4.11.0"
