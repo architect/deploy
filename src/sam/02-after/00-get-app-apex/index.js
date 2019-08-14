@@ -4,18 +4,19 @@ let create = require('./cloudfront-create')
 let enable = require('./cloudfront-enable')
 let destroy = require('./cloudfront-destroy')
 
-module.exports = function getAppApex({ts, arc, pretty, stackname, stage}, callback) {
+module.exports = function getAppApex(params, callback) {
+  let {ts, arc, pretty, stackname, stage} = params
   pretty.success(ts)
   reads({
     stackname,
     stage
   },
-  function done(err, {url, bucketDomain, apiDomain, s3, apigateway}) {
+  function done(err, result) {
     if (err) {
-      console.log(err)
-      callback()
+      callback(err)
     }
     else {
+      let {url, bucketDomain, apiDomain, s3, apigateway} = result
       if (arc.cdn && apigateway && apigateway.status != 'InProgress') {
         pretty.url(`https://${apigateway.domain}`)
       }

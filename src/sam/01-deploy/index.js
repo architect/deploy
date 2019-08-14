@@ -1,6 +1,7 @@
 let spawn = require('../spawn')
 
-module.exports = function deploy({stackname, nested, appname, bucket, pretty, region}, callback) {
+module.exports = function deploy(params, callback) {
+  let {stackname, nested, appname, bucket, pretty, region} = params
   let template = nested ? `${appname}-cfn.yaml` : 'sam.yaml'
   let args = [
     'cloudformation', 'deploy',
