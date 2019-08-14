@@ -1,6 +1,7 @@
 let pkg = require('@architect/package')
 let utils = require('@architect/utils')
 let series = require('run-series')
+let {initAWS} = require('@architect/utils')
 
 let print = require('./print')
 let macros = require('./macros')
@@ -30,6 +31,8 @@ module.exports = function samDeploy({verbose, production}, callback) {
   let region = process.env.AWS_REGION
   if (!region)
     throw ReferenceError('AWS region must be configured to deploy')
+
+  initAWS() // Load AWS creds
 
   let promise
   if (!callback) {

@@ -7,10 +7,12 @@ let deploy = require('./deploy-one')
 let pretty = require('./pretty')
 
 module.exports = function deploySAM({stackname, arc, ts}, callback) {
-  // To see a World in a Grain of Sand,
-  // And a Heaven in a Wild Flower,
-  // Hold Infinity in the palm of your hand,
-  // And Eternity in an hour.
+  /**
+   * To see a World in a Grain of Sand,
+   * And a Heaven in a Wild Flower,
+   * Hold Infinity in the palm of your hand,
+   * And Eternity in an hour.
+   */
   let cloudformation = new aws.CloudFormation
   waterfall([
 

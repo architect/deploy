@@ -1,6 +1,7 @@
 let aws = require('aws-sdk')
 let waterfall = require('run-waterfall')
 let utils = require('@architect/utils')
+let {initAWS} = require('@architect/utils')
 let fingerprintConfig = utils.fingerprint.config
 let publishToS3 = require('./publish-to-s3')
 
@@ -21,6 +22,8 @@ module.exports = function statics({verbose, production}, callback) {
       }
     })
   }
+
+  initAWS() // Load AWS creds
 
   // defaults
   let {arc} = utils.readArc()

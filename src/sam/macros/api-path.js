@@ -55,7 +55,7 @@ module.exports = async function api({arc, cfn, stage}) {
     else throw Error('Outputs WebSocket stage not found in CloudFormation template')
   }
 
-  // TODO handle @cdn origin path here
+  // TODO handle @cdn origin path here?
 
   return cfn
 

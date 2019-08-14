@@ -1,5 +1,6 @@
 let pkg = require('@architect/package')
 let utils = require('@architect/utils')
+let {initAWS} = require('@architect/utils')
 let deployNested = require('./deploy-nested-stack')
 let deployStack = require('./deploy-sam-stack')
 let pretty = require('./pretty')
@@ -26,13 +27,14 @@ module.exports = function dirty(callback) {
     })
   }
 
-
   let {arc} = utils.readArc()
   let appname = arc.app[0]
   let stackname = `${utils.toLogicalID(appname)}Staging`
   let sam = pkg(arc)
   let nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
   let exec = nested? deployNested : deployStack
+
+  initAWS() // Load AWS creds
 
   pretty.warn()
 
