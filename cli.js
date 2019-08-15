@@ -2,6 +2,7 @@
 let deploy = require('.')
 let utils = require('@architect/utils')
 let validate = require('./src/validate')
+let {version} = require('./package.json')
 
 /**
  * `arc deploy`
@@ -24,6 +25,7 @@ async function cmd(opts=[]) {
   validate(opts)
 
   await utils.init()
+  utils.banner({version: `Deploy ${version}`})
 
   let args = { verbose: opts.some(isVerbose), production: opts.some(isProd) }
 
