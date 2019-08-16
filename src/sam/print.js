@@ -1,4 +1,5 @@
 let chalk = require('chalk')
+let {chars} = require('@architect/utils')
 let b = chalk.green.bold
 let d = chalk.green.dim
 let g = chalk.green
@@ -6,7 +7,7 @@ let g = chalk.green
 module.exports = function pretty({log, verbose}) {
   return {
     spawn(cmd, args) {
-      if (log) {
+      if (verbose) {
         let first = args.shift() + ' ' + args.shift()
         console.log(b('  ' + cmd + ' ' + first))
         if (args % 2) {
@@ -32,13 +33,13 @@ module.exports = function pretty({log, verbose}) {
     },
     url(v) {
       if (!log) return
-      console.log(chalk.cyan.underline(v), '\n')
+      console.log(`\n    ${chalk.green.bold.underline(v)}\n`)
     },
     success(ts) {
       if (!log) return
-      let check = chalk.green('✓')
-      let msg = chalk.grey('Deployed')
-      let time = chalk.green.bold((Date.now() - ts)/1000 + ' seconds')
+      let check = chalk.green(chars.done)
+      let msg = chalk.grey('Success! ')
+      let time = chalk.green(`Deployed in ${(Date.now() - ts)/1000} seconds`)
       console.log(check, msg, time)
     }
   }

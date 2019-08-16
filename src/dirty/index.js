@@ -1,6 +1,6 @@
 let pkg = require('@architect/package')
 let utils = require('@architect/utils')
-let {initAWS} = require('@architect/utils')
+let {initAWS, updater} = require('@architect/utils')
 let deployNested = require('./deploy-nested-stack')
 let deployStack = require('./deploy-sam-stack')
 let pretty = require('./pretty')
@@ -15,13 +15,20 @@ let pretty = require('./pretty')
 module.exports = function dirty(callback) {
   // time the deploy
   let ts = Date.now()
+  let update = updater('Deploying')
+  update.status(
+    'Initializing dirty deployment',
+    `App ..... ${appname}`,
+    `Region .. ${process.env.AWS_REGION}`,
+    `Stack ... ${stackname}`
+  )
 
   // return a promise if a callback is not supplied
   let promise
   if (!callback) {
     promise = new Promise(function ugh(res, rej) {
       callback = function errback(err, result) {
-        if (err) rej(err)
+        if (err) rej(update.err(err))
         else res(result)
       }
     })
@@ -36,12 +43,13 @@ module.exports = function dirty(callback) {
 
   initAWS() // Load AWS creds
 
-  pretty.warn()
+  pretty.warn(update)
 
   exec({
     ts,
     arc,
     stackname,
+    update
   }, callback)
 
   return promise

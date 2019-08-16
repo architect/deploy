@@ -5,9 +5,9 @@ let patchApiG = require('./02-patch-apig')
 let cleanup = require('./03-cleanup')
 
 module.exports = function after(params, callback) {
-  let {ts, arc, verbose, production, pretty, appname, stackname, stage} = params
+  let {ts, arc, verbose, production, pretty, appname, stackname, stage, update} = params
   series([
-    appApex.bind({}, {ts, arc, pretty, stackname, stage}),
+    appApex.bind({}, {ts, arc, pretty, stackname, stage, update}),
     staticDeploy.bind({}, {arc, verbose, production}),
     patchApiG.bind({}, {stackname, stage}),
     cleanup.bind({}, {appname}),

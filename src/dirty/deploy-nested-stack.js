@@ -6,7 +6,7 @@ let waterfall = require('run-waterfall')
 let deploy = require('./deploy-one')
 let pretty = require('./pretty')
 
-module.exports = function deploySAM({stackname, arc, ts}, callback) {
+module.exports = function deploySAM({stackname, arc, ts, update}, callback) {
   /**
    * To see a World in a Grain of Sand,
    * And a Heaven in a Wild Flower,
@@ -86,7 +86,7 @@ module.exports = function deploySAM({stackname, arc, ts}, callback) {
       function done(err) {
         if (err) callback(err)
         else {
-          pretty.success(ts)
+          pretty.success(ts, update)
           callback()
         }
       })
