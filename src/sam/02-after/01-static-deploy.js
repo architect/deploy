@@ -3,8 +3,9 @@ let {updater} = require('@architect/utils')
 
 module.exports = function staticDeploy({arc, verbose, production}, callback) {
   if (arc.static) {
-    updater('Deploy').status('Deploying static assets...')
-    statics({verbose, production}, callback)
+    let update = updater('Deploy')
+    update.status('Deploying static assets...')
+    statics({verbose, production, update}, callback)
   }
   else callback()
 }

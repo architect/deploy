@@ -37,7 +37,6 @@ module.exports = function samDeploy({verbose, production}, callback) {
     `Stack ... ${stackname}`,
     `Bucket .. ${bucket}`,
   )
-  update.start('Generating CloudFormation deployment...')
 
   let region = process.env.AWS_REGION
   if (!region)
@@ -58,7 +57,7 @@ module.exports = function samDeploy({verbose, production}, callback) {
     else {
       let nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
       series([
-        before.bind({}, {sam, nested, bucket, pretty}),
+        before.bind({}, {sam, nested, bucket, pretty, update}),
         deploy.bind({}, {appname, stackname, nested, bucket, pretty, region, update}),
         after.bind({}, {ts, arc, verbose, production, pretty, appname, stackname, stage, update}),
       ], callback)

@@ -8,7 +8,6 @@ let path = require('path')
 let series = require('run-series')
 let sort = require('path-sort')
 let waterfall = require('run-waterfall')
-let {updater} = require('@architect/utils')
 
 function getContentType(file) {
   let bits = file.split('.')
@@ -24,14 +23,14 @@ function normalizePath(path) {
 }
 
 module.exports = function factory(params, callback) {
-  let {Bucket, fingerprint, ignore, prune, folder, verbose} = params
+  let {Bucket, fingerprint, ignore, prune, folder, verbose, update} = params
   let s3 = new aws.S3({region: process.env.AWS_REGION})
   let publicDir = path.join(process.cwd(), folder)
   let staticAssets = path.join(publicDir, '/**/*')
   let files
   let staticManifest
+  let uploaded = 0
   let notModified = 0
-  let update = updater('Deploy')
   waterfall([
     /**
      * Notices
@@ -143,6 +142,7 @@ module.exports = function factory(params, callback) {
                     callback()
                   }
                   else {
+                    uploaded++
                     console.log(`${chalk.blue('[  Uploaded  ]')} ${chalk.underline.cyan(url)}`)
                     if (big)
                       console.log(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
@@ -247,8 +247,10 @@ module.exports = function factory(params, callback) {
     }
     else {
       if (notModified)
-        update.status(`Skipped ${notModified} files (already up to date)`)
-      console.log(`${chalk.green('✓ Success!')} ${chalk.green.dim('Deployed static assets from ' + folder + path.sep)}`)
+        update.done(`Skipped ${notModified} files (already up to date)`)
+      let msg = chalk.green('Deployed static assets from ' + folder + path.sep)
+      if (uploaded)
+        update.done('Success!', msg)
       callback()
     }
   })
