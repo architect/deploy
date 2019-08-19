@@ -37,6 +37,9 @@ test('Deploy/public should exit if public dir has no files to upload', t=> {
     headObject: headStub,
     putObject: putStub,
   })
+  params.update = {
+    done: sinon.stub().returns()
+  }
   publish(params, () => {
     // Reset env for next test
     aws.S3.restore()
