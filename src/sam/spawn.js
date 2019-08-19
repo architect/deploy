@@ -14,8 +14,13 @@ module.exports = function spawn(command, args, pretty, callback) {
     pretty.stderr(data)
   })
   pkg.on('close', (code)=> {
-    if (code !== 0) {
-      callback(Error(output.join('')))
+    output = output.join('')
+    let noChanges = output.includes('No changes to deploy.')
+    if (code === 255 && noChanges) {
+      callback()
+    }
+    else if (code !== 0) {
+      callback(Error(output))
     }
     else callback()
   })

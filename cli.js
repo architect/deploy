@@ -27,7 +27,10 @@ async function cmd(opts=[]) {
   await utils.init()
   utils.banner({version: `Deploy ${version}`})
 
-  let args = { verbose: opts.some(isVerbose), production: opts.some(isProd) }
+  let args = {
+    verbose: opts.some(isVerbose),
+    production: opts.some(isProd)
+  }
 
   if (opts.some(isDirty))
     return deploy.dirty()
@@ -38,7 +41,6 @@ async function cmd(opts=[]) {
   return deploy.sam(args)
 }
 
-// export for architect/architect
 module.exports = cmd
 
 // allow direct invoke

@@ -1,7 +1,7 @@
 let pkg = require('@architect/package')
 let utils = require('@architect/utils')
 let series = require('run-series')
-let {initAWS} = require('@architect/utils')
+let {initAWS, updater} = require('@architect/utils')
 
 let print = require('./print')
 let macros = require('./macros')
@@ -29,6 +29,14 @@ module.exports = function samDeploy({verbose, production}, callback) {
   let cfn = pkg(arc)
 
   initAWS() // Load AWS creds
+  let update = updater('Deploy')
+  update.status(
+    'Initializing deployment',
+    `App ..... ${appname}`,
+    `Region .. ${process.env.AWS_REGION}`,
+    `Stack ... ${stackname}`,
+    `Bucket .. ${bucket}`,
+  )
 
   let region = process.env.AWS_REGION
   if (!region)
@@ -38,7 +46,7 @@ module.exports = function samDeploy({verbose, production}, callback) {
   if (!callback) {
     promise = new Promise(function ugh(res, rej) {
       callback = function errback(err, result) {
-        if (err) rej(err)
+        if (err) rej(update.fail(err))
         else res(result)
       }
     })
@@ -49,9 +57,9 @@ module.exports = function samDeploy({verbose, production}, callback) {
     else {
       let nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
       series([
-        before.bind({}, {sam, nested, bucket, pretty}),
-        deploy.bind({}, {appname, stackname, nested, bucket, pretty, region}),
-        after.bind({}, {ts, arc, verbose, production, pretty, appname, stackname, stage}),
+        before.bind({}, {sam, nested, bucket, pretty, update}),
+        deploy.bind({}, {appname, stackname, nested, bucket, pretty, region, update}),
+        after.bind({}, {ts, arc, verbose, production, pretty, appname, stackname, stage, update}),
       ], callback)
     }
   })

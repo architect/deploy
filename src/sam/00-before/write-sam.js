@@ -2,7 +2,8 @@ let parallel = require('run-parallel')
 let path = require('path')
 let fs = require('fs')
 
-module.exports = function writeSAM({nested, sam}, callback) {
+module.exports = function writeSAM({nested, sam, update}, callback) {
+  update.start('Generating CloudFormation deployment...')
   if (nested) {
     // writes appname-cfn.json, appname-cfn-http.json and appname-cfn-events.json
     parallel(Object.keys(sam).map(k=> {

@@ -1,4 +1,5 @@
 let series = require('run-series')
+let hydrate = require('@architect/hydrate').install
 let writeSAM = require('./write-sam')
 let writeCFN = require('./write-cfn')
 
@@ -20,9 +21,10 @@ let writeCFN = require('./write-cfn')
  * - AWS::Cloudformation appname-cfn-events.yaml
  *
  */
-module.exports = function pkg({sam, nested, bucket, pretty}, callback) {
+module.exports = function pkg({sam, nested, bucket, pretty, update}, callback) {
   series([
-    writeSAM.bind({}, {sam, nested}),
+    hydrate.bind({}, {}),
+    writeSAM.bind({}, {sam, nested, update}),
     writeCFN.bind({}, {sam, nested, bucket, pretty})
   ], callback)
 }
