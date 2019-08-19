@@ -8,6 +8,7 @@ let path = require('path')
 let series = require('run-series')
 let sort = require('path-sort')
 let waterfall = require('run-waterfall')
+let {updater} = require('@architect/utils')
 
 function getContentType(file) {
   let bits = file.split('.')
@@ -23,19 +24,23 @@ function normalizePath(path) {
 }
 
 module.exports = function factory(params, callback) {
-  let {Bucket, fingerprint, ignore, prune, folder} = params
+  let {Bucket, fingerprint, ignore, prune, folder, verbose} = params
   let s3 = new aws.S3({region: process.env.AWS_REGION})
   let publicDir = path.join(process.cwd(), folder)
   let staticAssets = path.join(publicDir, '/**/*')
   let files
   let staticManifest
+  let notModified = 0
+  let update = updater('Deploy')
   waterfall([
     /**
      * Notices
      */
     function notices(callback) {
-      console.log(chalk.green.dim('✓'), chalk.grey(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`))
-      console.log(chalk.green.dim('✓'), chalk.grey(`Orphaned file pruning ${prune ? 'enabled' : 'disabled'}`))
+      if (fingerprint || verbose)
+        update.done(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`)
+      if (prune || verbose)
+        update.done(`Orphaned file pruning ${prune ? 'enabled' : 'disabled'}`)
       callback()
     },
 
@@ -79,6 +84,10 @@ module.exports = function factory(params, callback) {
      * Upload files to S3
      */
     function uploadFiles(manifest={}, callback) {
+      if (!callback) {
+        callback = manifest
+        manifest = {}
+      }
       staticManifest = manifest
       if (fingerprint) {
         // Ensure static.json is uploaded
@@ -135,14 +144,18 @@ module.exports = function factory(params, callback) {
                   }
                   else {
                     console.log(`${chalk.blue('[  Uploaded  ]')} ${chalk.underline.cyan(url)}`)
-                    if (big) console.log(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
+                    if (big)
+                      console.log(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
                     callback()
                   }
                 })
               }
               else {
-                console.log(`${chalk.gray('[Not modified]')} ${chalk.underline.cyan(url)}`)
-                if (big) console.log(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
+                notModified++
+                if (verbose)
+                  console.log(`${chalk.gray('[Not modified]')} ${chalk.underline.cyan(url)}`)
+                if (big)
+                  console.log(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
                 callback()
               }
             }
@@ -151,7 +164,10 @@ module.exports = function factory(params, callback) {
       })
       // Upload all the objects
       // (This used to be a parallel op, but large batches could rate limit out)
-      series(tasks, callback)
+      series(tasks, (err, results) => {
+        if (err) callback(err)
+        else callback(null, results)
+      })
     },
 
     /**
@@ -230,7 +246,9 @@ module.exports = function factory(params, callback) {
       callback(err)
     }
     else {
-      console.log(`${chalk.green('✓ Success!')} ${chalk.green.dim('Deployed static assets from public' + path.sep)}`)
+      if (notModified)
+        update.status(`Skipped ${notModified} files (already up to date)`)
+      console.log(`${chalk.green('✓ Success!')} ${chalk.green.dim('Deployed static assets from ' + folder + path.sep)}`)
       callback()
     }
   })
