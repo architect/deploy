@@ -25,7 +25,6 @@ async function cmd(opts=[]) {
   validate(opts)
 
   await utils.init()
-  utils.banner({version: `Deploy ${version}`})
 
   let args = {
     verbose: opts.some(isVerbose),
@@ -47,6 +46,7 @@ module.exports = cmd
 if (require.main === module) {
   (async function() {
     try {
+      utils.banner({version: `Deploy ${version}`})
       await cmd(process.argv)
     }
     catch (err) {
