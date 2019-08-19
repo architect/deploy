@@ -247,10 +247,11 @@ module.exports = function factory(params, callback) {
     }
     else {
       if (notModified)
-        update.done(`Skipped ${notModified} files (already up to date)`)
-      let msg = chalk.green('Deployed static assets from ' + folder + path.sep)
-      if (uploaded)
+        update.done(`Skipped ${notModified} file${notModified > 1 ? 's' : ''} (already up to date)`)
+      if (uploaded) {
+        let msg = chalk.green(`Deployed static asset${uploaded > 1 ? 's' : ''} from ${folder}${path.sep}`)
         update.done('Success!', msg)
+      }
       callback()
     }
   })
