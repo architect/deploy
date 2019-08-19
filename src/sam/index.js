@@ -29,7 +29,7 @@ module.exports = function samDeploy({verbose, production}, callback) {
   let cfn = pkg(arc)
 
   initAWS() // Load AWS creds
-  let update = updater('Deploying')
+  let update = updater('Deploy')
   update.status(
     'Initializing deployment',
     `App ..... ${appname}`,

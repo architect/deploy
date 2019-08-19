@@ -1,4 +1,5 @@
 let series = require('run-series')
+let hydrate = require('@architect/hydrate').install
 let writeSAM = require('./write-sam')
 let writeCFN = require('./write-cfn')
 
@@ -22,6 +23,7 @@ let writeCFN = require('./write-cfn')
  */
 module.exports = function pkg({sam, nested, bucket, pretty}, callback) {
   series([
+    hydrate.bind({}, {}),
     writeSAM.bind({}, {sam, nested}),
     writeCFN.bind({}, {sam, nested, bucket, pretty})
   ], callback)

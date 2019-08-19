@@ -15,7 +15,7 @@ let pretty = require('./pretty')
 module.exports = function dirty(callback) {
   // time the deploy
   let ts = Date.now()
-  let update = updater('Deploying')
+  let update = updater('Deploy')
   update.status(
     'Initializing dirty deployment',
     `App ..... ${appname}`,

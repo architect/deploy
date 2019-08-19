@@ -28,6 +28,7 @@
   },
   "homepage": "https://github.com/architect/deploy#readme",
   "dependencies": {
+    "@architect/hydrate": "^1.3.0-RC.1",
     "@architect/package": "^1.0.37",
     "@architect/parser": "^1.1.7",
     "@architect/utils": "^1.3.1",
