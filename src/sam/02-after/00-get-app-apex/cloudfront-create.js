@@ -70,10 +70,10 @@ function config({DomainName, OriginPath, stage}) {
         ViewerProtocolPolicy: 'redirect-to-https',
         MinTTL: 0,
         AllowedMethods: {
-          //Quantity: 2,
+          Quantity: 6,
           Items: ['GET', 'HEAD', 'DELETE', 'POST', 'PATCH', 'OPTIONS'],
           CachedMethods: {
-            //Quantity: 2,
+            Quantity: 2,
             Items: ['GET', 'HEAD'],
           },
         },
