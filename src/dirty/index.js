@@ -18,8 +18,6 @@ module.exports = function dirty(callback) {
   let update = updater('Deploy')
   update.status(
     'Initializing dirty deployment',
-    `App ..... ${appname}`,
-    `Region .. ${process.env.AWS_REGION}`,
     `Stack ... ${stackname}`
   )
 
