@@ -32,8 +32,6 @@ module.exports = function samDeploy({verbose, production}, callback) {
   let update = updater('Deploy')
   update.status(
     'Initializing deployment',
-    `App ..... ${appname}`,
-    `Region .. ${process.env.AWS_REGION}`,
     `Stack ... ${stackname}`,
     `Bucket .. ${bucket}`,
   )
