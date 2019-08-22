@@ -26,10 +26,25 @@ module.exports = function patchApiGateway({stackname, stage}, callback) {
       let apigateway = new aws.APIGateway
       apigateway.updateRestApi({
         restApiId,
-        patchOperations: [{
-          op: 'add',
-          path: '/binaryMediaTypes/*~1*'
-        }]
+        patchOperations: [
+          /**
+           * Just a sampling of binary types
+           *   use: https://github.com/architect/functions/blob/master/src/http/helpers/binary-types.js
+           *   also: folks can add / alter their own with macros
+           */
+          {
+            op: 'add',
+            path: '/binaryMediaTypes/application~1octet-stream'
+          },
+          {
+            op: 'add',
+            path: '/binaryMediaTypes/image~1jpeg',
+          },
+          {
+            op: 'add',
+            path: '/binaryMediaTypes/image~1png',
+          }
+        ]
       },
       function done(err) {
         if (err) callback(err)
