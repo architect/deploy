@@ -233,13 +233,13 @@ module.exports = function factory(params, callback) {
     }
   ], function done(err) {
     if (err && err.message === 'no_files_to_publish') {
-      console.log(`${chalk.gray('No static assets found to deploy from public' + path.sep)}`)
+      let msg = chalk.gray(`No static assets found to deploy from ${folder}${path.sep}`)
+      update.done('Done!', msg)
       callback()
     }
     else if (err && err.message === 'access_denied') {
-      console.log(chalk.bgRed.bold.white('S3 Access Denied'))
-      console.log(chalk.yellow('Could not access S3 bucket '+ Bucket))
-      console.log('Possible reason: bucket already exists and belongs to another AWS account')
+      update.error(`${chalk.red.bold('S3 access denied:')} could not access S3 bucket (${Bucket})`)
+      update.error('Possible reason: bucket already exists & belongs to another AWS account')
       callback()
     }
     else if (err) {
