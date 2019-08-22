@@ -38,6 +38,10 @@ module.exports = function patchApiGateway({stackname, stage}, callback) {
           },
           {
             op: 'add',
+            path: '/binaryMediaTypes/multipart~1form-data'
+          },
+          {
+            op: 'add',
             path: '/binaryMediaTypes/image~1jpeg',
           },
           {
