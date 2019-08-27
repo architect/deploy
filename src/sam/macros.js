@@ -25,7 +25,7 @@ let {join} = require('path')
  * Macros are of the form:
  *
  * ```javascript
- * module.exports = function MyMacro(arc, cloudformation) {
+ * module.exports = function MyMacro(arc, cloudformation, stage) {
  *   // ... modify cloudformation
  *   return cloudformation
  * }
@@ -56,19 +56,19 @@ module.exports = function macros(params, callback) {
  *   @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
  * @returns {AWS::Serverless}
  */
-async function exec({arc, cfn, stage}) {
+async function exec(arc, cloudformation, stage) {
   let transforms = arc.macros || []
   // always run the following internal macros:
-  transforms.push('set-stage')  // Sets cfn stage name for all resources
+  transforms.push('set-stage')  // Sets cloudformation stage name for all resources
   transforms.push('api-path')   // Updates @cdn, @http, @ws stage URL paths
   transforms.push('arc-env')    // Gets and sets env vars for functions
   return await transforms.map(path)
     .reduce(async function reducer(current, macro) {
       // eslint-disable-next-line
       let run = require(macro)
-      let cfn = await current
-      return await run({arc, cfn, stage})
-    }, Promise.resolve(cfn))
+      let cloudformation = await current
+      return await run(arc, cloudformation, stage)
+    }, Promise.resolve(cloudformation))
 }
 
 /**

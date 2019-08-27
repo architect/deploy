@@ -1,8 +1,9 @@
 /**
  * Update API paths (and any callers to them) with stage-specific parts
  */
-module.exports = async function api({arc, cfn, stage}) {
+module.exports = async function api(arc, cloudformation, stage) {
   stage = defaultStage(stage)
+  let cfn = cloudformation
 
   // @http path/stages
   if (arc.http) {

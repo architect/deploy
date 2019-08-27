@@ -26,7 +26,7 @@ module.exports = function samDeploy({verbose, production}, callback) {
   let bucket = arc.aws.find(o=> o[0] === 'bucket')[1]
   let appname = arc.app[0]
   let stackname = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
-  let cfn = pkg(arc)
+  let cloudformation = pkg(arc)
 
   initAWS() // Load AWS creds
   let update = updater('Deploy')
@@ -50,7 +50,7 @@ module.exports = function samDeploy({verbose, production}, callback) {
     })
   }
 
-  macros({arc, cfn, stage}, function done(err, sam) {
+  macros(arc, cloudformation, stage, function done(err, sam) {
     if (err) callback(err)
     else {
       let nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
