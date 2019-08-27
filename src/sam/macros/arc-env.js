@@ -4,8 +4,9 @@ let utils = require('util')
 /**
  * reads SSM for env vars and resets NODE_ENV
  */
-module.exports = async function env({arc, cfn, stage}) {
+module.exports = async function env(arc, cloudformation, stage) {
   stage = defaultStage(stage)
+  let cfn = cloudformation
   let appname = arc.app[0]
   let getAll = utils.promisify(all)
   let variables = await getAll(appname)

@@ -3,8 +3,9 @@ let toLogicalID = require('@architect/utils/to-logical-id')
 /**
  * Sets correct stage name
  */
-module.exports = async function api({arc, cfn, stage}) {
+module.exports = async function api(arc, cloudformation, stage) {
   stage = defaultStage(stage)
+  let cfn = cloudformation
   let appname = toLogicalID(arc.app[0])
 
   let hasStageName =
