@@ -4,7 +4,7 @@ let waterfall = require('run-waterfall')
 module.exports = function patchApiGateway({stackname, stage}, callback) {
   waterfall([
     function(callback) {
-      let cloudformation = new aws.CloudFormation
+      let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
       cloudformation.describeStacks({
         StackName: stackname
       },
@@ -23,7 +23,7 @@ module.exports = function patchApiGateway({stackname, stage}, callback) {
     },
     function(restApiId, callback) {
       // update binary media types to */*
-      let apigateway = new aws.APIGateway
+      let apigateway = new aws.APIGateway({region: process.env.AWS_REGION})
       apigateway.updateRestApi({
         restApiId,
         patchOperations: [{
@@ -37,7 +37,7 @@ module.exports = function patchApiGateway({stackname, stage}, callback) {
       })
     },
     function(restApiId, callback) {
-      let apigateway = new aws.APIGateway
+      let apigateway = new aws.APIGateway({region: process.env.AWS_REGION})
       apigateway.createDeployment({
         restApiId,
         stageName: stage

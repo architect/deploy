@@ -67,7 +67,7 @@ module.exports = function statics({verbose, production, update}, callback) {
 
     function({fingerprint, ignore, prune, folder}, callback) {
       // lookup bucket in cloudformation
-      let cloudformation = new aws.CloudFormation
+      let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
       cloudformation.listStackResources({
         StackName: name
       },

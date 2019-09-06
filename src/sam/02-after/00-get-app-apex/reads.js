@@ -12,7 +12,7 @@ let list = require('./cloudfront-list')
 module.exports = function reads({stackname, stage}, callback){
   parallel({
     cfn(callback) {
-      let cloudformation = new aws.CloudFormation
+      let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
       cloudformation.describeStacks({
         StackName: stackname
       }, callback)

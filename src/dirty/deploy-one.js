@@ -45,7 +45,7 @@ function updateCode({FunctionName, pathToCode}, callback) {
       zip(pathToCode, callback)
     },
     function(buffer, callback) {
-      let lambda = new aws.Lambda
+      let lambda = new aws.Lambda({region: process.env.AWS_REGION})
       lambda.updateFunctionCode({
         FunctionName,
         ZipFile: buffer
@@ -62,7 +62,7 @@ function updateCode({FunctionName, pathToCode}, callback) {
  * reads path/to/code/.arc-config and dirty updates lambda function config
  */
 function updateConfig({FunctionName, pathToCode}, callback) {
-  let lambda = new aws.Lambda
+  let lambda = new aws.Lambda({region: process.env.AWS_REGION})
   let configPath = path.join(pathToCode, '.arc-config')
   if (fs.existsSync(configPath)) {
     fs.readFile(configPath, 'utf8', function done(err, body) {

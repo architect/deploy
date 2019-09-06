@@ -13,7 +13,7 @@ module.exports = function deploySAM({stackname, arc, ts, update}, callback) {
    * Hold Infinity in the palm of your hand,
    * And Eternity in an hour.
    */
-  let cloudformation = new aws.CloudFormation
+  let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
   waterfall([
 
     function readStax(callback) {
@@ -93,7 +93,7 @@ module.exports = function deploySAM({stackname, arc, ts, update}, callback) {
     },
 
     function readURL(callback) {
-      let cloudformation = new aws.CloudFormation
+      let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
       cloudformation.describeStacks({
         StackName: stackname
       },

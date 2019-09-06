@@ -10,7 +10,7 @@ module.exports = function deploySAM({stackname, arc, ts, update}, callback) {
   waterfall([
 
     function readResources(callback) {
-      let cloudformation = new aws.CloudFormation
+      let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
       cloudformation.listStackResources({
         StackName: stackname
       },
@@ -56,7 +56,7 @@ module.exports = function deploySAM({stackname, arc, ts, update}, callback) {
     },
 
     function readURL(callback) {
-      let cloudformation = new aws.CloudFormation
+      let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
       cloudformation.describeStacks({
         StackName: stackname
       },
