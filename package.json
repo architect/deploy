@@ -43,7 +43,7 @@
     "run-waterfall": "^1.1.6",
     "sha": "^3.0.0",
     "zip-dir": "^1.0.2",
-    "zipit": "^1.0.2"
+    "zipit": "^2.0.0"
   },
   "devDependencies": {
     "aws-sdk-mock": "^4.5.0",
