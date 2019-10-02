@@ -34,8 +34,10 @@ async function cmd(opts=[]) {
   if (opts.some(isDirty))
     return deploy.dirty()
 
-  if (opts.some(isStatic))
+  if (opts.some(isStatic)) {
+    args.isFullDeploy = false
     return deploy.static(args)
+  }
 
   return deploy.sam(args)
 }

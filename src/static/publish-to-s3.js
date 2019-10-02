@@ -1,6 +1,7 @@
 let aws = require('aws-sdk')
 let chalk = require('chalk')
 let fs = require('fs')
+let fingerprinter = require('@architect/utils').fingerprint
 let glob = require('glob')
 let mime = require('mime-types')
 let path = require('path')
@@ -22,7 +23,7 @@ function normalizePath(path) {
 }
 
 module.exports = function factory(params, callback) {
-  let {Bucket, fingerprint, ignore, prune, folder, verbose, update} = params
+  let {Bucket, fingerprint, ignore, isFullDeploy=true, prune, folder, verbose, update} = params
   let s3 = new aws.S3({region: process.env.AWS_REGION})
   let publicDir = path.join(process.cwd(), folder)
   let staticAssets = path.join(publicDir, '/**/*')
@@ -35,6 +36,9 @@ module.exports = function factory(params, callback) {
      * Notices
      */
     function notices(callback) {
+      if (!isFullDeploy && fingerprint ||
+          !isFullDeploy && verbose)
+        update.done(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`)
       if (prune || verbose)
         update.done(`Orphaned file pruning ${prune ? 'enabled' : 'disabled'}`)
       callback()
@@ -75,13 +79,33 @@ module.exports = function factory(params, callback) {
     },
 
     /**
-     * Upload files to S3
+     * Write (or remove) fingerprinted static asset manifest if not run as a full deploy
      */
-    function uploadFiles(callback) {
+    function maybeWriteStaticManifest(callback) {
       let staticFile = path.join(publicDir, 'static.json')
       let staticFileExists = fs.existsSync(staticFile)
-      if (fingerprint && staticFileExists) {
-        staticManifest = JSON.parse(fs.readFileSync(staticFile))
+      let useExistingStaticManifest = isFullDeploy && fingerprint && staticFileExists
+      if (useExistingStaticManifest) {
+        // Use the static manifest already written to disk if run as a full deploy
+        let manifest = JSON.parse(fs.readFileSync(staticFile))
+        callback(null, manifest)
+      }
+      else {
+        // Let the fingerprinter sort it out
+        fingerprinter({fingerprint, ignore}, callback)
+      }
+    },
+
+    /**
+     * Upload files to S3
+     */
+    function uploadFiles(manifest={}, callback) {
+      if (!callback) {
+        callback = manifest
+        manifest = {}
+      }
+      staticManifest = manifest
+      if (fingerprint) {
         // Ensure static.json is uploaded
         files.unshift(path.join(publicDir, 'static.json'))
       }
