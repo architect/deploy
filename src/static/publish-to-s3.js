@@ -1,7 +1,6 @@
 let aws = require('aws-sdk')
 let chalk = require('chalk')
 let fs = require('fs')
-let fingerprinter = require('@architect/utils').fingerprint
 let glob = require('glob')
 let mime = require('mime-types')
 let path = require('path')
@@ -36,8 +35,6 @@ module.exports = function factory(params, callback) {
      * Notices
      */
     function notices(callback) {
-      if (fingerprint || verbose)
-        update.done(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`)
       if (prune || verbose)
         update.done(`Orphaned file pruning ${prune ? 'enabled' : 'disabled'}`)
       callback()
@@ -47,7 +44,12 @@ module.exports = function factory(params, callback) {
      * Scan for files in the public directory
      */
     function globFiles(callback) {
-      glob(normalizePath(staticAssets), {dot:true, nodir:true, follow:true}, callback)
+      let opts = {
+        dot: true,
+        nodir: true,
+        follow: true
+      }
+      glob(normalizePath(staticAssets), opts, callback)
     },
 
     /**
@@ -73,22 +75,13 @@ module.exports = function factory(params, callback) {
     },
 
     /**
-     * Write (or remove) fingerprinted static asset manifest
-     */
-    function writeStaticManifest(callback) {
-      fingerprinter({fingerprint, ignore}, callback)
-    },
-
-    /**
      * Upload files to S3
      */
-    function uploadFiles(manifest={}, callback) {
-      if (!callback) {
-        callback = manifest
-        manifest = {}
-      }
-      staticManifest = manifest
-      if (fingerprint) {
+    function uploadFiles(callback) {
+      let staticFile = path.join(publicDir, 'static.json')
+      let staticFileExists = fs.existsSync(staticFile)
+      if (fingerprint && staticFileExists) {
+        staticManifest = JSON.parse(fs.readFileSync(staticFile))
         // Ensure static.json is uploaded
         files.unshift(path.join(publicDir, 'static.json'))
       }
