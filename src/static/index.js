@@ -12,7 +12,7 @@ let publishToS3 = require('./publish-to-s3')
  * @param {Function} callback - a node-style errback
  * @returns {Promise} - if no callback is supplied
  */
-module.exports = function statics({verbose, production, update}, callback) {
+module.exports = function statics({verbose, production, update, isFullDeploy}, callback) {
   let promise
   if (!callback) {
     promise = new Promise(function ugh(res, rej) {
@@ -86,6 +86,7 @@ module.exports = function statics({verbose, production, update}, callback) {
         Bucket,
         fingerprint,
         ignore,
+        isFullDeploy,
         prune,
         verbose,
         folder,
