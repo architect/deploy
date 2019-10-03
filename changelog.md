@@ -1,7 +1,27 @@
-# Changelog
+# Architect Deploy changelog
 
-## 1.0.4
+---
 
-Adds:
+## [1.1.5] 2019-10-02
+
+### Fixed
+
+- Fixed issue where with `@static fingerprint true` enabled, the `static.json` file would not be copied into deployed functions' shared dirs; fixes #43, thanks @dawnerd + @jgallen23!
+
+
+### Changed
+
+- Updated dependencies
+
+---
+
+<!-- TODO backfill, please! -->
+
+---
+
+## [1.0.4]
+
+### Added
+
 - `changelog.md` _meta_
 - New `@static` config option: `folder` to override `public`
