@@ -1,6 +1,11 @@
 # Architect Deploy changelog
 
 ---
+## [1.2.0] 2019-10-03
+
+### Added
+
+- Automatic `@cdn` invalidation every deploy (similar behavior to 3rd party CDNs); CloudFront gives you 1000 free invalidations/mo
 
 ## [1.1.5 - 1.1.6] 2019-10-02
 
