@@ -23,7 +23,7 @@ function normalizePath(path) {
 }
 
 module.exports = function factory(params, callback) {
-  let {Bucket, fingerprint, ignore, prune, folder, verbose, update} = params
+  let {Bucket, fingerprint, ignore, isFullDeploy=true, prune, folder, verbose, update} = params
   let s3 = new aws.S3({region: process.env.AWS_REGION})
   let publicDir = path.join(process.cwd(), folder)
   let staticAssets = path.join(publicDir, '/**/*')
@@ -36,7 +36,8 @@ module.exports = function factory(params, callback) {
      * Notices
      */
     function notices(callback) {
-      if (fingerprint || verbose)
+      if (!isFullDeploy && fingerprint ||
+          !isFullDeploy && verbose)
         update.done(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`)
       if (prune || verbose)
         update.done(`Orphaned file pruning ${prune ? 'enabled' : 'disabled'}`)
@@ -47,7 +48,12 @@ module.exports = function factory(params, callback) {
      * Scan for files in the public directory
      */
     function globFiles(callback) {
-      glob(normalizePath(staticAssets), {dot:true, nodir:true, follow:true}, callback)
+      let opts = {
+        dot: true,
+        nodir: true,
+        follow: true
+      }
+      glob(normalizePath(staticAssets), opts, callback)
     },
 
     /**
@@ -73,10 +79,21 @@ module.exports = function factory(params, callback) {
     },
 
     /**
-     * Write (or remove) fingerprinted static asset manifest
+     * Write (or remove) fingerprinted static asset manifest if not run as a full deploy
      */
-    function writeStaticManifest(callback) {
-      fingerprinter({fingerprint, ignore}, callback)
+    function maybeWriteStaticManifest(callback) {
+      let staticFile = path.join(publicDir, 'static.json')
+      let staticFileExists = fs.existsSync(staticFile)
+      let useExistingStaticManifest = isFullDeploy && fingerprint && staticFileExists
+      if (useExistingStaticManifest) {
+        // Use the static manifest already written to disk if run as a full deploy
+        let manifest = JSON.parse(fs.readFileSync(staticFile))
+        callback(null, manifest)
+      }
+      else {
+        // Let the fingerprinter sort it out
+        fingerprinter({fingerprint, ignore}, callback)
+      }
     },
 
     /**
