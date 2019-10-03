@@ -2,11 +2,12 @@
 
 ---
 
-## [1.1.5] 2019-10-02
+## [1.1.5 - 1.1.6] 2019-10-02
 
 ### Fixed
 
 - Fixed issue where with `@static fingerprint true` enabled, the `static.json` file would not be copied into deployed functions' shared dirs; fixes #43, thanks @dawnerd + @jgallen23!
+- Removed `eslint` from production dependencies
 
 
 ### Changed
