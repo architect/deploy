@@ -1,6 +1,21 @@
 # Architect Deploy changelog
 
 ---
+
+## [1.2.1] 2019-10-09
+
+### Added
+
+- Cleans up temp directory left by `package` when using root proxy + fingerprint
+
+
+### Changed
+
+- Now uses `@architect/http-proxy` instead of manually vendored root proxy file
+- Updated dependencies
+
+---
+
 ## [1.2.0] 2019-10-03
 
 ### Added
