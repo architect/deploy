@@ -12,7 +12,7 @@ let publishToS3 = require('./publish-to-s3')
  * @param {Function} callback - a node-style errback
  * @returns {Promise} - if no callback is supplied
  */
-module.exports = function statics({verbose, production, update, isFullDeploy}, callback) {
+module.exports = function statics({verbose, prune=false, production, update, isFullDeploy}, callback) {
   let promise
   if (!callback) {
     promise = new Promise(function ugh(res, rej) {
@@ -42,7 +42,6 @@ module.exports = function statics({verbose, production, update, isFullDeploy}, c
       }
       else {
         // Enable deletion of files not present in public/ folder
-        let prune = false
         if (arc.static.some(s => {
           if (!s[0])
             return false
