@@ -148,7 +148,12 @@ module.exports = function factory(params, callback) {
                 if (fingerprint && Key !== 'static.json') {
                   params.CacheControl = 'max-age=315360000'
                 }
-                if (fingerprint && Key === 'static.json') {
+                let noCache = [
+                  'text/html',
+                  'application/json',
+                ]
+                let neverCache = noCache.some(n => contentType.includes(n))
+                if (fingerprint && Key === 'static.json' || neverCache) {
                   params.CacheControl = 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'
                 }
                 s3.putObject(params, function _putObj(err) {
