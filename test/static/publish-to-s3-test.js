@@ -55,7 +55,7 @@ test('Deploy/public uploads to S3, static.json manifest', t=> {
    * Note: prior to moving fingerprinting to @architect/utils, it was tested here
    * While this test assumes fingerprinting is itself tested and working properly, it does test its effects (such as the presence of caching headers, etc.)
    */
-  t.plan(4)
+  t.plan(5)
   // Globbing
   globStub.resetBehavior()
   globStub.callsFake((filepath, options, callback) => callback(null, [
@@ -91,7 +91,8 @@ test('Deploy/public uploads to S3, static.json manifest', t=> {
     t.ok(headStub.calledThrice, 'Correct number of s3.headObject reqs made')
     t.ok(putStub.calledThrice, 'Correct number of s3.putObject reqs made')
     t.equals(putStub.args[0][0].CacheControl, 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0', 'static.json anti-caching headers set')
-    t.equals(putStub.args[1][0].CacheControl, 'max-age=315360000', 'Fingerprinted cache-control headers set')
+    t.equals(putStub.args[1][0].CacheControl, 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0', 'static.json anti-caching headers set')
+    t.equals(putStub.args[2][0].CacheControl, 'max-age=315360000', 'Fingerprinted cache-control headers set')
   })
 })
 

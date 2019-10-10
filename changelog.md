@@ -2,6 +2,19 @@
 
 ---
 
+## [1.2.2] 2019-10-10
+
+### Changed
+
+- Ensures html / json are published to S3 with anti-cache headers
+
+
+### Fixed
+
+- Restores static asset pruning
+
+---
+
 ## [1.2.1] 2019-10-09
 
 ### Added

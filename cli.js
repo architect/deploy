@@ -18,6 +18,7 @@ let {version} = require('./package.json')
 let isDirty = opt=> opt === 'dirty' || opt === '--dirty' || opt === '-d'
 let isStatic = opt=> opt === 'static' || opt === '--static' || opt === '-s'
 let isProd = opt=> opt === 'production' || opt === '--production' || opt === '-p'
+let isPrune = opt=> opt === 'prune' || opt === '--prune'
 let isVerbose = opt=> opt === 'verbose' || opt === '--verbose' || opt === '-v'
 
 async function cmd(opts=[]) {
@@ -27,6 +28,7 @@ async function cmd(opts=[]) {
   await utils.init()
 
   let args = {
+    prune: opts.some(isPrune),
     verbose: opts.some(isVerbose),
     production: opts.some(isProd)
   }
