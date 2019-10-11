@@ -2,6 +2,20 @@
 
 ---
 
+## [1.2.3] 2019-10-10
+
+### Added
+
+- Added support for `@static fingerprint true` in root spa / proxy function deployments
+
+
+### Changed
+
+- Moved fingerprint operations into a pre-CloudFormation step
+- Internal refactor to sam
+
+---
+
 ## [1.2.2] 2019-10-10
 
 ### Changed
