@@ -13,7 +13,7 @@ function getContentType(file) {
   let bits = file.split('.')
   let last = bits[bits.length - 1]
   if (last === 'tsx') return 'text/tsx'
-  return mime.lookup(last)
+  return mime.lookup(last) || 'application/octet-stream'
 }
 
 function normalizePath(path) {
