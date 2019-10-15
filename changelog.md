@@ -2,6 +2,14 @@
 
 ---
 
+## [1.2.5] 2019-10-15
+
+### Fixed
+
+- Fixes deployment issue if `get /` is not specified in `@http`; resolves @package#27, /ht @grahamb and @jeffreyfate!
+
+---
+
 ## [1.2.4] 2019-10-11
 
 ### Changed
