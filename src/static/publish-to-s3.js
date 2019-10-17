@@ -13,7 +13,7 @@ function getContentType(file) {
   let bits = file.split('.')
   let last = bits[bits.length - 1]
   if (last === 'tsx') return 'text/tsx'
-  return mime.lookup(last) || 'application/octet-stream'
+  return mime.lookup(last)
 }
 
 function normalizePath(path) {
@@ -114,7 +114,7 @@ module.exports = function factory(params, callback) {
         return function _maybeUploadFileToS3(callback) {
           // First, let's check to ensure we even need to upload the file
           let stats = fs.lstatSync(file)
-          // Remove the public dir so the S3 path (called 'Key') is relative 
+          // Remove the public dir so the S3 path (called 'Key') is relative
           let Key = file.replace(publicDir, '').replace(/^\//, '')
           if (Key.startsWith(path.sep)) Key = Key.substr(1)
           let big = stats.size >= 5750000
@@ -142,10 +142,9 @@ module.exports = function factory(params, callback) {
                   Key,
                   Body: fs.readFileSync(file),
                 }
-                let contentType = getContentType(file)
-                if (contentType) {
-                  params.ContentType = contentType
-                }
+                // S3 requires content-type; fall back to octet-stream if not found by mime-types
+                let contentType = getContentType(file) || 'application/octet-stream'
+                params.ContentType = contentType
                 if (fingerprint && Key !== 'static.json') {
                   params.CacheControl = 'max-age=315360000'
                 }

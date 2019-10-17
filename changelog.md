@@ -2,6 +2,14 @@
 
 ---
 
+## [1.2.7] 2019-10-17
+
+### Fixed
+
+- Fixes failed deploys if file type is known by common mime-type database; resolves #56, thanks @mikemaccana!
+
+---
+
 ## [1.2.5 - 1.2.6] 2019-10-15
 
 ### Fixed
