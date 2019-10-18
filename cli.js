@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 let deploy = require('.')
-let utils = require('@architect/utils')
+let {banner} = require('@architect/utils')
+let create = require('@architect/create')
 let validate = require('./src/validate')
 let {version} = require('./package.json')
 
@@ -25,7 +26,7 @@ async function cmd(opts=[]) {
 
   validate(opts)
 
-  await utils.init()
+  await create({})
 
   let args = {
     prune: opts.some(isPrune),
@@ -50,7 +51,7 @@ module.exports = cmd
 if (require.main === module) {
   (async function() {
     try {
-      utils.banner({version: `Deploy ${version}`})
+      banner({version: `Deploy ${version}`})
       await cmd(process.argv)
     }
     catch (err) {
