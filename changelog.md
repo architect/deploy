@@ -2,6 +2,15 @@
 
 ---
 
+## [On master]
+
+### Changed
+
+- Internal change: swapped out `utils/init` for `@architect/create`
+- Updated dependencies
+
+---
+
 ## [1.2.7] 2019-10-17
 
 ### Fixed
