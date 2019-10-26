@@ -1,6 +1,82 @@
 # Architect Deploy changelog
 
 ---
+
+## [1.2.8] 2019-10-17
+
+### Changed
+
+- Internal change: swapped out `utils/init` for `@architect/create`
+- Updated dependencies
+
+---
+
+## [1.2.7] 2019-10-17
+
+### Fixed
+
+- Fixes failed deploys if file type is known by common mime-type database; resolves #56, thanks @mikemaccana!
+- Fixes paths for deployment of assets on Windows; resolves #58, thanks @mikemaccana!
+
+---
+
+## [1.2.5 - 1.2.6] 2019-10-15
+
+### Fixed
+
+- Fixed deployment issue if `get /` is not specified in `@http`; resolves @package#27, /ht @grahamb and @jeffreyfate!
+
+---
+
+## [1.2.4] 2019-10-11
+
+### Changed
+
+- Updated dependencies
+
+---
+
+## [1.2.3] 2019-10-10
+
+### Added
+
+- Added support for `@static fingerprint true` in root spa / proxy function deployments
+
+
+### Changed
+
+- Moved fingerprint operations into a pre-CloudFormation step
+- Internal refactor to sam
+
+---
+
+## [1.2.2] 2019-10-10
+
+### Changed
+
+- Ensures html / json are published to S3 with anti-cache headers
+
+
+### Fixed
+
+- Restores static asset pruning
+
+---
+
+## [1.2.1] 2019-10-09
+
+### Added
+
+- Cleans up temp directory left by `package` when using root proxy + fingerprint
+
+
+### Changed
+
+- Now uses `@architect/http-proxy` instead of manually vendored root proxy file
+- Updated dependencies
+
+---
+
 ## [1.2.0] 2019-10-03
 
 ### Added

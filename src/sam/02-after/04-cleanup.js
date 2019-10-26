@@ -1,6 +1,7 @@
 let fs = require('fs')
 let path = require('path')
 let parallel = require('run-parallel')
+let rm = require('rimraf')
 
 module.exports = function cleanup({appname}, callback) {
   let files = [
@@ -17,5 +18,9 @@ module.exports = function cleanup({appname}, callback) {
       })
     }
   })
-  parallel(files, callback)
+  parallel(files, function almostDone(err) {
+    if (err) console.log(err)
+    // Clean up temp dir from root proxy + fingerprint
+    rm(path.join(process.cwd(), '__ARC_TMP__'), callback)
+  })
 }

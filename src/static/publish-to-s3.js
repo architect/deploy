@@ -25,7 +25,7 @@ function normalizePath(path) {
 module.exports = function factory(params, callback) {
   let {Bucket, fingerprint, ignore, isFullDeploy=true, prune, folder, verbose, update} = params
   let s3 = new aws.S3({region: process.env.AWS_REGION})
-  let publicDir = path.join(process.cwd(), folder)
+  let publicDir = normalizePath(path.join(process.cwd(), folder))
   let staticAssets = path.join(publicDir, '/**/*')
   let files
   let staticManifest
@@ -114,7 +114,8 @@ module.exports = function factory(params, callback) {
         return function _maybeUploadFileToS3(callback) {
           // First, let's check to ensure we even need to upload the file
           let stats = fs.lstatSync(file)
-          let Key = file.replace(publicDir, '')
+          // Remove the public dir so the S3 path (called 'Key') is relative
+          let Key = file.replace(publicDir, '').replace(/^\//, '')
           if (Key.startsWith(path.sep)) Key = Key.substr(1)
           let big = stats.size >= 5750000
           if (fingerprint && Key !== 'static.json') {
@@ -141,13 +142,18 @@ module.exports = function factory(params, callback) {
                   Key,
                   Body: fs.readFileSync(file),
                 }
-                if (getContentType(file)) {
-                  params.ContentType = getContentType(file)
-                }
+                // S3 requires content-type; fall back to octet-stream if not found by mime-types
+                let contentType = getContentType(file) || 'application/octet-stream'
+                params.ContentType = contentType
                 if (fingerprint && Key !== 'static.json') {
                   params.CacheControl = 'max-age=315360000'
                 }
-                if (fingerprint && Key === 'static.json') {
+                let noCache = [
+                  'text/html',
+                  'application/json',
+                ]
+                let neverCache = noCache.some(n => contentType.includes(n))
+                if (fingerprint && Key === 'static.json' || neverCache) {
                   params.CacheControl = 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'
                 }
                 s3.putObject(params, function _putObj(err) {
