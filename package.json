@@ -11,7 +11,8 @@
     "test:slow": "tape test/slow/*-test.js | tap-spec",
     "test:unit": "tape test/*-test.js test/static/*-test.js | tap-spec",
     "coverage": "nyc --reporter=lcov --reporter=text-summary npm run test:unit",
-    "lint": "eslint . --fix"
+    "lint": "eslint . --fix",
+    "rc": "npm version prerelease --preid RC"
   },
   "repository": {
     "type": "git",
