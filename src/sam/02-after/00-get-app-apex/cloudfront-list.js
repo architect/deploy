@@ -7,11 +7,12 @@ module.exports = function listCloudfrontDistributions(callback) {
   let cf = new aws.CloudFront
   let distros = []
   function list(params={}) {
-    cf.listDistributions(params, function done(err, {DistributionList, NextMarker}) {
+    cf.listDistributions(params, function done(err, res) {
       if (err) {
         callback(err)
       }
       else {
+        let {DistributionList, NextMarker} = res
         distros = distros.concat(DistributionList.Items)
         if (NextMarker) {
           list({Marker: NextMarker})
