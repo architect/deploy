@@ -2,6 +2,19 @@
 
 ---
 
+## [1.2.9] 2019-11-19
+
+### Changed
+
+- Updated dependencies
+
+
+### Fixed
+
+- Fixed potential CloudFront error related to destructuring; thanks @roxeteer!
+
+---
+
 ## [1.2.8] 2019-10-17
 
 ### Changed

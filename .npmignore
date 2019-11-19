@@ -1,9 +1,8 @@
 .eslintignore
 .eslintrc.js
+.git/
 .github/
-.nyc_output
-.travis.yml
-appveyor.yml
+.nyc_output/
 codecov.yaml
 coverage/
 test/
