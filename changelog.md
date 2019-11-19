@@ -4,7 +4,6 @@
 
 ## [1.2.9] 2019-11-19
 
-
 ### Changed
 
 - Updated dependencies
