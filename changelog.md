@@ -2,7 +2,7 @@
 
 ---
 
-## [1.2.9] 2019-11-19
+## [1.2.11] 2019-11-19
 
 ### Changed
 
@@ -12,6 +12,10 @@
 ### Fixed
 
 - Fixed potential CloudFront error related to destructuring; thanks @roxeteer!
+
+---
+
+## 1.2.9 - 1.2.10 TBD
 
 ---
 
