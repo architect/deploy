@@ -31,15 +31,15 @@ module.exports = function pretty({log, verbose}) {
       if (verbose)
         console.log(chalk.yellow.dim(data))
     },
-    url(v) {
+    url(v, type) {
       if (!log) return
-      console.log(`\n    ${chalk.green.bold.underline(v)}\n`)
+      console.log(`    ${type ? type.padStart(10, ' ') + ': ' : ''}${chalk.green.bold.underline(v)}`)
     },
     success(ts) {
       if (!log) return
       let check = chalk.green(chars.done)
       let msg = chalk.grey('Success!')
-      let time = chalk.green(`Deployed app in ${(Date.now() - ts)/1000} seconds`)
+      let time = chalk.green(`Deployed app in ${(Date.now() - ts)/1000} seconds\n`)
       console.log(check, msg, time)
     }
   }

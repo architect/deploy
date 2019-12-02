@@ -17,16 +17,23 @@ module.exports = function getAppApex(params, callback) {
     else {
       update.done('Deployed & built infrastructure')
       pretty.success(ts)
-      let {url, bucketDomain, apiDomain, s3, apigateway} = result
-      if (arc.cdn && apigateway && apigateway.status != 'InProgress') {
-        pretty.url(`https://${apigateway.domain}`)
+      let {url, wssURL, bucketDomain, apiDomain, s3, apigateway} = result
+      let type = wssURL ? 'HTTPS' : undefined
+      if (arc.cdn && apigateway && apigateway.status !== 'InProgress') {
+        pretty.url(`https://${apigateway.domain}`, type)
       }
-      else if (arc.cdn && s3 && s3.status != 'InProgress') {
-        pretty.url(`https://${s3.domain}`)
+      else if (arc.cdn && s3 && s3.status !== 'InProgress') {
+        pretty.url(`https://${s3.domain}`, type)
       }
       else if (url) {
-        pretty.url(url)
+        pretty.url(url, type)
       }
+      if (wssURL) {
+        pretty.url(wssURL, 'WS')
+        pretty.url(wssURL + '/@connections', 'WS connect')
+      }
+      // Added whitespace after URLs
+      console.log()
 
       // create cdns if cdn is defined
       let creatingS3 = arc.static && arc.cdn && s3 === false

@@ -2,6 +2,21 @@
 
 ---
 
+## [1.2.12] 2019-12-01
+
+### Changed
+
+- Now prints WebSockets URLs upon deployment, thanks @jessehattabaugh!
+
+
+### Fixed
+
+- Fixes regression related `staging` and `production` WebSockets names and paths, thanks @jessehattabaugh!
+  - WebSockets APIs named `${appname}Websocket` are now named `${appname}Websocket${stage}` (like `@http` APIs)
+  - `production` WebSockets paths now correctly reflect the production stage (e.g. `longawsurl.com/production`)
+
+---
+
 ## [1.2.11] 2019-11-19
 
 ### Changed
