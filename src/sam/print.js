@@ -33,7 +33,7 @@ module.exports = function pretty({log, verbose}) {
     },
     url(v, type) {
       if (!log) return
-      console.log(`    ${type ? type.padStart(10, ' ') + ': ' : ''}${chalk.green.bold.underline(v)}`)
+      console.log(`    ${type ? type.padStart(4, ' ') + ': ' : ''}${chalk.green.bold.underline(v)}`)
     },
     success(ts) {
       if (!log) return

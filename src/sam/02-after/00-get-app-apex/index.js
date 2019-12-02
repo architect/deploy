@@ -18,7 +18,7 @@ module.exports = function getAppApex(params, callback) {
       update.done('Deployed & built infrastructure')
       pretty.success(ts)
       let {url, wssURL, bucketDomain, apiDomain, s3, apigateway} = result
-      let type = wssURL ? 'HTTPS' : undefined
+      let type = wssURL ? 'HTTP' : undefined
       if (arc.cdn && apigateway && apigateway.status !== 'InProgress') {
         pretty.url(`https://${apigateway.domain}`, type)
       }
@@ -30,7 +30,6 @@ module.exports = function getAppApex(params, callback) {
       }
       if (wssURL) {
         pretty.url(wssURL, 'WS')
-        pretty.url(wssURL + '/@connections', 'WS connect')
       }
       // Added whitespace after URLs
       console.log()

@@ -13,8 +13,8 @@ module.exports = async function api(arc, cloudformation, stage) {
       cfn.Outputs.API &&
       cfn.Outputs.API.Value &&
       cfn.Outputs.API.Value['Fn::Sub']
-    let API = outputsAPI.findIndex(i => i.startsWith('https://') && i.includes('.execute-api.'))
-    if (outputsAPI[API]) {
+    let API = outputsAPI && outputsAPI.findIndex(i => typeof i === 'string' && i.startsWith('wss://') && i.includes('.execute-api.'))
+    if (outputsAPI && outputsAPI[API]) {
       cfn.Outputs.API.Value['Fn::Sub'][API] = outputsAPI[API].replace('staging', stage)
     }
   }
@@ -49,8 +49,8 @@ module.exports = async function api(arc, cloudformation, stage) {
         r.Properties.Environment.Variables &&
         r.Properties.Environment.Variables.ARC_WSS_URL &&
         r.Properties.Environment.Variables.ARC_WSS_URL['Fn::Sub']
-      let API = ARC_WSS_URL.findIndex(i => i.startsWith('https://') && i.includes('.execute-api.'))
-      if (ARC_WSS_URL[API]) {
+      let API = ARC_WSS_URL && ARC_WSS_URL.findIndex(i => typeof i === 'string' && i.startsWith('wss://') && i.includes('.execute-api.'))
+      if (ARC_WSS_URL && ARC_WSS_URL[API]) {
         cfn.Resources[r].Properties.Environment.Variables.ARC_WSS_URL['Fn::Sub'][API] = ARC_WSS_URL[API].replace('staging', stage)
       }
     })
@@ -61,13 +61,13 @@ module.exports = async function api(arc, cloudformation, stage) {
       cfn.Outputs.WSS &&
       cfn.Outputs.WSS.Value &&
       cfn.Outputs.WSS.Value['Fn::Sub']
-    let API = outputsAPI.findIndex(i => i.startsWith('https://') && i.includes('.execute-api.'))
-    if (outputsAPI[API]) {
+    let API = outputsAPI && outputsAPI.findIndex(i => typeof i === 'string' && i.startsWith('wss://') && i.includes('.execute-api.'))
+    if (outputsAPI && outputsAPI[API]) {
       cfn.Outputs.WSS.Value['Fn::Sub'][API] = outputsAPI[API].replace('staging', stage)
     }
   }
 
-  // return cfn
+  return cfn
 }
 
 // If it's not 'staging' or 'production', then it should be 'staging'
