@@ -10,11 +10,11 @@ module.exports = function deploy(params, callback) {
       '--template-file', template,
       '--stack-name', stackname,
       '--s3-bucket', bucket,
-      '--capabilities', 'CAPABILITY_IAM',
+      '--capabilities', 'CAPABILITY_IAM CAPABILITY_AUTO_EXPAND',
       '--region', region
   ]
-  if (nested) {
-    args.push('CAPABILITY_AUTO_EXPAND')
-  }
+  // if (nested) {
+    //   args.push('CAPABILITY_AUTO_EXPAND')
+    //}
   spawn('aws', args, pretty, callback)
 }
