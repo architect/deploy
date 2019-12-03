@@ -43,12 +43,13 @@ module.exports = async function api(arc, cloudformation, stage) {
 
     // Update env var stage
     Object.keys(cfn.Resources).forEach(r => {
+      let resource = cfn.Resources[r]
       let ARC_WSS_URL =
-        r.Properties &&
-        r.Properties.Environment &&
-        r.Properties.Environment.Variables &&
-        r.Properties.Environment.Variables.ARC_WSS_URL &&
-        r.Properties.Environment.Variables.ARC_WSS_URL['Fn::Sub']
+        resource.Properties &&
+        resource.Properties.Environment &&
+        resource.Properties.Environment.Variables &&
+        resource.Properties.Environment.Variables.ARC_WSS_URL &&
+        resource.Properties.Environment.Variables.ARC_WSS_URL['Fn::Sub']
       let API = ARC_WSS_URL && ARC_WSS_URL.findIndex(i => typeof i === 'string' && i.startsWith('wss://') && i.includes('.execute-api.'))
       if (ARC_WSS_URL && ARC_WSS_URL[API]) {
         cfn.Resources[r].Properties.Environment.Variables.ARC_WSS_URL['Fn::Sub'][API] = ARC_WSS_URL[API].replace('staging', stage)
