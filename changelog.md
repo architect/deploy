@@ -2,7 +2,7 @@
 
 ---
 
-## [1.2.12] 2019-12-01
+## [1.2.13] 2019-12-01
 
 ### Changed
 
@@ -14,6 +14,14 @@
 - Fixes regression related `staging` and `production` WebSockets names and paths, thanks @jessehattabaugh!
   - WebSockets APIs named `${appname}Websocket` are now named `${appname}Websocket${stage}` (like `@http` APIs)
   - `production` WebSockets paths now correctly reflect the production stage (e.g. `longawsurl.com/production`)
+
+---
+
+## [1.2.12] 2019-12-02
+
+### Added
+
+- Adds `CAPABILITY_AUTO_EXPAND` for nested stack deployments; fixes #436, thanks @jgallen23!
 
 ---
 
