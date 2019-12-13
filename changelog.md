@@ -2,6 +2,14 @@
 
 ---
 
+## [1.2.14] 2019-12-12
+
+### Changed
+
+- Updated dependencies
+
+---
+
 ## [1.2.13] 2019-12-01
 
 ### Changed
