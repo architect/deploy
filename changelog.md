@@ -1,6 +1,13 @@
 # Architect Deploy changelog
 
 ---
+## [1.3.0] 2019-12-14
+
+### Added
+
+- Adding `--name` for creating a unique stack name. (Aliased to `-n` and `name`.)
+- Adding `--tags` for adding tags to the CloudFormation stack.
+
 
 ## [1.2.14] 2019-12-12
 
