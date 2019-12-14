@@ -1,7 +1,7 @@
 let spawn = require('../spawn')
 
 module.exports = function deploy(params, callback) {
-  let {stackname, nested, appname, bucket, pretty, region, update} = params
+  let {stackname, nested, appname, bucket, pretty, region, update, tags} = params
   update.done('Generated CloudFormation deployment')
   update.start('Deploying & building infrastructure...')
   let template = nested ? `${appname}-cfn.yaml` : 'sam.yaml'
@@ -13,8 +13,9 @@ module.exports = function deploy(params, callback) {
       '--capabilities', 'CAPABILITY_IAM CAPABILITY_AUTO_EXPAND',
       '--region', region
   ]
-  // if (nested) {
-    //   args.push('CAPABILITY_AUTO_EXPAND')
-    //}
+  if (tags.length > 0) {
+    args.push('--tags')
+    args = args.concat(tags)
+  }
   spawn('aws', args, pretty, callback)
 }
