@@ -3,45 +3,40 @@ let deploy = require('.')
 let {banner} = require('@architect/utils')
 let create = require('@architect/create')
 let validate = require('./src/validate')
+let options = require('./src/options')
 let {version} = require('./package.json')
 
 /**
  * `arc deploy`
  *
- * deploys the current .arc as a sam application to AppNameStaging stack
+ * deploys the current arcfile
  *
  * options
  * -p|--production|production ... deploys to AppNameProduction
  * -d|--dirty|dirty ............. *staging only* dirty deploy function code/config
  * -s|--static|static ........... dirty deploys /public to s3 bucket
  * -v|--verbose|verbose ......... prints all output to console
+ * -t|--tags|tags ............... add tags
+ * -n|--name|name ............... customize stack name
  */
-let isDirty = opt=> opt === 'dirty' || opt === '--dirty' || opt === '-d'
-let isStatic = opt=> opt === 'static' || opt === '--static' || opt === '-s'
-let isProd = opt=> opt === 'production' || opt === '--production' || opt === '-p'
-let isPrune = opt=> opt === 'prune' || opt === '--prune'
-let isVerbose = opt=> opt === 'verbose' || opt === '--verbose' || opt === '-v'
-
 async function cmd(opts=[]) {
 
+  // validate the call for expected env and args
   validate(opts)
 
+  // create any missing local infra
   await create({})
 
-  let args = {
-    prune: opts.some(isPrune),
-    verbose: opts.some(isVerbose),
-    production: opts.some(isProd)
-  }
+  // read args into {prune, verbose, production, tags, name, isFullDeploy}
+  let args = options(opts)
 
-  if (opts.some(isDirty))
+  if (args.isDirty)
     return deploy.dirty()
 
-  if (opts.some(isStatic)) {
-    args.isFullDeploy = false
+  if (args.isStatic)
     return deploy.static(args)
-  }
 
+  // deploy with SAM by default..
   return deploy.sam(args)
 }
 

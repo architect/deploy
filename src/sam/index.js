@@ -18,7 +18,7 @@ let after = require('./02-after')
  * @param {Function} callback - a node-style errback
  * @returns {Promise} - if not callback is supplied
  */
-module.exports = function samDeploy({verbose, production}, callback) {
+module.exports = function samDeploy({verbose, production, tags, name}, callback) {
 
   let stage = production? 'production' : 'staging'
   let ts = Date.now()
@@ -29,6 +29,9 @@ module.exports = function samDeploy({verbose, production}, callback) {
   let appname = arc.app[0]
   let stackname = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
   let update = updater('Deploy')
+
+  if (name)
+    stackname += utils.toLogicalID(name)
 
   // Assigned below
   let cloudformation
@@ -118,8 +121,16 @@ module.exports = function samDeploy({verbose, production}, callback) {
      * Deployment
      */
     function theDeploy(callback) {
-      let params = {appname, stackname, nested, bucket, pretty, region, update}
-      deploy(params, callback)
+      deploy({
+        appname,
+        stackname,
+        nested,
+        bucket,
+        pretty,
+        region,
+        update,
+        tags,
+      }, callback)
     },
 
      /**
