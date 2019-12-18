@@ -29,7 +29,7 @@
   },
   "homepage": "https://github.com/architect/deploy#readme",
   "dependencies": {
-    "@architect/create": "^1.0.8",
+    "@architect/create": "^1.0.9",
     "@architect/hydrate": "^1.4.12",
     "@architect/package": "^1.0.55",
     "@architect/parser": "^1.2.2",
