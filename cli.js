@@ -21,7 +21,7 @@ let {version} = require('./package.json')
  */
 async function cmd(opts=[]) {
 
-  // validate the call for expected env and args
+  // Validate for expected env and args and check for potential creds issues
   validate(opts)
 
   // create any missing local infra
