@@ -1,7 +1,7 @@
 let aws = require('aws-sdk')
 let waterfall = require('run-waterfall')
 let utils = require('@architect/utils')
-let {initAWS, updater} = require('@architect/utils')
+let {updater} = require('@architect/utils')
 let fingerprintConfig = utils.fingerprint.config
 let publishToS3 = require('./publish-to-s3')
 
@@ -23,7 +23,6 @@ module.exports = function statics({verbose, prune=false, production, update, isF
     })
   }
 
-  initAWS() // Load AWS creds
   if (!update) {
     update = updater('Deploy')
     update.status('Deploying static assets...')
