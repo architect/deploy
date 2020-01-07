@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 let deploy = require('.')
-let {banner} = require('@architect/utils')
+let {banner, updater} = require('@architect/utils')
 let create = require('@architect/create')
 let validate = require('./src/validate')
 let options = require('./src/options')
@@ -21,7 +21,7 @@ let {version} = require('./package.json')
  */
 async function cmd(opts=[]) {
 
-  // validate the call for expected env and args
+  // Validate for expected env and args and check for potential creds issues
   validate(opts)
 
   // create any missing local infra
@@ -42,7 +42,7 @@ async function cmd(opts=[]) {
 
 module.exports = cmd
 
-// allow direct invoke
+// Allow direct invoke
 if (require.main === module) {
   (async function() {
     try {
@@ -50,7 +50,8 @@ if (require.main === module) {
       await cmd(process.argv)
     }
     catch (err) {
-      console.log(err)
+      let update = updater('Deploy')
+      update.error(err)
     }
   })();
 }

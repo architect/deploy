@@ -1,7 +1,7 @@
 let pkg = require('@architect/package')
 let utils = require('@architect/utils')
 let series = require('run-series')
-let {initAWS, updater} = require('@architect/utils')
+let {updater} = require('@architect/utils')
 let fingerprinter = utils.fingerprint
 let fingerprintConfig = fingerprinter.config
 
@@ -46,7 +46,7 @@ module.exports = function samDeploy({verbose, production, tags, name}, callback)
   if (!callback) {
     promise = new Promise(function ugh(res, rej) {
       callback = function errback(err, result) {
-        if (err) rej(update.fail(err))
+        if (err) rej(err)
         else res(result)
       }
     })
@@ -57,7 +57,6 @@ module.exports = function samDeploy({verbose, production, tags, name}, callback)
      * Initialize operations
      */
     function init(callback) {
-      initAWS() // Load AWS creds
       update.status(
         'Initializing deployment',
         `Stack ... ${stackname}`,

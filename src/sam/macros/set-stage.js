@@ -1,4 +1,4 @@
-let toLogicalID = require('@architect/utils/to-logical-id')
+let {toLogicalID} = require('@architect/utils')
 
 /**
  * Sets correct stage name

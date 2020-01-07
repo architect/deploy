@@ -1,6 +1,6 @@
 let pkg = require('@architect/package')
 let utils = require('@architect/utils')
-let {initAWS, updater} = require('@architect/utils')
+let {updater} = require('@architect/utils')
 let deployNested = require('./deploy-nested-stack')
 let deployStack = require('./deploy-sam-stack')
 let pretty = require('./pretty')
@@ -44,9 +44,6 @@ module.exports = function dirty(callback) {
     `Stack ... ${stackname}`
   )
   pretty.warn(update)
-
-  // load creds
-  initAWS()
 
   exec({
     ts,
