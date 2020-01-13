@@ -44,7 +44,8 @@ module.exports = cmd
 
 // Allow direct invoke
 if (require.main === module) {
-  (async function() {
+  let args = options(process.argv)
+  ;(async function() {
     try {
       banner({version: `Deploy ${version}`})
       await cmd(process.argv)
@@ -52,6 +53,8 @@ if (require.main === module) {
     catch (err) {
       let update = updater('Deploy')
       update.error(err)
+      if (args.verbose)
+        console.log(err)
     }
   })();
 }
