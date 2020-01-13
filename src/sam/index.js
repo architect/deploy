@@ -6,6 +6,7 @@ let fingerprinter = utils.fingerprint
 let fingerprintConfig = fingerprinter.config
 
 let print = require('./print')
+let getBucket = require('./bucket')
 let macros = require('./macros')
 let before = require('./00-before')
 let deploy = require('./01-deploy')
@@ -25,7 +26,7 @@ module.exports = function samDeploy({verbose, production, tags, name}, callback)
   let log = true
   let pretty = print({log, verbose})
   let {arc} = utils.readArc()
-  let bucket = arc.aws.find(o=> o[0] === 'bucket')[1]
+  let bucket // Assigned later
   let appname = arc.app[0]
   let stackname = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
   let update = updater('Deploy')
@@ -53,6 +54,32 @@ module.exports = function samDeploy({verbose, production, tags, name}, callback)
   }
 
   series([
+    /**
+     * Maybe create a new deployment bucket
+     */
+    function bucketSetup(callback) {
+      let bucketProvided = arc.aws && arc.aws.some(o => o[0] === 'bucket')
+      if (bucketProvided) {
+        bucket = arc.aws.find(o => o[0] === 'bucket')[1]
+        callback()
+      }
+      else {
+        let appname = arc.app[0]
+        getBucket({
+          appname,
+          region,
+          update
+        },
+        function next(err, result) {
+          if (err) callback(err)
+          else {
+            bucket = result
+            callback()
+          }
+        })
+      }
+    },
+
     /**
      * Initialize operations
      */

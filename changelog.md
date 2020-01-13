@@ -2,6 +2,16 @@
 
 ---
 
+## [1.4.0] 2020-01-13
+
+### Added
+
+- If no deployment bucket is specified, Deploy now automatically creates one for you
+  - If a deployment bucket was automatically created before, but no longer exists (or access is no longer available), a new bucket will be created and your app's configuration will be updated
+  - This also means the `@aws` pragma is no longer stricly necessary to deploy to AWS with Architect
+
+---
+
 ## [1.3.3] 2020-01-07
 
 ### Changed
