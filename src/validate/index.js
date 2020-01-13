@@ -1,4 +1,3 @@
-let utils = require('@architect/utils')
 let {updater} = require('@architect/utils')
 let path = require('path')
 let fs = require('fs')
@@ -14,8 +13,6 @@ module.exports = function validate(/*opts*/) {
   try {
     if (process.env.ARC_AWS_CREDS === 'missing')
       throw Error('missing_creds')
-
-    let {arc} = utils.readArc()
 
     if (!binExists('aws'))
       throw ReferenceError('missing_aws_cli')
