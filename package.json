@@ -31,10 +31,10 @@
   "dependencies": {
     "@architect/create": "^1.0.11",
     "@architect/hydrate": "^1.4.13",
-    "@architect/package": "^1.1.0",
+    "@architect/package": "^1.2.0",
     "@architect/parser": "1.2.2",
     "@architect/utils": "^1.4.4",
-    "aws-sdk": "^2.606.0",
+    "aws-sdk": "^2.607.0",
     "chalk": "^3.0.0",
     "glob": "^7.1.6",
     "mime-types": "^2.1.26",
