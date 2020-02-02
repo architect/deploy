@@ -72,7 +72,7 @@ module.exports = function statics({verbose, prune=false, production, update, isF
       function done(err, data) {
         if (err) callback(err)
         else {
-          let find = i=> i.ResourceType === 'AWS::S3::Bucket'
+          let find = i => i.ResourceType === 'AWS::S3::Bucket' && i.LogicalResourceId === 'StaticBucket'
           let Bucket = data.StackResourceSummaries.find(find).PhysicalResourceId
           callback(null, {Bucket, fingerprint, ignore, prune, folder})
         }

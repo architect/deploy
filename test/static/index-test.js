@@ -8,7 +8,10 @@ let index = proxyquire('../../src/static', {
   './publish-to-s3': publishFake
 })
 let stackFake = sinon.fake.yields(null, {
-  StackResourceSummaries: [{ResourceType: 'AWS::S3::Bucket', PhysicalResourceId: 'stagingbukt'}]
+  StackResourceSummaries: [
+    {ResourceType: 'AWS::S3::Bucket', PhysicalResourceId: 'custombukt', LogicalResourceId: 'CustomBucket'},
+    {ResourceType: 'AWS::S3::Bucket', PhysicalResourceId: 'stagingbukt', LogicalResourceId: 'StaticBucket'}
+  ]
 })
 aws.mock('CloudFormation', 'listStackResources', stackFake);
 let readFake = sinon.stub(utils, 'readArc').returns({
