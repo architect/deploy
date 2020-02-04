@@ -6,7 +6,8 @@ let fs = require('fs')
 
 let samPkg = require('./package')
 
-module.exports = function writeCFN({sam, nested, bucket, pretty}, callback) {
+module.exports = function writeCFN(params, callback) {
+  let {sam, nested, bucket, pretty, update, isDryRun} = params
   if (nested) {
     series([
       function samPackage(callback) {
@@ -22,22 +23,28 @@ module.exports = function writeCFN({sam, nested, bucket, pretty}, callback) {
       },
 
       function uploadToS3(callback) {
-        let s3 = new aws.S3
-        parallel(Object.keys(sam).map(Key=> {
-          return function put(callback) {
-            let bodyPath = path.join(process.cwd(), Key)
-            fs.readFile(bodyPath, function readFile(err, Body) {
-              if (err) callback(err)
-              else {
-                s3.putObject({
-                  Bucket: bucket,
-                  Key,
-                  Body,
-                }, callback)
-              }
-            })
-          }
-        }), callback)
+        if (isDryRun) {
+          update.status('Skipping deploy artifact upload to S3...')
+          callback()
+        }
+        else {
+          let s3 = new aws.S3
+          parallel(Object.keys(sam).map(Key=> {
+            return function put(callback) {
+              let bodyPath = path.join(process.cwd(), Key)
+              fs.readFile(bodyPath, function readFile(err, Body) {
+                if (err) callback(err)
+                else {
+                  s3.putObject({
+                    Bucket: bucket,
+                    Key,
+                    Body,
+                  }, callback)
+                }
+              })
+            }
+          }), callback)
+        }
       }
 
     ], callback)

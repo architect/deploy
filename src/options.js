@@ -1,11 +1,12 @@
-let isDirty = opt=> opt === 'dirty' || opt === '--dirty' || opt === '-d'
-let isStatic = opt=> opt === 'static' || opt === '--static' || opt === '-s'
-let isProd = opt=> opt === 'production' || opt === '--production' || opt === '-p'
-let isPrune = opt=> opt === 'prune' || opt === '--prune'
-let isVerbose = opt=> opt === 'verbose' || opt === '--verbose' || opt === '-v'
+let isDirty =   opt => opt === 'dirty' || opt === '--dirty' || opt === '-d'
+let isDryRun =  opt => opt === '--dry-run'
+let isProd =    opt => opt === 'production' || opt === '--production' || opt === '-p'
+let isPrune =   opt => opt === 'prune' || opt === '--prune'
+let isStatic =  opt => opt === 'static' || opt === '--static' || opt === '-s'
+let isVerbose = opt => opt === 'verbose' || opt === '--verbose' || opt === '-v'
 
-let tags = arg=> arg === '--tags' || arg === '-t' || arg === 'tags'
-let name = arg=> arg === '--name' || arg === '-n' || arg === 'name' || arg.startsWith('--name=')
+let tags = arg => arg === '--tags' || arg === '-t' || arg === 'tags'
+let name = arg => arg === '--name' || arg === '-n' || arg === 'name' || arg.startsWith('--name=')
 
 module.exports = function options(opts) {
   return {
@@ -15,8 +16,9 @@ module.exports = function options(opts) {
     tags: getTags(opts),
     name: getName(opts),
     isDirty: opts.some(isDirty),
+    isDryRun: opts.some(isDryRun),
     isStatic: opts.some(isStatic),
-    isFullDeploy: opts.some(isStatic)? false : true
+    isFullDeploy: opts.some(isStatic) ? false : true
   }
 }
 
@@ -27,7 +29,7 @@ function getTags(list) {
   let len = list.length
   let index = list.findIndex(tags) + 1
   let left = list.slice(index, len)
-  return left.filter(arg=> /^[a-zA-Z0-9]+=[a-zA-Z0-9]+/.test(arg))
+  return left.filter(arg => /^[a-zA-Z0-9]+=[a-zA-Z0-9]+/.test(arg))
 }
 
 function getName(list) {
