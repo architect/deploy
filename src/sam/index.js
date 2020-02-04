@@ -56,7 +56,6 @@ module.exports = function samDeploy(params, callback) {
 
   if (isDryRun) {
     update = updater('Deploy [dry-run]')
-    update.warn('Even in dry-run mode AWS CLI will write inert template files to S3! (No infra will be created.)')
     update.status('Starting dry run!')
   }
 
@@ -65,25 +64,31 @@ module.exports = function samDeploy(params, callback) {
      * Maybe create a new deployment bucket
      */
     function bucketSetup(callback) {
-      let bucketProvided = arc.aws && arc.aws.some(o => o[0] === 'bucket')
-      if (bucketProvided) {
-        bucket = arc.aws.find(o => o[0] === 'bucket')[1]
+      if (isDryRun) {
+        bucket = 'N/A (dry-run)'
         callback()
       }
       else {
-        let appname = arc.app[0]
-        getBucket({
-          appname,
-          region,
-          update
-        },
-        function next(err, result) {
-          if (err) callback(err)
-          else {
-            bucket = result
-            callback()
-          }
-        })
+        let bucketProvided = arc.aws && arc.aws.some(o => o[0] === 'bucket')
+        if (bucketProvided) {
+          bucket = arc.aws.find(o => o[0] === 'bucket')[1]
+          callback()
+        }
+        else {
+          let appname = arc.app[0]
+          getBucket({
+            appname,
+            region,
+            update
+          },
+          function next(err, result) {
+            if (err) callback(err)
+            else {
+              bucket = result
+              callback()
+            }
+          })
+        }
       }
     },
 

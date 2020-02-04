@@ -8,7 +8,12 @@ let samPkg = require('./package')
 
 module.exports = function writeCFN(params, callback) {
   let {sam, nested, bucket, pretty, update, isDryRun} = params
-  if (nested) {
+  if (isDryRun) {
+    update.status('Skipping CloudFormation deployment...')
+    callback()
+  }
+  else if (nested) {
+    update.start('Generating CloudFormation deployment...')
     series([
       function samPackage(callback) {
         parallel(Object.keys(sam).map(filename=> {
@@ -23,33 +28,27 @@ module.exports = function writeCFN(params, callback) {
       },
 
       function uploadToS3(callback) {
-        if (isDryRun) {
-          update.status('Skipping deploy artifact upload to S3...')
-          callback()
-        }
-        else {
-          let s3 = new aws.S3
-          parallel(Object.keys(sam).map(Key=> {
-            return function put(callback) {
-              let bodyPath = path.join(process.cwd(), Key)
-              fs.readFile(bodyPath, function readFile(err, Body) {
-                if (err) callback(err)
-                else {
-                  s3.putObject({
-                    Bucket: bucket,
-                    Key,
-                    Body,
-                  }, callback)
-                }
-              })
-            }
-          }), callback)
-        }
+        let s3 = new aws.S3
+        parallel(Object.keys(sam).map(Key=> {
+          return function put(callback) {
+            let bodyPath = path.join(process.cwd(), Key)
+            fs.readFile(bodyPath, function readFile(err, Body) {
+              if (err) callback(err)
+              else {
+                s3.putObject({
+                  Bucket: bucket,
+                  Key,
+                  Body,
+                }, callback)
+              }
+            })
+          }
+        }), callback)
       }
-
     ], callback)
   }
   else {
+    update.start('Generating CloudFormation deployment...')
     samPkg({
       filename: `sam.json`,
       bucket,
