@@ -31,7 +31,7 @@ async function cmd(opts=[]) {
   let args = options(opts)
 
   if (args.isDirty)
-    return deploy.dirty()
+    return deploy.dirty(args)
 
   if (args.isStatic)
     return deploy.static(args)

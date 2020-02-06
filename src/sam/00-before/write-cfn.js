@@ -6,8 +6,14 @@ let fs = require('fs')
 
 let samPkg = require('./package')
 
-module.exports = function writeCFN({sam, nested, bucket, pretty}, callback) {
-  if (nested) {
+module.exports = function writeCFN(params, callback) {
+  let {sam, nested, bucket, pretty, update, isDryRun} = params
+  if (isDryRun) {
+    update.status('Skipping CloudFormation deployment...')
+    callback()
+  }
+  else if (nested) {
+    update.start('Generating CloudFormation deployment...')
     series([
       function samPackage(callback) {
         parallel(Object.keys(sam).map(filename=> {
@@ -39,10 +45,10 @@ module.exports = function writeCFN({sam, nested, bucket, pretty}, callback) {
           }
         }), callback)
       }
-
     ], callback)
   }
   else {
+    update.start('Generating CloudFormation deployment...')
     samPkg({
       filename: `sam.json`,
       bucket,

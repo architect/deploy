@@ -2,6 +2,22 @@
 
 ---
 
+## [1.5.0] 2020-02-05
+
+### Added
+
+- Dry-run flag: `deploy --dry-run`
+  - Test your `@macros`, function hydration, CloudFormation / SAM template files, and other deployment-related operations without actually building any live infra
+  - Dry-run mode runs through all deploy operations necessary to generate your app's CloudFormation / SAM template files
+  - **Heads up:** the AWS CLI requires a live, active S3 bucket to generate your app's templates; however no **live infra will be created** from these templates
+
+
+### Changed
+
+- Updated dependencies
+
+---
+
 ## [1.4.0] 2020-01-13
 
 ### Added
