@@ -20,7 +20,7 @@ let after = require('./02-after')
  * @returns {Promise} - if not callback is supplied
  */
 module.exports = function samDeploy(params, callback) {
-  let {verbose, production, tags, name, isDryRun} = params
+  let {verbose, production, tags, name, isDryRun=false} = params
 
   let stage = production ? 'production' : 'staging'
   let ts = Date.now()
@@ -183,6 +183,7 @@ module.exports = function samDeploy(params, callback) {
     function afterDeploy(callback) {
       if (isDryRun) {
         update.status('Skipping post-deployment operations & cleanup')
+        update.done('Dry run complete!')
         callback()
       }
       else {

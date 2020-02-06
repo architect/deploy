@@ -12,7 +12,7 @@ let pretty = require('./pretty')
  * @param {Function} callback - node style errback
  * @returns {Promise} if no callback is supplied
  */
-module.exports = function dirty({isDryRun}, callback) {
+module.exports = function dirty({isDryRun=false}, callback) {
   // return a promise if a callback is not supplied
   let promise
   if (!callback) {

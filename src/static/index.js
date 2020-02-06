@@ -13,7 +13,7 @@ let publishToS3 = require('./publish-to-s3')
  * @returns {Promise} - if no callback is supplied
  */
 module.exports = function statics(params, callback) {
-  let {verbose, prune=false, production, update, isDryRun, isFullDeploy} = params
+  let {verbose, prune=false, production, update, isDryRun=false, isFullDeploy} = params
   if (!update) update = updater('Deploy')
 
   let promise
