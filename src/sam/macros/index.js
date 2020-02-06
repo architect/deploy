@@ -80,7 +80,7 @@ async function exec(arc, cloudformation, stage) {
  * @returns {String} path - the path to the macro
  */
 function path(name) {
-  let internal = join(__dirname, 'macros', `${name}.js`)
+  let internal = join(__dirname, `_${name}.js`)
   let localPath = join(process.cwd(), 'src', 'macros', `${name}.js`)
   let localPath1 = join(process.cwd(), 'src', 'macros', name)
   let modulePath = join(process.cwd(), 'node_modules', name)
