@@ -31,7 +31,7 @@
   "dependencies": {
     "@architect/create": "^1.0.15",
     "@architect/hydrate": "^1.4.17",
-    "@architect/package": "^1.2.5",
+    "@architect/package": "^1.2.7",
     "@architect/parser": "1.2.2",
     "@architect/utils": "^1.4.7",
     "aws-sdk": "^2.612.0",
