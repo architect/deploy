@@ -32,7 +32,7 @@
     "@architect/create": "^1.0.15",
     "@architect/hydrate": "^1.4.17",
     "@architect/package": "^1.2.7",
-    "@architect/parser": "1.2.2",
+    "@architect/parser": "2.0.1",
     "@architect/utils": "^1.4.7",
     "aws-sdk": "^2.612.0",
     "chalk": "^3.0.0",
