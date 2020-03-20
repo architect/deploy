@@ -4,6 +4,7 @@ let {updater} = require('@architect/utils')
 let fingerprinter = utils.fingerprint
 let fingerprintConfig = fingerprinter.config
 let series = require('run-series')
+let hydrate = require('@architect/hydrate')
 
 let print = require('./print')
 let getBucket = require('./bucket')
@@ -123,6 +124,13 @@ module.exports = function samDeploy(params, callback) {
           callback()
         }
       })
+    },
+
+    /**
+     * Hydrate dependencies
+     */
+    function hydrateTheThings(callback) {
+      hydrate.install({}, callback)
     },
 
     /**
