@@ -2,6 +2,23 @@
 
 ---
 
+## [1.5.2] 2020-03-19
+
+### Changed
+
+- Ensures hydration occurs before macros in the deploy process, enabling macros to mutate dependencies and shared files during a deploy
+- Updated dependencies
+
+---
+
+## [1.5.1] 2020-02-13
+
+### Changed
+
+- Updated dependencies
+
+---
+
 ## [1.5.0] 2020-02-05
 
 ### Added
