@@ -30,6 +30,7 @@ module.exports = function reads({stackname, stage}, callback){
       let api = o=> o.OutputKey === 'API'
       let wss = o=> o.OutputKey === 'WSS'
       let bucket = o=> o.OutputKey === 'BucketURL'
+      let http = o=> o.OutputKey === 'HTTP'
 
       let apigateway = cf.find(function findDistro(distro) {
         let origin = outs.find(api)
@@ -54,8 +55,9 @@ module.exports = function reads({stackname, stage}, callback){
       let url =  cdnURL || apiURL || bucketURL
       let apiDomain = apiURL? apiURL.replace(`/${stage}`, '').replace('https://', '') : false
       let bucketDomain = bucketURL? bucketURL.replace('http://', '') : false
+      let httpDomain = outs.find(http)? outs.find(http).OutputValue : false
 
-      callback(null, {url, wssURL, apiDomain, bucketDomain, apigateway, s3})
+      callback(null, {url, wssURL, apiDomain, bucketDomain, apigateway, s3, httpDomain})
     }
   })
 }
