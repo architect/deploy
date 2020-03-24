@@ -2,6 +2,14 @@
 
 ---
 
+## [1.6.0] 2020-03-22
+
+### Added
+
+- Added early support for HTTP APIs (currently only via Macro)
+
+---
+
 ## [1.5.4] 2020-03-22
 
 ### Changed
