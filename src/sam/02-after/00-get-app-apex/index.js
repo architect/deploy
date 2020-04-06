@@ -37,6 +37,11 @@ module.exports = function getAppApex(params, callback) {
       // Added whitespace after URLs
       console.log()
 
+      const cdn = arc.aws && arc.aws.find(tuple => tuple.includes('cdn'))
+      if (cdn && cdn[1] === false) {
+        return callback()
+      }
+
       // create cdns if cdn is defined
       let creatingS3 = arc.static && arc.cdn && s3 === false
       let creatingApiGateway = arc.http && arc.cdn && apigateway === false
