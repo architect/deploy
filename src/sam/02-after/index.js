@@ -9,7 +9,7 @@ module.exports = function after(params, callback) {
   let {ts, arc, verbose, production, pretty, appname, stackname, stage, update} = params
   series([
     appApex.bind({}, {ts, arc, pretty, stackname, stage, update}),
-    staticDeploy.bind({}, {arc, verbose, production}),
+    staticDeploy.bind({}, {arc, verbose, stackname, production}),
     patchApiG.bind({}, {stackname, stage}),
     maybeInvalidate.bind({}, {stackname, stage}),
     cleanup.bind({}, {appname}),
