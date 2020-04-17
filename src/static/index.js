@@ -13,7 +13,7 @@ let publishToS3 = require('./publish-to-s3')
  * @returns {Promise} - if no callback is supplied
  */
 module.exports = function statics(params, callback) {
-  let {verbose, prune=false, production, update, isDryRun=false, isFullDeploy} = params
+  let {verbose, name, stackname, prune=false, production, update, isDryRun=false, isFullDeploy} = params
   if (!update) update = updater('Deploy')
 
   let promise
@@ -37,7 +37,11 @@ module.exports = function statics(params, callback) {
     // defaults
     let {arc} = utils.readArc()
     let appname = arc.app[0]
-    let name = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
+    if (!stackname) {
+      stackname = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
+      if (name)
+        stackname += utils.toLogicalID(name)
+    }
 
     // get the bucket PhysicalResourceId
     waterfall([
@@ -73,7 +77,7 @@ module.exports = function statics(params, callback) {
         // lookup bucket in cloudformation
         let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
         cloudformation.listStackResources({
-          StackName: name
+          StackName: stackname
         },
         function done(err, data) {
           if (err) callback(err)
