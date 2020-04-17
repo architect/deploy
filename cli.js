@@ -5,6 +5,7 @@ let create = require('@architect/create')
 let validate = require('./src/validate')
 let options = require('./src/options')
 let {version} = require('./package.json')
+let pauser = require('./src/utils/pause-sandbox')
 
 /**
  * `arc deploy`
@@ -24,20 +25,31 @@ async function cmd(opts=[]) {
   // Validate for expected env and args and check for potential creds issues
   validate(opts)
 
+  // Pause the Sandbox watcher
+  pauser.pause()
+
   // create any missing local infra
   await create({})
 
   // read args into {prune, verbose, production, tags, name, isFullDeploy}
   let args = options(opts)
 
-  if (args.isDirty)
-    return deploy.dirty(args)
+  if (args.isDirty) {
+    let result = await deploy.dirty(args)
+    pauser.unpause()
+    return result
+  }
 
-  if (args.isStatic)
-    return deploy.static(args)
+  if (args.isStatic) {
+    let result = await deploy.static(args)
+    pauser.unpause()
+    return result
+  }
 
   // deploy with SAM by default..
-  return deploy.sam(args)
+  let result = await deploy.sam(args)
+  pauser.unpause()
+  return result
 }
 
 module.exports = cmd
@@ -51,6 +63,8 @@ if (require.main === module) {
       await cmd(process.argv)
     }
     catch (err) {
+      // Pause the Sandbox watcher
+      pauser.unpause()
       let update = updater('Deploy')
       update.error(err)
       if (args.verbose)

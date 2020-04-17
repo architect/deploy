@@ -2,6 +2,21 @@
 
 ---
 
+## [1.6.1] 2020-04-16
+
+### Added
+
+- Added Sandbox watcher pausing
+  - Writes an empty `_pause-architect-sandbox-watcher` file in your operating system's `$TMP` directory (usually `/tmp` or `c:\windows\temp`) which temporarily pauses the Sandbox watcher
+  - This means Sandbox can remain open during deploys and neither should interfere with the other
+
+
+### Changed
+
+- Updated dependencies
+
+---
+
 ## [1.6.0] 2020-03-22
 
 ### Added
