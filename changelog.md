@@ -9,11 +9,19 @@
 - Added Sandbox watcher pausing
   - Writes an empty `_pause-architect-sandbox-watcher` file in your operating system's `$TMP` directory (usually `/tmp` or `c:\windows\temp`) which temporarily pauses the Sandbox watcher
   - This means Sandbox can remain open during deploys and neither should interfere with the other
+- Allow disabling Architect's CDN checks / processes so user can configure / manage their own CDNS via Macros; fixes #750, thanks @jgallen23!
+  - Syntax: `@cdn false` || `@cdn disable` || `@cdn disabled`
 
 
 ### Changed
 
 - Updated dependencies
+
+
+### Fixed
+
+- Fixed issue where custom named deployments (`deploy --name`) wouldn't work with `static`; fixes #759, thanks @jgallen23!
+- Fixed issue where deploying static assets may deploy to the wrong bucket if additional buckets are defined in Macros; fixes #750, thanks @jgallen23!
 
 ---
 

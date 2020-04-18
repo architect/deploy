@@ -11,7 +11,7 @@ module.exports = function after(params, callback) {
     appApex.bind({}, {ts, arc, pretty, stackname, stage, update}),
     staticDeploy.bind({}, {arc, verbose, stackname, production}),
     patchApiG.bind({}, {stackname, stage}),
-    maybeInvalidate.bind({}, {stackname, stage}),
+    maybeInvalidate.bind({}, {arc, stackname, stage}),
     cleanup.bind({}, {appname}),
   ], callback)
 }

@@ -34,72 +34,76 @@ module.exports = function getAppApex(params, callback) {
       if (httpDomain) {
         pretty.url(httpDomain)
       }
+
       // Added whitespace after URLs
       console.log()
 
-      const cdn = arc.aws && arc.aws.find(tuple => tuple.includes('cdn'))
-      if (cdn && cdn[1] === false) {
-        return callback()
+      // Allow users to disable Architect's CDN checks so they can configure / manage their own via Macros
+      let cdn = arc.cdn && arc.cdn[0]
+      let cdnBypass = cdn === false || cdn === 'disable' || cdn === 'disabled'
+      if (cdnBypass) {
+        callback()
       }
+      else {
+        // create cdns if cdn is defined
+        let creatingS3 = arc.static && arc.cdn && s3 === false
+        let creatingApiGateway = arc.http && arc.cdn && apigateway === false
 
-      // create cdns if cdn is defined
-      let creatingS3 = arc.static && arc.cdn && s3 === false
-      let creatingApiGateway = arc.http && arc.cdn && apigateway === false
+        // enabling (in the event someone destroyed and then changed their mind)
+        let enablingS3 = arc.static && arc.cdn && s3.enabled === false
+        let enablingApiGateway = arc.http && arc.cdn && apigateway.enabled === false
 
-      // enabling (in the event someone destroyed and then changed their mind)
-      let enablingS3 = arc.static && arc.cdn && s3.enabled === false
-      let enablingApiGateway = arc.http && arc.cdn && apigateway.enabled === false
+        // destroy (to the best of our ability) cdns if cdn is not defined
+        let destroyingS3 = typeof arc.cdn === 'undefined' && s3
+        let destroyingApiGateway = typeof arc.cdn === 'undefined' && apigateway
 
-      // destroy (to the best of our ability) cdns if cdn is not defined
-      let destroyingS3 = typeof arc.cdn === 'undefined' && s3
-      let destroyingApiGateway = typeof arc.cdn === 'undefined' && apigateway
-
-      series([
-        function createS3(callback) {
-          if (creatingS3) {
-            create({
-              domain: bucketDomain
-              // FIXME: create requires 'path' param
-            }, callback)
+        series([
+          function createS3(callback) {
+            if (creatingS3) {
+              create({
+                domain: bucketDomain
+                // FIXME: create requires 'path' param
+              }, callback)
+            }
+            else {
+              callback()
+            }
+          },
+          function enableS3(callback) {
+            if (enablingS3) enable(s3, callback)
+            else callback()
+          },
+          function destroyS3(callback) {
+            if (destroyingS3) destroy(s3, callback)
+            else callback()
+          },
+          function createApiGateway(callback) {
+            if (creatingApiGateway) {
+              create({
+                domain: apiDomain,
+                path: `/${stage}`,
+                stage
+              }, callback)
+            }
+            else {
+              callback()
+            }
+          },
+          function enableApiGateway(callback) {
+            if (enablingApiGateway) enable(apigateway, callback)
+            else callback()
+          },
+          function destroyApiGateway(callback) {
+            if (destroyingApiGateway) destroy(apigateway, callback)
+            else callback()
           }
-          else {
-            callback()
-          }
-        },
-        function enableS3(callback) {
-          if (enablingS3) enable(s3, callback)
+        ],
+        function done(err) {
+          if (err) callback(err)
           else callback()
-        },
-        function destroyS3(callback) {
-          if (destroyingS3) destroy(s3, callback)
-          else callback()
-        },
-        function createApiGateway(callback) {
-          if (creatingApiGateway) {
-            create({
-              domain: apiDomain,
-              path: `/${stage}`,
-              stage
-            }, callback)
-          }
-          else {
-            callback()
-          }
-        },
-        function enableApiGateway(callback) {
-          if (enablingApiGateway) enable(apigateway, callback)
-          else callback()
-        },
-        function destroyApiGateway(callback) {
-          if (destroyingApiGateway) destroy(apigateway, callback)
-          else callback()
-        }
-      ],
-      function done(err) {
-        if (err) callback(err)
-        else callback()
-      })
+        })
 
+      }
     }
   })
 }
