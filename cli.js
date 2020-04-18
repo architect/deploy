@@ -63,7 +63,7 @@ if (require.main === module) {
       await cmd(process.argv)
     }
     catch (err) {
-      // Pause the Sandbox watcher
+      // Unpause the Sandbox watcher
       pauser.unpause()
       let update = updater('Deploy')
       update.error(err)
