@@ -3,8 +3,8 @@ module.exports = {
     ecmaVersion: 2018
   },
   env: {
-    node:true,
-    es6:true
+    node: true,
+    es6: true
   },
   extends: 'eslint:recommended',
   rules: {
@@ -23,4 +23,4 @@ module.exports = {
     // style specific
     'no-trailing-spaces': 'error'
   }
-}                      
+}

@@ -1,9 +1,9 @@
 let dirty = require('./src/dirty')
-let statics = require('./src/static')
 let sam = require('./src/sam')
+let _static = require('./src/static')
 
 module.exports = {
   dirty,
-  static: statics,
-  sam
+  sam,
+  static: _static
 }
