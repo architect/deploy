@@ -1,3 +1,5 @@
+let fs = require('fs')
+
 let isDirty =   opt => opt === 'dirty' || opt === '--dirty' || opt === '-d'
 let isDryRun =  opt => opt === '--dry-run'
 let isProd =    opt => opt === 'production' || opt === '--production' || opt === '-p'
@@ -15,6 +17,7 @@ module.exports = function options(opts) {
     production: opts.some(isProd),
     tags: getTags(opts),
     name: getName(opts),
+    srcDirs: getSrcDirs(opts),
     isDirty: opts.some(isDirty),
     isDryRun: opts.some(isDryRun),
     isStatic: opts.some(isStatic),
@@ -48,4 +51,17 @@ function getName(list) {
   else {
     return operator.split('=')[1]
   }
+}
+
+function getSrcDirs(list) {
+  return list.reduce((acc, f) => {
+    if (!f.startsWith('src')) return acc
+    try {
+      let s = fs.statSync(f)
+      if (s.isDirectory()) {
+        acc.push(f)
+      }
+      return acc
+    } catch (e) { return acc }
+  }, [])
 }

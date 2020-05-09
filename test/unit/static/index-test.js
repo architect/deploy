@@ -4,7 +4,7 @@ let proxyquire = require('proxyquire')
 let utils = require('@architect/utils')
 let aws = require('aws-sdk-mock')
 let publishFake = sinon.fake.yields()
-let index = proxyquire('../../src/static', {
+let index = proxyquire('../../../src/static', {
   './publish-to-s3': publishFake
 })
 let stackFake = sinon.fake.yields(null, {

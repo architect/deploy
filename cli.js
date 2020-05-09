@@ -34,7 +34,7 @@ async function cmd(opts=[]) {
   // read args into {prune, verbose, production, tags, name, isFullDeploy}
   let args = options(opts)
 
-  if (args.isDirty) {
+  if (args.isDirty || args.srcDirs.length) {
     let result = await deploy.dirty(args)
     pauser.unpause()
     return result
