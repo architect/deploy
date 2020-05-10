@@ -2,6 +2,17 @@
 
 ---
 
+## [1.7.0] 2020-05-10
+
+### Added
+
+- `arc deploy dirty` can now deploy "dirty deploy" single functions or groups of functions by providing a path 
+  - Eg: `arc deploy src` will dirty deploy all of `./src`
+  - Eg: `arc deploy src/http` will dirty deploy all of `./src/http`
+  - Eg: `arc deploy src/events/foo` will dirty deploy `./src/events/foo`
+
+> Shoutout to @filmaj for this awesome feature! 🔥
+
 ## [1.6.1] 2020-04-16
 
 ### Added
