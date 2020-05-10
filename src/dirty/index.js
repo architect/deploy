@@ -1,6 +1,6 @@
 let pkg = require('@architect/package')
 let utils = require('@architect/utils')
-let {updater} = require('@architect/utils')
+let updater = utils.updater
 let deployNested = require('./deploy-nested-stack')
 let deployStack = require('./deploy-sam-stack')
 let pretty = require('./pretty')
@@ -12,7 +12,7 @@ let pretty = require('./pretty')
  * @param {Function} callback - node style errback
  * @returns {Promise} if no callback is supplied
  */
-module.exports = function dirty({isDryRun=false}, callback) {
+module.exports = function dirty({isDryRun=false, srcDirs=[]}, callback) {
   // return a promise if a callback is not supplied
   let promise
   if (!callback) {
@@ -29,12 +29,17 @@ module.exports = function dirty({isDryRun=false}, callback) {
 
   if (isDryRun) {
     // TODO implement dry run?
-    update.status('Static dry run not yet available, skipping dirty deploy...')
+    update.status('Dirty dry run not yet available, skipping dirty deploy...')
     callback()
   }
   else {
     // time the deploy
     let ts = Date.now()
+    let inventory = utils.inventory()
+    let specificLambdasToDeploy = []
+    if (srcDirs.length && inventory.localPaths.length) {
+      specificLambdasToDeploy = srcDirs.reduce((acc, d) => acc.concat(inventory.localPaths.filter(p => p.startsWith(d))), [])
+    }
     let {arc} = utils.readArc()
 
     // FIXME architect/package is mutating the orig arc object and adding a (possibly) non existent get / to http
@@ -54,6 +59,7 @@ module.exports = function dirty({isDryRun=false}, callback) {
 
     exec({
       ts,
+      specificLambdasToDeploy,
       arc: copy,
       stackname,
       update

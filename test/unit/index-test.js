@@ -1,5 +1,5 @@
 let test = require('tape')
-let index = require('../')
+let index = require('../../')
 
 test('module should have three functions', t => {
   t.plan(3)

@@ -6,7 +6,7 @@ let waterfall = require('run-waterfall')
 let deploy = require('./deploy-one')
 let pretty = require('./pretty')
 
-module.exports = function deploySAM({stackname, arc, ts, update}, callback) {
+module.exports = function deploySAM({stackname, arc, ts, update, specificLambdasToDeploy}, callback) {
   /**
    * To see a World in a Grain of Sand,
    * And a Heaven in a Wild Flower,
@@ -63,7 +63,7 @@ module.exports = function deploySAM({stackname, arc, ts, update}, callback) {
     },
 
     function readLocal(functions, callback) {
-      let {localPaths} = utils.inventory(arc)
+      let localPaths = specificLambdasToDeploy.length ? specificLambdasToDeploy : utils.inventory(arc).localPaths
       parallel(localPaths.map(pathToCode=> {
         return function one(callback) {
           let folder = pathToCode.split('/').reverse().shift()
