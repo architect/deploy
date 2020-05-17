@@ -2,16 +2,27 @@
 
 ---
 
+## [1.7.1] 2020-05-17
+
+### Changed
+
+- Updated direct deployment copy, added warning
+- Updated dependencies
+
+---
+
 ## [1.7.0] 2020-05-10
 
 ### Added
 
-- `arc deploy dirty` can now deploy "dirty deploy" single functions or groups of functions by providing a path 
-  - Eg: `arc deploy src` will dirty deploy all of `./src`
-  - Eg: `arc deploy src/http` will dirty deploy all of `./src/http`
-  - Eg: `arc deploy src/events/foo` will dirty deploy `./src/events/foo`
+- Deploy can now deploy directly deploy single functions or groups of functions to Lambda by providing a path; examples:
+  - `arc deploy src` will dirty deploy all of `./src`
+  - `arc deploy src/http` will dirty deploy all of `./src/http`
+  - `arc deploy src/events/foo` will dirty deploy `./src/events/foo`
+  - As a reminder: direct deployments should be considered temporary / for testing only, and will be overwritten by any deployments coming in from a proper full deploy operation
+  - Fixes #625, shout out to @filmaj for this awesome feature! 🔥
 
-> Shoutout to @filmaj for this awesome feature! 🔥
+---
 
 ## [1.6.1] 2020-04-16
 
