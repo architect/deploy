@@ -40,7 +40,7 @@ module.exports = function dirty({isDryRun=false, srcDirs=[]}, callback) {
     if (srcDirs.length && inventory.localPaths.length) {
       specificLambdasToDeploy = srcDirs.reduce((acc, d) => acc.concat(inventory.localPaths.filter(p => p.startsWith(d))), [])
     }
-    let {arc} = utils.readArc()
+    let { arc } = utils.readArc()
 
     // FIXME architect/package is mutating the orig arc object and adding a (possibly) non existent get / to http
     let copy = JSON.parse(JSON.stringify(arc))
@@ -49,10 +49,11 @@ module.exports = function dirty({isDryRun=false, srcDirs=[]}, callback) {
     let stackname = `${utils.toLogicalID(appname)}Staging`
     let sam = pkg(arc)
     let nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
-    let exec = nested? deployNested : deployStack
+    let exec = nested ? deployNested : deployStack
 
+    update.warn('Direct deployments should be considered temporary, and will be overwritten')
     update.status(
-      'Initializing dirty deployment',
+      'Initializing direct deployment',
       `Stack ... ${stackname}`
     )
     pretty.warn(update)
