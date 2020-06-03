@@ -24,8 +24,19 @@ function normalizePath(path) {
 }
 
 module.exports = function factory(params, callback) {
-  let {Bucket, fingerprint, ignore, isFullDeploy=true, prune, folder, verbose, update} = params
-  let s3 = new aws.S3({region: process.env.AWS_REGION})
+  let {
+    arcStaticFolder,
+    Bucket,
+    fingerprint,
+    folder,
+    ignore,
+    isFullDeploy=true,
+    prune,
+    region,
+    update,
+    verbose,
+  } = params
+  let s3 = new aws.S3({region})
   let publicDir = normalizePath(path.join(process.cwd(), folder))
   let staticAssets = path.join(publicDir, '/**/*')
   let files
@@ -122,6 +133,7 @@ module.exports = function factory(params, callback) {
           if (fingerprint && Key !== 'static.json') {
             Key = staticManifest[file.replace(publicDir, '').substr(1)]
           }
+          if (arcStaticFolder) Key = `${arcStaticFolder}/${Key}`
           s3.headObject({
             Bucket,
             Key,
