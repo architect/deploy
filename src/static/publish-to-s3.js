@@ -13,6 +13,7 @@ function getContentType(file) {
   let bits = file.split('.')
   let last = bits[bits.length - 1]
   if (last === 'tsx') return 'text/tsx'
+  if (last === 'ts') return 'text/typescript'
   return mime.lookup(last)
 }
 
