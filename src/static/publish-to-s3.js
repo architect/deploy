@@ -212,7 +212,7 @@ module.exports = function factory(params, callback) {
     function deleteFiles(results, callback) {
       if (prune) {
         let params = { Bucket }
-        // If prefix is enabled, we don't care about anything else in the bucket
+        // If prefix is enabled, we must ignore everything else in the bucket
         if (prefix) params.Prefix = prefix
         s3.listObjectsV2(params, function(err, filesOnS3) {
           if (err) {

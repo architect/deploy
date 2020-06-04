@@ -145,8 +145,7 @@ test('Deploy/public should prune files present in the bucket but not in public/'
     path.join(process.cwd(), 'public', 'readme.md'),
   ]))
   // Static manifest
-  // eslint-disable-next-line
-  let fsStub = sinon.stub(fs, 'writeFile').callsFake((dest, data, callback) => {callback()})
+  sinon.stub(fs, 'writeFile').callsFake((dest, data, callback) => {callback()})
   // S3 operations
   sinon.stub(fs, 'lstatSync').returns({
     isDirectory: () => false,
@@ -185,8 +184,7 @@ test('Deploy/public should not prune files present in the bucket but not in publ
     path.join(process.cwd(), 'public', 'index.html'),
   ]))
   // Static manifest
-  // eslint-disable-next-line
-  let fsStub = sinon.stub(fs, 'writeFile').callsFake((dest, data, callback) => {callback()})
+  sinon.stub(fs, 'writeFile').callsFake((dest, data, callback) => {callback()})
   // S3 operations
   sinon.stub(fs, 'lstatSync').returns({
     isDirectory: () => false,
@@ -210,4 +208,45 @@ test('Deploy/public should not prune files present in the bucket but not in publ
   })
 })
 
-// TODO add test for prune + prefix
+test('Deploy/public should prune files correctly with prefix set', t=> {
+  t.plan(4)
+  // Alter params
+  let prefix = 'some-path'
+  let params = defaultParams()
+  params.fingerprint = false
+  params.prune = true
+  params.prefix = prefix
+  // Globbing
+  globStub.resetBehavior()
+  globStub.callsFake((filepath, options, callback) => callback(null, [
+    path.join(process.cwd(), 'public', 'index.html'),
+    path.join(process.cwd(), 'public', 'readme.md'),
+  ]))
+  // S3 operations
+  sinon.stub(fs, 'lstatSync').returns({
+    isDirectory: () => false,
+    isFile: () => true,
+    mtime: 2
+  })
+  sinon.stub(fs, 'readFileSync')
+  let listStub = sinon.stub().callsFake((params, callback) => callback(null, {Contents:[{Key:`${prefix}/index.html`}, {Key:'test.file'}]}))
+  let deleteStub = sinon.stub().callsFake((params, callback) => callback(null, {Deleted:[{Key:'test.file'}]}))
+  sinon.stub(aws, 'S3').returns({
+    headObject: sinon.stub().callsFake((params, callback) => callback(null, {LastModified: 1})),
+    putObject: sinon.stub().callsFake((params, callback) => callback()),
+    listObjectsV2: listStub,
+    deleteObjects: deleteStub,
+  })
+  publish(params, () => {
+    // Reset env for next test
+    fs.lstatSync.restore()
+    fs.readFileSync.restore()
+    aws.S3.restore()
+
+    let args = deleteStub.args[0][0]
+    t.ok(listStub.called, 'S3.listStub called')
+    t.ok(deleteStub.calledOnce, 'S3.deleteObjects called')
+    t.equals(args.Delete.Objects[0].Key, 'test.file', 's3.deleteObjects called with proper key name using file name')
+    t.equals(args.Delete.Objects.length, 1, 's3.deleteObjects deleted correct number of files')
+  })
+})
