@@ -1,28 +1,33 @@
 let test = require('tape')
 let sinon = require('sinon')
 let proxyquire = require('proxyquire')
-let utils = require('@architect/utils')
+let parser = require('@architect/parser')
 let aws = require('aws-sdk-mock')
 let publishFake = sinon.fake.yields()
+let existsFake = { existsSync: sinon.fake.yields }
 let index = proxyquire('../../../src/static', {
-  './publish-to-s3': publishFake
+  './publish-to-s3': publishFake,
+  'fs': existsFake
 })
+let bucketName = 'somebucket'
 let stackFake = sinon.fake.yields(null, {
-  StackResourceSummaries: [{ResourceType: 'AWS::S3::Bucket', PhysicalResourceId: 'stagingbukt', LogicalResourceId: 'StaticBucket'}]
+  StackResourceSummaries: [{
+    ResourceType: 'AWS::S3::Bucket', PhysicalResourceId: bucketName, LogicalResourceId: 'StaticBucket'
+  }]
 })
 aws.mock('CloudFormation', 'listStackResources', stackFake);
 let basicArc = {
   arc: {
     app: ['appname'],
-    static: [['staging', 'stagingbukt']]
+    static: [['staging', bucketName]]
   }
 }
-let readFake = sinon.stub(utils, 'readArc').returns(basicArc)
+let readFake = sinon.stub(parser, 'readArc').returns(basicArc)
 
 test('static: proper bucket parameter name invoked', t => {
   t.plan(1)
   index({}, () => {
-    t.equals(publishFake.lastCall.args[0].Bucket, 'stagingbukt', 'publish was called with correct bucket name')
+    t.equals(publishFake.lastCall.args[0].Bucket, bucketName, 'publish was called with correct bucket name')
   })
 })
 
@@ -40,7 +45,7 @@ test('static: folder can be specified', t => {
   readFake.returns({
     arc: {
       app: ['appname'],
-      static: [['staging', 'stagingbukt'], ['folder', 'a-static-folder']]
+      static: [['staging', bucketName], ['folder', 'a-static-folder']]
     }
   })
   index({}, () => {
@@ -63,7 +68,7 @@ test('static: fingerprinting is enabled if specified', t => {
   readFake.returns({
     arc: {
       app: ['appname'],
-      static: [['staging', 'stagingbukt'], ['fingerprint', 'on']]
+      static: [['staging', bucketName], ['fingerprint', 'on']]
     }
   })
   index({}, () => {
@@ -77,7 +82,7 @@ test('static: fingerprinting is disabled if explicitly specified', t => {
   readFake.returns({
     arc: {
       app: ['appname'],
-      static: [['staging', 'stagingbukt'], ['fingerprint', 'off']]
+      static: [['staging', bucketName], ['fingerprint', 'off']]
     }
   })
   aws.mock('CloudFormation', 'listStackResources', stackFake);
@@ -92,7 +97,7 @@ test('static: pruning is disabled by default', t => {
   readFake.returns({
     arc: {
       app: ['appname'],
-      static: [['staging', 'stagingbukt']]
+      static: [['staging', bucketName]]
     }
   })
   index({}, () => {
@@ -106,7 +111,7 @@ test('static: pruning is enabled if specified', t => {
   readFake.returns({
     arc: {
       app: ['appname'],
-      static: [['staging', 'stagingbukt'], ['prune', true]]
+      static: [['staging', bucketName], ['prune', true]]
     }
   })
   index({}, () => {
@@ -120,7 +125,7 @@ test('static: pruning is disabled if specified', t => {
   readFake.returns({
     arc: {
       app: ['appname'],
-      static: [['staging', 'stagingbukt'], ['prune', false]]
+      static: [['staging', bucketName], ['prune', false]]
     }
   })
   index({}, () => {
@@ -134,10 +139,53 @@ test('static: ignore set is passed if specified', t => {
   readFake.returns({
     arc: {
       app: ['appname'],
-      static: [['staging', 'stagingbukt'], { ignore: { tar: false, zip: false } }]
+      static: [['staging', bucketName], { ignore: { tar: false, zip: false } }]
     }
   })
   index({}, () => {
     t.deepEquals(publishFake.lastCall.args[0].ignore, ['tar', 'zip'], 'publish was called with correct ignore array')
+  })
+})
+
+test('static: prefix is disabled by default', t => {
+  t.plan(1)
+  readFake.resetBehavior()
+  readFake.returns({
+    arc: {
+      app: ['appname'],
+      static: [['staging', bucketName]]
+    }
+  })
+  index({}, () => {
+    t.equals(publishFake.lastCall.args[0].prefix, false, 'publish was called with prefix set to false')
+  })
+})
+
+test('static: prefix is enabled if specified', t => {
+  t.plan(1)
+  let prefix = 'a-prefix/'
+  readFake.resetBehavior()
+  readFake.returns({
+    arc: {
+      app: ['appname'],
+      static: [['staging', bucketName], ['prefix', prefix]]
+    }
+  })
+  index({}, () => {
+    t.equals(publishFake.lastCall.args[0].prefix, prefix, 'publish was called with prefix')
+  })
+})
+
+test('static: prefix is disabled if specified', t => {
+  t.plan(1)
+  readFake.resetBehavior()
+  readFake.returns({
+    arc: {
+      app: ['appname'],
+      static: [['staging', bucketName], ['prefix', false]]
+    }
+  })
+  index({}, () => {
+    t.equals(publishFake.lastCall.args[0].prefix, false, 'publish was called with prefix set to false')
   })
 })

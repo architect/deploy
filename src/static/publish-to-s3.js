@@ -1,7 +1,7 @@
 let aws = require('aws-sdk')
 let chalk = require('chalk')
 let fs = require('fs')
-let fingerprinter = require('@architect/utils').fingerprint
+let { fingerprint: fingerprinter } = require('@architect/utils')
 let glob = require('glob')
 let mime = require('mime-types')
 let path = require('path')
@@ -25,12 +25,12 @@ function normalizePath(path) {
 
 module.exports = function factory(params, callback) {
   let {
-    arcStaticFolder,
     Bucket,
     fingerprint,
     folder,
     ignore,
     isFullDeploy=true,
+    prefix,
     prune,
     region,
     update,
@@ -133,7 +133,7 @@ module.exports = function factory(params, callback) {
           if (fingerprint && Key !== 'static.json') {
             Key = staticManifest[file.replace(publicDir, '').substr(1)]
           }
-          if (arcStaticFolder) Key = `${arcStaticFolder}/${Key}`
+          if (prefix) Key = `${prefix}/${Key}`
           s3.headObject({
             Bucket,
             Key,
@@ -211,7 +211,10 @@ module.exports = function factory(params, callback) {
      */
     function deleteFiles(results, callback) {
       if (prune) {
-        s3.listObjectsV2({Bucket}, function(err, filesOnS3) {
+        let params = { Bucket }
+        // If prefix is enabled, we don't care about anything else in the bucket
+        if (prefix) params.Prefix = prefix
+        s3.listObjectsV2(params, function(err, filesOnS3) {
           if (err) {
             console.error('Listing objects for deletion in S3 failed', err)
             callback()
@@ -220,15 +223,18 @@ module.exports = function factory(params, callback) {
             // calculate diff between files_on_s3 and local_files
             // TODO: filesOnS3.IsTruncated may be true if you have > 1000 files.
             // might want to handle that (need to ask for next page, etc)...
-            let leftovers = filesOnS3.Contents.filter((S3File) => {
-              let fileOnS3 = path.join(process.cwd(), 'public', S3File.Key.replace('/', path.sep)) // windows
+            let leftovers = filesOnS3.Contents.filter(S3File => {
+              let key = S3File.Key
+              // Denormalize prefix
+              if (prefix && key.startsWith(prefix)) key = key.replace(prefix, '')
+              // Windowsify
+              key = key.replace('/', path.sep)
+              let fileOnS3 = path.join(process.cwd(), folder, key)
               return !files.includes(fileOnS3)
-            }).map(function(S3File) {
-              return {Key: S3File.Key}
-            })
+            }).map(S3File => ({ Key: S3File.Key }))
 
             if (fingerprint) {
-              leftovers = filesOnS3.Contents.filter((S3File) => {
+              leftovers = filesOnS3.Contents.filter(S3File => {
                 if (S3File.Key === 'static.json') return
                 else return !Object.values(staticManifest).some(f => f === S3File.Key)
               }).map(function(S3File) {

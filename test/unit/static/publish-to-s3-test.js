@@ -14,7 +14,7 @@ let publish = proxyquire('../../../src/static/publish-to-s3', {
   'glob': globStub
 })
 
-let params = {
+let defaultParams = () => ({
   Bucket: 'prodbucket',
   fingerprint: true,
   ignore: [],
@@ -22,7 +22,8 @@ let params = {
   folder: 'public',
   isFullDeploy: false,
   update: { done: sinon.stub().returns() }
-}
+})
+let params = defaultParams()
 
 // Each unit test should follow the order of calls made in the SUT
 
@@ -69,9 +70,10 @@ test('Deploy/public should upload with a prepended file path if specified', t=> 
     listObjectsV2: sinon.stub().callsFake((params, callback) => callback(null, {Contents:[]})),
     deleteObjects: sinon.stub().callsFake((params, callback) => callback(null, {Deleted:[]})),
   })
-  let prepend = 'a-folder'
+  let prefix = 'a-folder'
+  let params = defaultParams()
   params.fingerprint = false
-  params.arcStaticFolder = prepend
+  params.prefix = prefix
   publish(params, () => {
     // Reset env for next test
     fs.lstatSync.restore()
@@ -80,10 +82,8 @@ test('Deploy/public should upload with a prepended file path if specified', t=> 
 
     t.ok(headStub.calledOnce, 'Correct number of s3.headObject reqs made')
     t.ok(putStub.calledOnce, 'Correct number of s3.putObject reqs made')
-    t.equals(putStub.args[0][0].Key, `${prepend}/index.html`, 'static.json anti-caching headers set')
+    t.equals(putStub.args[0][0].Key, `${prefix}/index.html`, 'static.json anti-caching headers set')
   })
-  params.fingerprint = true
-  delete params.arcStaticFolder
 })
 
 test('Deploy/public uploads to S3, static.json manifest', t=> {
@@ -135,6 +135,7 @@ test('Deploy/public uploads to S3, static.json manifest', t=> {
 test('Deploy/public should prune files present in the bucket but not in public/', t=> {
   t.plan(4)
   // Alter params
+  let params = defaultParams()
   params.fingerprint = false
   params.prune = true
   // Globbing
@@ -167,8 +168,6 @@ test('Deploy/public should prune files present in the bucket but not in public/'
     fs.lstatSync.restore()
     fs.readFileSync.restore()
     aws.S3.restore()
-    params.fingerprint = true
-    params.prune = false
 
     let args = deleteStub.args[0][0]
     t.ok(listStub.called, 'S3.listStub called')
@@ -178,7 +177,7 @@ test('Deploy/public should prune files present in the bucket but not in public/'
   })
 })
 
-test('Deploy/public should prune files present in the bucket but not in public/', t=> {
+test('Deploy/public should not prune files present in the bucket but not in public/', t=> {
   t.plan(1)
   // Globbing
   globStub.resetBehavior()
@@ -210,3 +209,5 @@ test('Deploy/public should prune files present in the bucket but not in public/'
     t.ok(!putStub.called, 's3.putObject not called')
   })
 })
+
+// TODO add test for prune + prefix

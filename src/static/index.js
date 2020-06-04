@@ -1,8 +1,9 @@
 let aws = require('aws-sdk')
+let { join } = require('path')
+let { existsSync } = require('fs')
 let waterfall = require('run-waterfall')
-let utils = require('@architect/utils')
-let {updater} = require('@architect/utils')
-let fingerprintConfig = utils.fingerprint.config
+let parser = require('@architect/parser')
+let { fingerprint: fingerprinter, toLogicalID, updater } = require('@architect/utils')
 let publishToS3 = require('./publish-to-s3')
 
 /**
@@ -14,17 +15,18 @@ let publishToS3 = require('./publish-to-s3')
  */
 module.exports = function statics(params, callback) {
   let {
-    arcStaticFolder, // Enables folder prefix in S3 (not the same as @arc folder)
     bucket: Bucket,
     isDryRun=false,
     isFullDeploy,
     name,
     production,
-    prune=false,
     region,
     stackname,
     update,
     verbose,
+    // `@static` settings
+    prefix, // Enables `@static prefix` publishing prefix (not the same as `@static folder`)
+    prune=false,
   } = params
   if (!update) update = updater('Deploy')
   region = region || process.env.AWS_REGION
@@ -48,23 +50,22 @@ module.exports = function statics(params, callback) {
     update.status('Deploying static assets...')
 
     // defaults
-    let {arc} = utils.readArc()
+    let { arc } = parser.readArc()
     let appname = arc.app[0]
     if (!stackname) {
-      stackname = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
+      stackname = `${toLogicalID(appname)}${production? 'Production' : 'Staging'}`
       if (name)
-        stackname += utils.toLogicalID(name)
+        stackname += toLogicalID(name)
     }
 
-    // get the bucket PhysicalResourceId
     waterfall([
+      // Parse settings
       function(callback) {
         if (!arc.static) {
           callback(Error('cancel'))
         }
         else {
-          // Enable deletion of files not present in public/ folder
-
+          //
           function setting(name, bool) {
             let value
             for (let opt of arc.static) {
@@ -78,19 +79,26 @@ module.exports = function statics(params, callback) {
           }
 
 
-          // Enable fingerprinting + ignore any specified files
-          let { fingerprint, ignore }  = fingerprintConfig(arc)
+          // Fingerprinting + ignore any specified files
+          let { fingerprint, ignore }  = fingerprinter.config(arc)
 
-          // Enable asset pruning
-          prune = setting('prune', true)
+          // Asset pruning: delete files not present in public/ folder
+          prune = prune || setting('prune', true)
 
-          // Allow folder remap
+          // Project folder remap
           let folder = setting('folder') || 'public'
+          if (!existsSync(join(process.cwd(), folder))) {
+            callback(Error('@static folder not found'))
+          }
 
-          callback(null, {fingerprint, ignore, prune, folder})
+          // Published path prefixing
+          prefix = prefix || setting('prefix')
+
+          callback(null, {fingerprint, ignore, folder})
         }
       },
 
+      // Get the bucket PhysicalResourceId
       function(params, callback) {
         if (!Bucket) {
           // lookup bucket in cloudformation
@@ -110,14 +118,14 @@ module.exports = function statics(params, callback) {
         else callback(null, params)
       },
 
-      function({fingerprint, ignore, prune, folder}, callback) {
+      function({fingerprint, ignore, folder}, callback) {
         publishToS3({
-          arcStaticFolder,
           Bucket,
           fingerprint,
           folder,
           ignore,
           isFullDeploy,
+          prefix,
           prune,
           region,
           update,
