@@ -20,7 +20,8 @@ let params = {
   ignore: [],
   prune: false,
   folder: 'public',
-  isFullDeploy: false
+  isFullDeploy: false,
+  update: { done: sinon.stub().returns() }
 }
 
 // Each unit test should follow the order of calls made in the SUT
@@ -38,9 +39,6 @@ test('Deploy/public should exit if public dir has no files to upload', t=> {
     headObject: headStub,
     putObject: putStub,
   })
-  params.update = {
-    done: sinon.stub().returns()
-  }
   publish(params, () => {
     // Reset env for next test
     aws.S3.restore()
@@ -48,6 +46,44 @@ test('Deploy/public should exit if public dir has no files to upload', t=> {
     t.ok(headStub.notCalled, 's3.headObject not called')
     t.ok(putStub.notCalled, 's3.putObject not called')
   })
+})
+
+test('Deploy/public should upload with a prepended file path if specified', t=> {
+  t.plan(3)
+  // Globbing
+  globStub.resetBehavior()
+  globStub.callsFake((filepath, options, callback) => callback(null, [
+    path.join(process.cwd(), 'public', 'index.html'),
+  ]))
+  // S3 operations
+  sinon.stub(fs, 'lstatSync').returns({
+    mtime: 2
+  })
+  // eslint-disable-next-line
+  let headStub = sinon.stub().callsFake(({Bucket, Key}, callback) => callback(null, params))
+  let putStub = sinon.stub().callsFake((params, callback) => callback())
+  sinon.stub(fs, 'readFileSync')
+  sinon.stub(aws, 'S3').returns({
+    headObject: headStub,
+    putObject: putStub,
+    listObjectsV2: sinon.stub().callsFake((params, callback) => callback(null, {Contents:[]})),
+    deleteObjects: sinon.stub().callsFake((params, callback) => callback(null, {Deleted:[]})),
+  })
+  let prepend = 'a-folder'
+  params.fingerprint = false
+  params.arcStaticFolder = prepend
+  publish(params, () => {
+    // Reset env for next test
+    fs.lstatSync.restore()
+    fs.readFileSync.restore()
+    aws.S3.restore()
+
+    t.ok(headStub.calledOnce, 'Correct number of s3.headObject reqs made')
+    t.ok(putStub.calledOnce, 'Correct number of s3.putObject reqs made')
+    t.equals(putStub.args[0][0].Key, `${prepend}/index.html`, 'static.json anti-caching headers set')
+  })
+  params.fingerprint = true
+  delete params.arcStaticFolder
 })
 
 test('Deploy/public uploads to S3, static.json manifest', t=> {

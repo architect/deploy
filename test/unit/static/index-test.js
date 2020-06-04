@@ -11,12 +11,13 @@ let stackFake = sinon.fake.yields(null, {
   StackResourceSummaries: [{ResourceType: 'AWS::S3::Bucket', PhysicalResourceId: 'stagingbukt', LogicalResourceId: 'StaticBucket'}]
 })
 aws.mock('CloudFormation', 'listStackResources', stackFake);
-let readFake = sinon.stub(utils, 'readArc').returns({
+let basicArc = {
   arc: {
     app: ['appname'],
     static: [['staging', 'stagingbukt']]
   }
-})
+}
+let readFake = sinon.stub(utils, 'readArc').returns(basicArc)
 
 test('static: proper bucket parameter name invoked', t => {
   t.plan(1)
@@ -25,8 +26,32 @@ test('static: proper bucket parameter name invoked', t => {
   })
 })
 
+test('static: folder is set to public by default', t => {
+  t.plan(1)
+  index({}, () => {
+    t.equals(publishFake.lastCall.args[0].folder, 'public', 'publish was called with folder set to public')
+  })
+})
+
+
+test('static: folder can be specified', t => {
+  t.plan(1)
+  readFake.resetBehavior()
+  readFake.returns({
+    arc: {
+      app: ['appname'],
+      static: [['staging', 'stagingbukt'], ['folder', 'a-static-folder']]
+    }
+  })
+  index({}, () => {
+    t.equals(publishFake.lastCall.args[0].folder, 'a-static-folder', 'publish was called with fingerprint set to true')
+  })
+})
+
 test('static: fingerprinting is disabled by default', t => {
   t.plan(1)
+  readFake.resetBehavior()
+  readFake.returns(basicArc)
   index({}, () => {
     t.equals(publishFake.lastCall.args[0].fingerprint, false, 'publish was called with fingerprint set to false')
   })

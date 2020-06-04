@@ -13,8 +13,21 @@ let publishToS3 = require('./publish-to-s3')
  * @returns {Promise} - if no callback is supplied
  */
 module.exports = function statics(params, callback) {
-  let {verbose, name, stackname, prune=false, production, update, isDryRun=false, isFullDeploy} = params
+  let {
+    arcStaticFolder, // Enables folder prefix in S3 (not the same as @arc folder)
+    bucket: Bucket,
+    isDryRun=false,
+    isFullDeploy,
+    name,
+    production,
+    prune=false,
+    region,
+    stackname,
+    update,
+    verbose,
+  } = params
   if (!update) update = updater('Deploy')
+  region = region || process.env.AWS_REGION
 
   let promise
   if (!callback) {
@@ -51,54 +64,64 @@ module.exports = function statics(params, callback) {
         }
         else {
           // Enable deletion of files not present in public/ folder
-          if (arc.static.some(s => {
-            if (!s[0])
-              return false
-            if (s.includes('prune') && s.includes(true))
-              return true
-            return false
-          })) {prune = true}
 
-          // Enable fingerprinting
-          let fingerprint = fingerprintConfig(arc).fingerprint
+          function setting(name, bool) {
+            let value
+            for (let opt of arc.static) {
+              if (!opt[0]) return
+              if (opt[0].toLowerCase() === name && opt[1]) {
+                if (bool && opt[1] === true) value = true
+                else value = opt[1]
+              }
+            }
+            return value || false
+          }
 
-          // Collect any strings to match against for ignore
-          let ignore = fingerprintConfig(arc).ignore
+
+          // Enable fingerprinting + ignore any specified files
+          let { fingerprint, ignore }  = fingerprintConfig(arc)
+
+          // Enable asset pruning
+          prune = setting('prune', true)
 
           // Allow folder remap
-          let findFolder = t=> Array.isArray(t) && t[0].toLowerCase() === 'folder'
-          let folder = arc.static.some(findFolder)? arc.static.find(findFolder)[1] : 'public'
+          let folder = setting('folder') || 'public'
 
           callback(null, {fingerprint, ignore, prune, folder})
         }
       },
 
-      function({fingerprint, ignore, prune, folder}, callback) {
-        // lookup bucket in cloudformation
-        let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
-        cloudformation.listStackResources({
-          StackName: stackname
-        },
-        function done(err, data) {
-          if (err) callback(err)
-          else {
-            let find = i=> i.ResourceType === 'AWS::S3::Bucket' && i.LogicalResourceId === 'StaticBucket'
-            let Bucket = data.StackResourceSummaries.find(find).PhysicalResourceId
-            callback(null, {Bucket, fingerprint, ignore, prune, folder})
-          }
-        })
+      function(params, callback) {
+        if (!Bucket) {
+          // lookup bucket in cloudformation
+          let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
+          cloudformation.listStackResources({
+            StackName: stackname
+          },
+          function done(err, data) {
+            if (err) callback(err)
+            else {
+              let find = i=> i.ResourceType === 'AWS::S3::Bucket' && i.LogicalResourceId === 'StaticBucket'
+              Bucket = data.StackResourceSummaries.find(find).PhysicalResourceId
+              callback(null, params)
+            }
+          })
+        }
+        else callback(null, params)
       },
 
-      function({Bucket, fingerprint, ignore, prune, folder}, callback) {
+      function({fingerprint, ignore, prune, folder}, callback) {
         publishToS3({
+          arcStaticFolder,
           Bucket,
           fingerprint,
+          folder,
           ignore,
           isFullDeploy,
           prune,
+          region,
+          update,
           verbose,
-          folder,
-          update
         }, callback)
       }
     ],
