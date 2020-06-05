@@ -4,7 +4,7 @@ let { existsSync } = require('fs')
 let waterfall = require('run-waterfall')
 let parser = require('@architect/parser')
 let { fingerprint: fingerprinter, toLogicalID, updater } = require('@architect/utils')
-let publishToS3 = require('./publish-to-s3')
+let publishToS3 = require('./publish-to-s3-old')
 
 /**
  * Upload files to CFN defined bucket

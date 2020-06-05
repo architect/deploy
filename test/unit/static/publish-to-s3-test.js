@@ -9,7 +9,7 @@ let utils = {
   fingerprint: sinon.stub().callsFake((params, callback) => callback(null, {}))
 }
 let globStub = sinon.stub().callsFake((path, options, callback) => callback(null, []))
-let publish = proxyquire('../../../src/static/publish-to-s3', {
+let publish = proxyquire('../../../src/static/publish-to-s3-old', {
   '@architect/utils': utils,
   'glob': globStub
 })

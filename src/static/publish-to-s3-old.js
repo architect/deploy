@@ -36,7 +36,7 @@ module.exports = function factory(params, callback) {
     update,
     verbose,
   } = params
-  let s3 = new aws.S3({region})
+  let s3 = new aws.S3({ region })
   let publicDir = normalizePath(path.join(process.cwd(), folder))
   let staticAssets = path.join(publicDir, '/**/*')
   let files
@@ -130,6 +130,7 @@ module.exports = function factory(params, callback) {
           let Key = file.replace(publicDir, '').replace(/^\//, '')
           if (Key.startsWith(path.sep)) Key = Key.substr(1)
           let big = stats.size >= 5750000
+          // If fingerprint is set to 'external', don't mutate the file Key, it's assumed to be fingerprinted
           if (fingerprint && Key !== 'static.json') {
             Key = staticManifest[file.replace(publicDir, '').substr(1)]
           }

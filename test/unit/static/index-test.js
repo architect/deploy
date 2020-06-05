@@ -6,7 +6,7 @@ let aws = require('aws-sdk-mock')
 let publishFake = sinon.fake.yields()
 let existsFake = { existsSync: sinon.fake.yields }
 let index = proxyquire('../../../src/static', {
-  './publish-to-s3': publishFake,
+  './publish-to-s3-old': publishFake,
   'fs': existsFake
 })
 let bucketName = 'somebucket'
