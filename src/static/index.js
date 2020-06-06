@@ -4,7 +4,7 @@ let { existsSync } = require('fs')
 let waterfall = require('run-waterfall')
 let parser = require('@architect/parser')
 let { fingerprint: fingerprinter, toLogicalID, updater } = require('@architect/utils')
-let publishToS3 = require('./publish-to-s3-old')
+let publish = require('./publish')
 
 /**
  * Upload files to CFN defined bucket
@@ -13,7 +13,7 @@ let publishToS3 = require('./publish-to-s3-old')
  * @param {Function} callback - a node-style errback
  * @returns {Promise} - if no callback is supplied
  */
-module.exports = function statics(params, callback) {
+module.exports = function deployStatic (params, callback) {
   let {
     bucket: Bucket,
     isDryRun=false,
@@ -65,7 +65,6 @@ module.exports = function statics(params, callback) {
           callback(Error('cancel'))
         }
         else {
-          //
           function setting(name, bool) {
             let value
             for (let opt of arc.static) {
@@ -119,7 +118,7 @@ module.exports = function statics(params, callback) {
       },
 
       function({fingerprint, ignore, folder}, callback) {
-        publishToS3({
+        publish({
           Bucket,
           fingerprint,
           folder,
