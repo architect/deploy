@@ -17,7 +17,7 @@ module.exports = function deployStatic (params, callback) {
   let {
     bucket: Bucket,
     isDryRun=false,
-    isFullDeploy,
+    isFullDeploy=true, // Prevents duplicate static manifest operations that could impact state
     name,
     production,
     region,
@@ -33,8 +33,8 @@ module.exports = function deployStatic (params, callback) {
 
   let promise
   if (!callback) {
-    promise = new Promise(function ugh(res, rej) {
-      callback = function errback(err, result) {
+    promise = new Promise(function ugh (res, rej) {
+      callback = function errback (err, result) {
         if (err) rej(err)
         else res(result)
       }
@@ -48,10 +48,9 @@ module.exports = function deployStatic (params, callback) {
   }
   else {
     update.status('Deploying static assets...')
-
-    // defaults
     let { arc } = readArc()
     let appname = arc.app[0]
+
     if (!stackname) {
       stackname = `${toLogicalID(appname)}${production? 'Production' : 'Staging'}`
       if (name) stackname += toLogicalID(name)
@@ -60,11 +59,12 @@ module.exports = function deployStatic (params, callback) {
     waterfall([
       // Parse settings
       function(callback) {
+        // Bail early if this project doesn't have @static specified
         if (!arc.static) {
           callback(Error('cancel'))
         }
         else {
-          function setting(name, bool) {
+          function setting (name, bool) {
             let value
             for (let opt of arc.static) {
               if (!opt[0]) return
@@ -75,7 +75,6 @@ module.exports = function deployStatic (params, callback) {
             }
             return value || false
           }
-
 
           // Fingerprinting + ignore any specified files
           let { fingerprint, ignore }  = fingerprinter.config(arc)
@@ -96,10 +95,9 @@ module.exports = function deployStatic (params, callback) {
         }
       },
 
-      // Get the bucket PhysicalResourceId
+      // Get the bucket PhysicalResourceId if not supplied
       function(params, callback) {
         if (!Bucket) {
-          // lookup bucket in cloudformation
           let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
           cloudformation.listStackResources({
             StackName: stackname

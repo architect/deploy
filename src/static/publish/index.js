@@ -9,13 +9,13 @@ let writeStaticManifest = require('./write-static-manifest')
 let putFiles = require('./s3/put-files')
 let deleteFiles = require('./s3/delete-files')
 
-module.exports = function factory(params, callback) {
+module.exports = function publishStaticAssets (params, callback) {
   let {
     Bucket,
     fingerprint,
     folder,
     ignore,
-    isFullDeploy=true,
+    isFullDeploy,
     prefix,
     prune,
     region,
@@ -34,9 +34,7 @@ module.exports = function factory(params, callback) {
 
   waterfall([
 
-    /**
-     * Notices
-     */
+    // Notices
     function _notices(callback) {
       if ((!isFullDeploy && fingerprint) || (!isFullDeploy && verbose)) {
         update.done(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`)
@@ -47,9 +45,7 @@ module.exports = function factory(params, callback) {
       callback()
     },
 
-    /**
-     * Scan for files in the public directory
-     */
+    // Scan for files in the public directory
     function _globFiles(callback) {
       let dir = pathToUnix(staticAssets)
       let opts = {
@@ -60,18 +56,14 @@ module.exports = function factory(params, callback) {
       glob(dir, opts, callback)
     },
 
-    /**
-     * Filter based on default and user-specified @static ignore rules
-     */
+    // Filter based on default and user-specified @static ignore rules
     function _filterFiles(globbed, callback) {
       files = globbed
       let params = { files, ignore, publicDir }
       filterFiles(params, callback)
     },
 
-    /**
-     * Write (or remove) fingerprinted static asset manifest if not run as a full deploy
-     */
+    // Write, reuse, or possibly remove fingerprinted static asset manifest
     function _maybeWriteStaticManifest(filtered, ignored, callback) {
       files = filtered
       ignore = ignored
@@ -79,9 +71,7 @@ module.exports = function factory(params, callback) {
       writeStaticManifest(params, callback)
     },
 
-    /**
-     * Upload files to S3
-     */
+    // Upload files to S3
     function _put(manifest={}, callback) {
       // Fingerprinter may or may not return a manifest
       if (!callback) {
@@ -89,8 +79,8 @@ module.exports = function factory(params, callback) {
         manifest = {}
       }
       staticManifest = manifest
+      // static.json is intentionally ignored during fingerprinting; ensure it's uploaded
       if (fingerprint && (fingerprint !== 'external')) {
-        // static.json is ignored during fingerprinting; ensure it's uploaded
         files.unshift(join(publicDir, 'static.json'))
       }
 
@@ -105,9 +95,7 @@ module.exports = function factory(params, callback) {
       }, callback)
     },
 
-    /**
-     * Delete old files (if requested)
-     */
+    // Prune old files (if requested)
     function _delete(uploadCount, notModifiedCount, callback) {
       uploaded = uploadCount
       notModified = notModifiedCount
@@ -126,18 +114,15 @@ module.exports = function factory(params, callback) {
       else callback()
     }
   ], function done(err) {
-
     if (err && err.message === 'no_files_to_publish') {
       update.done('Done!', `No static assets found to deploy from ${folder}${sep}`)
       callback()
     }
-
     else if (err && err.message === 'access_denied') {
       update.error(`${chalk.red.bold('S3 access denied:')} could not access S3 bucket (${Bucket})`)
       update.error('Possible reason: bucket already exists & belongs to another AWS account')
       callback()
     }
-
     else if (err) {
       callback(err)
     }

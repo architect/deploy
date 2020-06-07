@@ -1,9 +1,11 @@
 let { readFileSync } = require('fs')
 let getContentType = require('./get-content-type')
 
+/**
+ * Get proper parameters for a given file upload
+ */
 module.exports = function putParams (params) {
   let { Bucket, Key, file, fingerprint } = params
-
   let s3Params = {
     ACL: 'public-read',
     Bucket,
@@ -15,7 +17,7 @@ module.exports = function putParams (params) {
   let contentType = getContentType(file)
   s3Params.ContentType = contentType
 
-  // Allow edges and proxies to cache forever
+  // Allow edges and proxies to cache fingerprinted files forever
   if (fingerprint && Key !== 'static.json') {
     s3Params.CacheControl = 'max-age=315360000'
   }

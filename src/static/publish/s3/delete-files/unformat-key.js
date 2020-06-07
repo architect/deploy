@@ -1,6 +1,8 @@
 let { sep } = require('path')
 
-// Denormalizes S3 keys for local filesystem lookups after accounting for prefix, Windows paths, etc.
+/**
+ * Denormalize the S3 Key for local filesystem lookups after accounting for prefix, Windows paths, etc.
+ */
 module.exports = function unformatKey (Key, prefix) {
   let key = Key
 

@@ -1,10 +1,13 @@
 let sort = require('path-sort')
 
+/**
+ * Filter based on default and user-specified @static ignore rules
+ */
 module.exports = function filterFiles (params, callback) {
   let { files, ignore } = params
 
-  // Default ignored files / paths
-  // Ignore static.json, as it may be destroyed by the fingerprinter if no longer necessary
+  // Default ignored files / paths; these defaults are not passed by fingerprint config
+  // Note: we must ignore static.json, as it may be destroyed by the fingerprinter if no longer necessary
   let ignored = ignore.concat([
     '.DS_Store',
     'node_modules',

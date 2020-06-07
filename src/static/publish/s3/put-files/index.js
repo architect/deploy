@@ -26,6 +26,7 @@ module.exports = function putFiles (params, callback) {
 
       // Get last modified + size
       let stats = lstatSync(file)
+      // Post-run size warning
       function tooBig () {
         if (stats.size >= 5750000) {
           console.log(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
@@ -47,6 +48,9 @@ module.exports = function putFiles (params, callback) {
         }
         else {
           let url = `https://${Bucket}.s3.${region}.amazonaws.com/${Key}`
+
+          // Only upload if the file was modified since last upload
+          // In theory we could use the ETag, but Amazon uses an unpublished chunk hashing algo
           if (!headData || !headData.LastModified || stats.mtime > headData.LastModified) {
 
             // Get the params for the file to be uploaded
@@ -81,8 +85,8 @@ module.exports = function putFiles (params, callback) {
     }
   })
 
-  // Upload all the objects
-  // (This used to be a parallel op, but large batches could rate limit out)
+  // Upload all the objects!
+  // This used to be a parallel op, but large batches could rate limit out, so let's not
   series(tasks, (err) => {
     if (err) callback(err)
     else callback(null, uploaded, notModified)

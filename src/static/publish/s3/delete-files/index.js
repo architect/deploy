@@ -16,7 +16,7 @@ module.exports = function deleteFiles (params, callback) {
 
   let s3 = new aws.S3({ region })
 
-  // If prefix is enabled, we must ignore everything else in the bucket
+  // If prefix is enabled, we must ignore everything else in the bucket (or risk pruning all contents)
   if (prefix) params.Prefix = prefix
 
   s3.listObjectsV2({ Bucket }, function _listObjects (err, filesOnS3) {
@@ -30,8 +30,8 @@ module.exports = function deleteFiles (params, callback) {
       let leftovers = filesOnS3.Contents.filter(S3File => {
         let { Key } = S3File
         let key = unformatKey(Key, prefix)
-        let fileOnS3 = join(process.cwd(), folder, key)
-        return !files.includes(fileOnS3)
+        let localPathOfS3File = join(process.cwd(), folder, key)
+        return !files.includes(localPathOfS3File)
       }).map(S3File => ({ Key: S3File.Key }))
 
       // Only do a second pass on files that Architect fingerprinted

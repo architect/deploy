@@ -40,14 +40,7 @@ function reset () {
   mockFs.restore()
 }
 
-test('Set up env', t => {
-  t.plan(1)
-  t.ok(sut, 'S3 publish module is present')
-})
-
-test('Static asset publishing', t => {
-  t.plan(7)
-
+function setup() {
   let html = 'public/index.html'
   let json = 'public/something.json'
   let file = 'public/index.js'
@@ -57,8 +50,16 @@ test('Static asset publishing', t => {
     [json]: Buffer.from(content),
     [file]: Buffer.from(content),
   })
+}
 
-  // Publishing
+test('Set up env', t => {
+  t.plan(1)
+  t.ok(sut, 'S3 publish module is present')
+})
+
+test('Static asset publishing', t => {
+  t.plan(7)
+  setup()
   sut(params, err => {
     if (err) t.fail(err)
     t.equal(putted.files.length, 3, 'Passed files to be published')
@@ -72,19 +73,10 @@ test('Static asset publishing', t => {
   })
 })
 
-test('Static asset publishing', t => {
+test('Static asset deletion', t => {
   t.plan(7)
-
-  let html = 'public/index.html'
-  let json = 'public/something.json'
-  let file = 'public/index.js'
-  let content = 'hi there'
-  mockFs({
-    [html]: Buffer.from(content),
-    [json]: Buffer.from(content),
-    [file]: Buffer.from(content),
-  })
-
+  setup()
+  let params = defaultParams()
   params.prune = true
   sut(params, err => {
     if (err) t.fail(err)
