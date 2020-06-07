@@ -9,6 +9,9 @@ module.exports = function unformatKey (Key, prefix) {
   // Denormalize prefix
   if (prefix && key.startsWith(prefix)) key = key.replace(prefix, '')
 
+  // Force a failed lookup against local files to ensure prefixes don't accidentally skip pruning previously deployed files at root
+  else if (prefix && !key.startsWith(prefix)) key = `${key}-ARC_DELETE`
+
   // Strip leading slash from prefix or jic
   if (key.startsWith('/')) key = key.substr(1)
 
