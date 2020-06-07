@@ -21,7 +21,7 @@ let after = require('./02-after')
  * @returns {Promise} - if not callback is supplied
  */
 module.exports = function samDeploy(params, callback) {
-  let {verbose, production, tags, name, isDryRun=false} = params
+  let {verbose, production, prune, tags, name, isDryRun=false} = params
 
   let stage = production ? 'production' : 'staging'
   let ts = Date.now()
@@ -195,7 +195,7 @@ module.exports = function samDeploy(params, callback) {
         callback()
       }
       else {
-        let params = {ts, arc, verbose, production, pretty, appname, stackname, stage, update}
+        let params = { ts, arc, verbose, production, pretty, prune, appname, stackname, stage, update }
         after(params, callback)
       }
     }
