@@ -72,8 +72,9 @@ module.exports = function factory(params, callback) {
     /**
      * Write (or remove) fingerprinted static asset manifest if not run as a full deploy
      */
-    function _maybeWriteStaticManifest(filtered, callback) {
+    function _maybeWriteStaticManifest(filtered, ignored, callback) {
       files = filtered
+      ignore = ignored
       let params = { fingerprint, ignore, isFullDeploy, publicDir }
       writeStaticManifest(params, callback)
     },

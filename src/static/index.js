@@ -2,7 +2,7 @@ let aws = require('aws-sdk')
 let { join } = require('path')
 let { existsSync } = require('fs')
 let waterfall = require('run-waterfall')
-let parser = require('@architect/parser')
+let { readArc } = require('@architect/parser')
 let { fingerprint: fingerprinter, toLogicalID, updater } = require('@architect/utils')
 let publish = require('./publish')
 
@@ -50,12 +50,11 @@ module.exports = function deployStatic (params, callback) {
     update.status('Deploying static assets...')
 
     // defaults
-    let { arc } = parser.readArc()
+    let { arc } = readArc()
     let appname = arc.app[0]
     if (!stackname) {
       stackname = `${toLogicalID(appname)}${production? 'Production' : 'Staging'}`
-      if (name)
-        stackname += toLogicalID(name)
+      if (name) stackname += toLogicalID(name)
     }
 
     waterfall([
