@@ -39,9 +39,8 @@ module.exports = function deleteFiles (params, callback) {
         leftovers = filesOnS3.Contents.filter(S3File => {
           let { Key } = S3File
           let key = unformatKey(Key, prefix)
-          let fingerprintedKey = f => f === (prefix ? `${prefix}/${key}` : key)
           if (key === 'static.json') return
-          else return !Object.values(staticManifest).some(fingerprintedKey)
+          else return !Object.values(staticManifest).some(f => f === key)
         }).map(S3File => ({ Key: S3File.Key }))
       }
 

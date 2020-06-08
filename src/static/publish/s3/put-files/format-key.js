@@ -10,16 +10,15 @@ module.exports = function formatKey (params) {
   let Key = file.replace(`${publicDir}${sep}`, '')
   if (Key.startsWith(sep)) Key = Key.substr(1)
 
-  // Match against static.json Key name before prefix mutation below
-  let notStaticManifest = Key !== 'static.json'
-
-  // Prepend asset prefix if present
-  if (prefix) Key = `${prefix}/${Key}`
 
   // If fingerprint is set to 'external', don't mutate the Key, it's assumed to be fingerprinted
+  let notStaticManifest = Key !== 'static.json'
   if (fingerprint && (fingerprint !== 'external') && notStaticManifest) {
     Key = staticManifest[Key]
   }
+
+  // Prepend asset prefix if present
+  if (prefix) Key = `${prefix}/${Key}`
 
   return Key
 }

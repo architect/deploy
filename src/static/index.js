@@ -67,7 +67,7 @@ module.exports = function deployStatic (params, callback) {
           function setting (name, bool) {
             let value
             for (let opt of arc.static) {
-              if (!opt[0]) return
+              if (!opt[0]) continue
               if (opt[0].toLowerCase() === name && opt[1]) {
                 if (bool && opt[1] === true) value = true
                 else value = opt[1]
@@ -77,7 +77,7 @@ module.exports = function deployStatic (params, callback) {
           }
 
           // Fingerprinting + ignore any specified files
-          let { fingerprint, ignore }  = fingerprinter.config(arc)
+          let { fingerprint, ignore } = fingerprinter.config(arc)
 
           // Asset pruning: delete files not present in public/ folder
           prune = prune || setting('prune', true)
