@@ -123,8 +123,8 @@ test('Prune respects both prefix & fingerprint settings together', t => {
   params.prefix = prefix
   params.fingerprint = true
   params.staticManifest = {
-    'index.html': 'index-df330f3f12.html',
-    'something.json': 'something-df330f3f12.json'
+    [`${prefix}/index.html`]: `${prefix}/index-df330f3f12.html`,
+    [`${prefix}/something.json`]: `${prefix}/something-df330f3f12.json`
   }
   params.files.pop() // Create a pruning opportunity
   let pruneThis = `${prefix}/index-df330f3f12.js`
@@ -154,8 +154,8 @@ test('Prune respects both prefix & fingerprint settings together in nested folde
   ]
   params.fingerprint = true
   params.staticManifest = {
-    'index.html': 'index-df330f3f12.html',
-    'a-folder/something.json': 'a-folder/something-df330f3f12.json'
+    [`${prefix}/index.html`]: `${prefix}/index-df330f3f12.html`,
+    [`${prefix}/a-folder/something.json`]: `${prefix}/a-folder/something-df330f3f12.json`
   }
   let pruneThis = `${prefix}/a-folder/index-df330f3f12.js`
   filesOnS3 = { Contents: [

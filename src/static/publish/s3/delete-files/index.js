@@ -26,7 +26,7 @@ module.exports = function deleteFiles (params, callback) {
     }
     else {
       // Diff the files on S3 and those on the local filesystem
-      // TODO need to handle paginatino (filesOnS3.IsTruncated) if > 1000 files
+      // TODO need to handle pagination (filesOnS3.IsTruncated) if > 1000 files
       let leftovers = filesOnS3.Contents.filter(S3File => {
         let { Key } = S3File
         let key = unformatKey(Key, prefix)
@@ -39,8 +39,9 @@ module.exports = function deleteFiles (params, callback) {
         leftovers = filesOnS3.Contents.filter(S3File => {
           let { Key } = S3File
           let key = unformatKey(Key, prefix)
+          let fingerprintedKey = f => f === (prefix ? `${prefix}/${key}` : key)
           if (key === 'static.json') return
-          else return !Object.values(staticManifest).some(f => f === key)
+          else return !Object.values(staticManifest).some(fingerprintedKey)
         }).map(S3File => ({ Key: S3File.Key }))
       }
 

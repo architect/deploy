@@ -17,7 +17,7 @@ test('Strip prefix if present', t => {
   t.equal(result, file, `Removed file prefix (${prefix}/) from key: ${file}`)
 })
 
-test.only('Force pruning if prefix is specified and root files are found', t => {
+test('Force pruning if prefix is specified and root files are found', t => {
   t.plan(1)
   let file = 'index.html'
   let prefix = 'foo'

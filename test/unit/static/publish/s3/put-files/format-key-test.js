@@ -61,11 +61,12 @@ test('Prefix key', t => {
   t.equal(Key, 'some-folder/index.html', 'Prepended prefix to filename')
 
   params = defaultParams()
-  params.prefix = 'some-folder'
+  let prefix = 'some-folder'
+  params.prefix = prefix
   params.fingerprint = true
   params.staticManifest = {
-    'index.html': 'index-a1b2c.html'
+    [`${prefix}/index.html`]: `${prefix}/index-a1b2c.html`
   }
   Key = sut(params)
-  t.equal(Key, 'some-folder/index-a1b2c.html', 'Prepended prefix to fingerprinted filename')
+  t.equal(Key, `${prefix}/index-a1b2c.html`, 'Prepended prefix to fingerprinted filename')
 })
