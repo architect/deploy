@@ -10,7 +10,6 @@ module.exports = function formatKey (params) {
   let Key = file.replace(`${publicDir}${sep}`, '')
   if (Key.startsWith(sep)) Key = Key.substr(1)
 
-
   // If fingerprint is set to 'external', don't mutate the Key, it's assumed to be fingerprinted
   let notStaticManifest = Key !== 'static.json'
   if (fingerprint && (fingerprint !== 'external') && notStaticManifest) {

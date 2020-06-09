@@ -60,7 +60,7 @@ async function exec(arc, cloudformation, stage) {
   transforms.push('set-stage')  // Sets cloudformation stage name for all resources
   transforms.push('api-path')   // Updates @cdn, @http, @ws stage URL paths
   transforms.push('arc-env')    // Gets and sets env vars for functions
-  transforms.push('s3-prefix')  // Sets S3 prefix in root handler (if specified)
+  transforms.push('static')     // Sets SPA, S3 prefix, etc. in root handler
   return await transforms.map(path)
     .reduce(async function reducer(current, macro) {
       // eslint-disable-next-line

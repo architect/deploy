@@ -98,7 +98,7 @@ module.exports = function deployStatic (params, callback) {
       // Get the bucket PhysicalResourceId if not supplied
       function(params, callback) {
         if (!Bucket) {
-          let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
+          let cloudformation = new aws.CloudFormation({ region })
           cloudformation.listStackResources({
             StackName: stackname
           },
