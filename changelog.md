@@ -7,9 +7,11 @@
 ### Added
 
 - Rewrite of static asset S3 publishing
-- Add the ability to prefix any path to `deploy.static` calls (e.g. `always-upload-to-this-folder/file.html`) with `@static prefix whatever` (or as a parameter in `deploy.static`)
-- Enables `deploy.static` calls to override the default Architect behavior (which always deploys to CloudFormation generated S3 buckets) and specify custom `bucket` and `region` parameters
+- Added the ability to prefix any path to `deploy.static` calls (e.g. `always-upload-to-this-folder/file.html`) with `@static prefix whatever` (or as a parameter in `deploy.static`)
+- Enabled `deploy.static` calls to override the default Architect behavior (which always deploys to CloudFormation generated S3 buckets) and specify custom `bucket` and `region` parameters
 - Added ability to prune from a full deploy (e.g. `arc deploy --prune`)
+- Respect `@static spa` setting in root proxy
+- Default root proxy now coldstarts faster by removing any globally defined layers
 
 
 ### Fixed

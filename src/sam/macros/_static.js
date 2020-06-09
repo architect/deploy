@@ -1,3 +1,5 @@
+let { readArc } = require('@architect/utils')
+
 /**
  * Adds SPA, ARC_STATIC_PREFIX, etc. to `get /` (if defined)
  */
@@ -18,6 +20,17 @@ module.exports = async function api(arc, cloudformation) {
   let spaIsValid = arc.static[spa] && typeof arc.static[spa][1] === 'boolean'
   if (cfn.Resources && cfn.Resources.GetIndex && spaIsValid) {
     cfn.Resources.GetIndex.Properties.Environment.Variables['ARC_STATIC_SPA'] = arc.static[spa][1]
+  }
+
+  // Delete global layers on root proxy
+  // TODO Package mutates the arc object, and we need the raw thing – this read should go away
+  let { arc: realArc } = readArc()
+  let noGetIndex = realArc.http && !realArc.http.some(r => r[0] === 'get' && r[1] === '/')
+  if (noGetIndex && cfn.Resources.GetIndex) {
+    try {
+      delete cfn.Resources.GetIndex.Properties.Layers
+    }
+    catch (err) { /*noop*/ }
   }
 
   return cfn
