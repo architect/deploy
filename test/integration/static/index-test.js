@@ -55,6 +55,17 @@ test(`Skip static deploy if @static isn't defined`, t => {
   })
 })
 
+test(`Skip static deploy if @http is defined, but public/ folder is not present`, t => {
+  t.plan(1)
+  let arc = '@app\n an-app\n @http'
+  mockFs({ 'app.arc': arc })
+  sut(params, err => {
+    if (err) t.fail(err)
+    t.notOk(published, 'Publish not called')
+    reset()
+  })
+})
+
 test(`Publish static deploy if @static is defined`, t => {
   t.plan(8)
   let arc = '@app\n an-app\n @static'
@@ -72,6 +83,20 @@ test(`Publish static deploy if @static is defined`, t => {
     t.equal(published.prefix, false, 'Prefix set to false by default')
     t.equal(published.prune, params.prune, 'Prune is unchaged')
     t.equal(published.region, params.region, 'Region is unchaged')
+    reset()
+  })
+})
+
+test(`Publish static deploy if @http is defined and public/ folder is present`, t => {
+  t.plan(1)
+  let arc = '@app\n an-app\n @http'
+  mockFs({
+    'app.arc': arc,
+    'public': {}
+  })
+  sut(params, err => {
+    if (err) t.fail(err)
+    t.ok(published, 'Publish was called')
     reset()
   })
 })

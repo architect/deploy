@@ -14,7 +14,6 @@ let publish = require('./publish')
  * @returns {Promise} - if no callback is supplied
  */
 module.exports = function deployStatic (params, callback) {
-
   let {
     bucket: Bucket,
     credentials,
@@ -62,16 +61,19 @@ module.exports = function deployStatic (params, callback) {
       if (name) stackname += toLogicalID(name)
     }
 
+    let staticEnabled = arc.static || (arc.http && existsSync(join(process.cwd(), 'public')))
+
     waterfall([
       // Parse settings
       function(callback) {
         // Bail early if this project doesn't have @static specified
-        if (!arc.static) {
+        if (!staticEnabled) {
           callback(Error('cancel'))
         }
         else {
           function setting (name, bool) {
             let value
+            if (!arc.static) return false
             for (let opt of arc.static) {
               if (!opt[0]) continue
               if (opt[0].toLowerCase() === name && opt[1]) {
