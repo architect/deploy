@@ -15,9 +15,10 @@ module.exports = function deleteFiles (params, callback) {
   } = params
 
   // If prefix is enabled, we must ignore everything else in the bucket (or risk pruning all contents)
-  if (prefix) params.Prefix = prefix
+  let listParams = { Bucket }
+  if (prefix) listParams.Prefix = prefix
 
-  s3.listObjectsV2({ Bucket }, function _listObjects (err, filesOnS3) {
+  s3.listObjectsV2(listParams, function _listObjects (err, filesOnS3) {
     if (err) {
       console.error('Listing objects for deletion in S3 failed', err)
       callback()

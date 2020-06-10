@@ -75,8 +75,22 @@ test('Prune if there is something to prune', t => {
   })
 })
 
+test('Prune does not prefix if prefix is not set', t => {
+  t.plan(2)
+
+  let params = defaultParams()
+  params.files.pop() // Create a pruning opportunity
+  filesOnS3 = { Contents: files.map(Key => ({ Key })) }
+  sut(params, err => {
+    if (err) t.fail(err)
+    t.equal(listObjCalls.length, 1, 'S3.listObjectsV2 called once')
+    t.notOk(listObjCalls[0].Prefix, 'S3.listObjectsV2 not called with prefix')
+    reset()
+  })
+})
+
 test('Prune respects prefix setting', t => {
-  t.plan(3)
+  t.plan(4)
 
   let params = defaultParams()
   let prefix = 'a-prefix'
@@ -86,6 +100,7 @@ test('Prune respects prefix setting', t => {
   sut(params, err => {
     if (err) t.fail(err)
     t.equal(listObjCalls.length, 1, 'S3.listObjectsV2 called once')
+    t.ok(listObjCalls[0].Prefix, 'S3.listObjectsV2 called with prefix')
     t.equal(delObjCalls.length, 1, 'S3.deleteObjects called once')
     let file = `${prefix}/${files[files.length - 1]}`
     t.equal(delObjCalls[0].Delete.Objects[0].Key, file, `Pruned correct file: ${file}`)
