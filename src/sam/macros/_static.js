@@ -17,7 +17,7 @@ module.exports = async function api(arc, cloudformation) {
   let spaSetting = tuple => tuple[0] === 'spa'
   // findIndex instead of find so we don't mix up bools
   let spa = arc.static && arc.static.some(spaSetting) && arc.static.findIndex(spaSetting)
-  let spaIsValid = arc.static[spa] && typeof arc.static[spa][1] === 'boolean'
+  let spaIsValid = arc.static && arc.static[spa] && typeof arc.static[spa][1] === 'boolean'
   if (cfn.Resources && cfn.Resources.GetIndex && spaIsValid) {
     cfn.Resources.GetIndex.Properties.Environment.Variables['ARC_STATIC_SPA'] = arc.static[spa][1]
   }
