@@ -1,5 +1,4 @@
 let { lstatSync } = require('fs')
-let aws = require('aws-sdk')
 let chalk = require('chalk')
 let series = require('run-series')
 let formatKey = require('./format-key')
@@ -13,11 +12,11 @@ module.exports = function putFiles (params, callback) {
     publicDir,
     prefix,
     region,
+    s3,
     staticManifest,
     verbose
   } = params
 
-  let s3 = new aws.S3({ region })
   let uploaded = 0
   let notModified = 0
 

@@ -19,6 +19,7 @@ module.exports = function publishStaticAssets (params, callback) {
     prefix,
     prune,
     region,
+    s3,
     update,
     verbose,
   } = params
@@ -91,6 +92,7 @@ module.exports = function publishStaticAssets (params, callback) {
         publicDir,
         prefix,
         region,
+        s3,
         staticManifest
       }, callback)
     },
@@ -108,6 +110,7 @@ module.exports = function publishStaticAssets (params, callback) {
           folder,
           prefix,
           region,
+          s3,
           staticManifest
         }, callback)
       }

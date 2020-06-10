@@ -29,7 +29,9 @@ Deploys all infrastructure associated to your @architect app.
 Set `verbose` to truthy to enable chatty mode. By default will only push to the staging environment unless `production` is truthy.
 
 
-## `deploy.static({bucket, fingerprint, prefix, prune, region, verbose, production}, callback)`
+## `deploy.static({bucket, credentials, fingerprint, prefix, prune, region, verbose, production}, callback)`
+
+All parameters are optional.
 
 Pushes static assets from the `public/` folder of @architect apps to S3, as defined by your @architect app's `.arc` file. Respects `fingerprint` (`true` or `external`), `prefix`, `prune`, and `ignore` params or `@static` pragma directives (more information available on the [`@static` arc guide][static-guide]).
 

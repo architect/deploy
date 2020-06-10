@@ -12,6 +12,7 @@
 - Added ability to prune from a full deploy (e.g. `arc deploy --prune`)
 - Respect `@static spa` setting in root proxy
 - Default root proxy now coldstarts faster by removing any globally defined layers
+- `deploy.static` now accepts optional AWS credentials object
 
 
 ### Fixed

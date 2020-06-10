@@ -1,15 +1,16 @@
 let test = require('tape')
 let { join } = require('path')
-let aws = require('aws-sdk-mock')
+let aws = require('aws-sdk')
+let awsMock = require('aws-sdk-mock')
 
 let listObjCalls = []
 let delObjCalls = []
 let filesOnS3 = { Contents: [] }
-aws.mock('S3', 'listObjectsV2', (params, callback) => {
+awsMock.mock('S3', 'listObjectsV2', (params, callback) => {
   listObjCalls.push(params)
   callback(null, filesOnS3)
 })
-aws.mock('S3', 'deleteObjects', (params, callback) => {
+awsMock.mock('S3', 'deleteObjects', (params, callback) => {
   delObjCalls.push(params)
   callback(null, { Deleted: params.Delete.Objects })
 })
@@ -20,6 +21,7 @@ let files = [
   'index.js',
 ]
 let localFiles = arr => arr.map(f => join(join(process.cwd(), 'public', f)))
+let s3 = new aws.S3()
 let defaultParams = () => ({
   Bucket: 'a-bucket',
   files: localFiles(files),
@@ -27,6 +29,7 @@ let defaultParams = () => ({
   folder: 'public',
   prefix: undefined,
   region: 'us-west-1',
+  s3,
   staticManifest: {}
 })
 
@@ -170,4 +173,10 @@ test('Prune respects both prefix & fingerprint settings together in nested folde
     t.equal(delObjCalls[0].Delete.Objects[0].Key, pruneThis, `Pruned correct file: ${pruneThis}`)
     reset()
   })
+})
+
+test('Teardown', t => {
+  t.plan(1)
+  awsMock.restore()
+  t.pass('Done')
 })

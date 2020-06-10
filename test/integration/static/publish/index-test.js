@@ -3,6 +3,8 @@ let { join } = require('path')
 let { updater } = require('@architect/utils')
 let proxyquire = require('proxyquire')
 let mockFs = require('mock-fs')
+let aws = require('aws-sdk')
+let awsMock = require('aws-sdk-mock')
 
 let putted
 let deleted
@@ -22,6 +24,20 @@ let sut = proxyquire(filePath, {
   './s3/delete-files': deleteFiles
 })
 
+awsMock.mock('S3', 'headObject', (params, callback) => {
+  callback()
+})
+awsMock.mock('S3', 'putObject', (params, callback) => {
+  callback()
+})
+awsMock.mock('S3', 'listObjectsV2', (params, callback) => {
+  callback()
+})
+awsMock.mock('S3', 'deleteObjects', (params, callback) => {
+  callback()
+})
+
+let s3 = new aws.S3()
 let defaultParams = () => ({
   Bucket: 'a-bucket',
   fingerprint: false,
@@ -30,6 +46,7 @@ let defaultParams = () => ({
   isFullDeploy: true,
   prune: false,
   region: 'us-west-1',
+  s3,
   update: updater('Deploy')
 })
 let params = defaultParams()
@@ -89,4 +106,10 @@ test('Static asset deletion', t => {
     t.deepEqual(deleted.staticManifest, {}, 'Passed empty staticManifest by default')
     reset()
   })
+})
+
+test('Teardown', t => {
+  t.plan(1)
+  awsMock.restore()
+  t.pass('Done')
 })

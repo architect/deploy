@@ -14,8 +14,10 @@ let publish = require('./publish')
  * @returns {Promise} - if no callback is supplied
  */
 module.exports = function deployStatic (params, callback) {
+
   let {
     bucket: Bucket,
+    credentials,
     isDryRun=false,
     isFullDeploy=true, // Prevents duplicate static manifest operations that could impact state
     name,
@@ -29,7 +31,11 @@ module.exports = function deployStatic (params, callback) {
     prune=false,
   } = params
   if (!update) update = updater('Deploy')
+
+  // AWS config
   region = region || process.env.AWS_REGION
+  let config = { region }
+  if (credentials) config.credentials = credentials
 
   let promise
   if (!callback) {
@@ -98,7 +104,7 @@ module.exports = function deployStatic (params, callback) {
       // Get the bucket PhysicalResourceId if not supplied
       function(params, callback) {
         if (!Bucket) {
-          let cloudformation = new aws.CloudFormation({ region })
+          let cloudformation = new aws.CloudFormation(config)
           cloudformation.listStackResources({
             StackName: stackname
           },
@@ -115,6 +121,8 @@ module.exports = function deployStatic (params, callback) {
       },
 
       function({fingerprint, ignore, folder}, callback) {
+        let s3 = new aws.S3(config)
+
         publish({
           Bucket,
           fingerprint,
@@ -124,6 +132,7 @@ module.exports = function deployStatic (params, callback) {
           prefix,
           prune,
           region,
+          s3,
           update,
           verbose,
         }, callback)

@@ -1,5 +1,4 @@
 let { join } = require('path')
-let aws = require('aws-sdk')
 let chalk = require('chalk')
 let unformatKey = require('./unformat-key')
 
@@ -11,10 +10,9 @@ module.exports = function deleteFiles (params, callback) {
     folder,
     prefix,
     region,
+    s3,
     staticManifest
   } = params
-
-  let s3 = new aws.S3({ region })
 
   // If prefix is enabled, we must ignore everything else in the bucket (or risk pruning all contents)
   if (prefix) params.Prefix = prefix

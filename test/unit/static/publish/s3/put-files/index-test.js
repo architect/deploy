@@ -1,16 +1,17 @@
 let test = require('tape')
 let proxyquire = require('proxyquire')
 let { join } = require('path')
-let aws = require('aws-sdk-mock')
+let aws = require('aws-sdk')
+let awsMock = require('aws-sdk-mock')
 
 let headObjCalls = []
 let putObjCalls = []
 let head = {}
-aws.mock('S3', 'headObject', (params, callback) => {
+awsMock.mock('S3', 'headObject', (params, callback) => {
   headObjCalls.push(params)
   callback(null, head)
 })
-aws.mock('S3', 'putObject', (params, callback) => {
+awsMock.mock('S3', 'putObject', (params, callback) => {
   putObjCalls.push(params)
   callback()
 })
@@ -21,6 +22,7 @@ let files = [
   'something.json',
   'index.js',
 ]
+let s3 = new aws.S3()
 let params = {
   Bucket: 'a-bucket',
   files,
@@ -28,6 +30,7 @@ let params = {
   publicDir: 'public',
   prefix: undefined,
   region: 'us-west-1',
+  s3,
   staticManifest: {}
 }
 
@@ -91,6 +94,6 @@ test('Skip publishing files that have not been updated', t => {
 
 test('Teardown', t => {
   t.plan(1)
-  aws.restore('S3')
+  awsMock.restore()
   t.pass('Done')
 })
