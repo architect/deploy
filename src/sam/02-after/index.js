@@ -6,12 +6,12 @@ let maybeInvalidate = require('./03-maybe-invalidate')
 let cleanup = require('./04-cleanup')
 
 module.exports = function after(params, callback) {
-  let {ts, arc, verbose, production, pretty, appname, stackname, stage, update} = params
+  let { ts, arc, verbose, production, pretty, prune, appname, stackname, stage, update } = params
   series([
-    appApex.bind({}, {ts, arc, pretty, stackname, stage, update}),
-    staticDeploy.bind({}, {arc, verbose, stackname, production}),
-    patchApiG.bind({}, {stackname, stage}),
-    maybeInvalidate.bind({}, {arc, stackname, stage}),
-    cleanup.bind({}, {appname}),
+    appApex.bind({}, { ts, arc, pretty, stackname, stage, update }),
+    staticDeploy.bind({}, { arc, verbose, stackname, production, prune }),
+    patchApiG.bind({}, { stackname, stage }),
+    maybeInvalidate.bind({}, { arc, stackname, stage }),
+    cleanup.bind({}, { appname }),
   ], callback)
 }

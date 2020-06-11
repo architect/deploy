@@ -1,9 +1,10 @@
 let aws = require('aws-sdk')
+let { join } = require('path')
+let { existsSync } = require('fs')
 let waterfall = require('run-waterfall')
-let utils = require('@architect/utils')
-let {updater} = require('@architect/utils')
-let fingerprintConfig = utils.fingerprint.config
-let publishToS3 = require('./publish-to-s3')
+let { readArc } = require('@architect/parser')
+let { fingerprint: fingerprinter, toLogicalID, updater } = require('@architect/utils')
+let publish = require('./publish')
 
 /**
  * Upload files to CFN defined bucket
@@ -12,14 +13,33 @@ let publishToS3 = require('./publish-to-s3')
  * @param {Function} callback - a node-style errback
  * @returns {Promise} - if no callback is supplied
  */
-module.exports = function statics(params, callback) {
-  let {verbose, name, stackname, prune=false, production, update, isDryRun=false, isFullDeploy} = params
+module.exports = function deployStatic (params, callback) {
+  let {
+    bucket: Bucket,
+    credentials,
+    isDryRun=false,
+    isFullDeploy=true, // Prevents duplicate static manifest operations that could impact state
+    name,
+    production,
+    region,
+    stackname,
+    update,
+    verbose,
+    // `@static` settings
+    prefix, // Enables `@static prefix` publishing prefix (not the same as `@static folder`)
+    prune=false,
+  } = params
   if (!update) update = updater('Deploy')
+
+  // AWS config
+  region = region || process.env.AWS_REGION
+  let config = { region }
+  if (credentials) config.credentials = credentials
 
   let promise
   if (!callback) {
-    promise = new Promise(function ugh(res, rej) {
-      callback = function errback(err, result) {
+    promise = new Promise(function ugh (res, rej) {
+      callback = function errback (err, result) {
         if (err) rej(err)
         else res(result)
       }
@@ -33,72 +53,90 @@ module.exports = function statics(params, callback) {
   }
   else {
     update.status('Deploying static assets...')
-
-    // defaults
-    let {arc} = utils.readArc()
+    let { arc } = readArc()
     let appname = arc.app[0]
+
     if (!stackname) {
-      stackname = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
-      if (name)
-        stackname += utils.toLogicalID(name)
+      stackname = `${toLogicalID(appname)}${production? 'Production' : 'Staging'}`
+      if (name) stackname += toLogicalID(name)
     }
 
-    // get the bucket PhysicalResourceId
+    let staticEnabled = arc.static || (arc.http && existsSync(join(process.cwd(), 'public')))
+
     waterfall([
+      // Parse settings
       function(callback) {
-        if (!arc.static) {
+        // Bail early if this project doesn't have @static specified
+        if (!staticEnabled) {
           callback(Error('cancel'))
         }
         else {
-          // Enable deletion of files not present in public/ folder
-          if (arc.static.some(s => {
-            if (!s[0])
-              return false
-            if (s.includes('prune') && s.includes(true))
-              return true
-            return false
-          })) {prune = true}
+          function setting (name, bool) {
+            let value
+            if (!arc.static) return false
+            for (let opt of arc.static) {
+              if (!opt[0]) continue
+              if (opt[0].toLowerCase() === name && opt[1]) {
+                if (bool && opt[1] === true) value = true
+                else value = opt[1]
+              }
+            }
+            return value || false
+          }
 
-          // Enable fingerprinting
-          let fingerprint = fingerprintConfig(arc).fingerprint
+          // Fingerprinting + ignore any specified files
+          let { fingerprint, ignore } = fingerprinter.config(arc)
 
-          // Collect any strings to match against for ignore
-          let ignore = fingerprintConfig(arc).ignore
+          // Asset pruning: delete files not present in public/ folder
+          prune = prune || setting('prune', true)
 
-          // Allow folder remap
-          let findFolder = t=> Array.isArray(t) && t[0].toLowerCase() === 'folder'
-          let folder = arc.static.some(findFolder)? arc.static.find(findFolder)[1] : 'public'
+          // Project folder remap
+          let folder = setting('folder') || 'public'
+          if (!existsSync(join(process.cwd(), folder))) {
+            callback(Error('@static folder not found'))
+          }
 
-          callback(null, {fingerprint, ignore, prune, folder})
+          // Published path prefixing
+          prefix = prefix || setting('prefix')
+
+          callback(null, {fingerprint, ignore, folder})
         }
       },
 
-      function({fingerprint, ignore, prune, folder}, callback) {
-        // lookup bucket in cloudformation
-        let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
-        cloudformation.listStackResources({
-          StackName: stackname
-        },
-        function done(err, data) {
-          if (err) callback(err)
-          else {
-            let find = i=> i.ResourceType === 'AWS::S3::Bucket' && i.LogicalResourceId === 'StaticBucket'
-            let Bucket = data.StackResourceSummaries.find(find).PhysicalResourceId
-            callback(null, {Bucket, fingerprint, ignore, prune, folder})
-          }
-        })
+      // Get the bucket PhysicalResourceId if not supplied
+      function(params, callback) {
+        if (!Bucket) {
+          let cloudformation = new aws.CloudFormation(config)
+          cloudformation.listStackResources({
+            StackName: stackname
+          },
+          function done(err, data) {
+            if (err) callback(err)
+            else {
+              let find = i=> i.ResourceType === 'AWS::S3::Bucket' && i.LogicalResourceId === 'StaticBucket'
+              Bucket = data.StackResourceSummaries.find(find).PhysicalResourceId
+              callback(null, params)
+            }
+          })
+        }
+        else callback(null, params)
       },
 
-      function({Bucket, fingerprint, ignore, prune, folder}, callback) {
-        publishToS3({
+      function({fingerprint, ignore, folder}, callback) {
+        let s3 = new aws.S3(config)
+
+        publish({
           Bucket,
           fingerprint,
+          folder,
           ignore,
           isFullDeploy,
+          prefix,
           prune,
+          region,
+          s3,
+          update,
           verbose,
-          folder,
-          update
         }, callback)
       }
     ],

@@ -2,6 +2,27 @@
 
 ---
 
+## [1.8.0] 2020-06-03
+
+### Added
+
+- Rewrite of static asset S3 publishing
+- Added the ability to prefix any path to `deploy.static` calls (e.g. `always-upload-to-this-folder/file.html`) with `@static prefix whatever` (or as a parameter in `deploy.static`)
+- Enabled `deploy.static` calls to override the default Architect behavior (which always deploys to CloudFormation generated S3 buckets) and specify custom `bucket` and `region` parameters
+- Added ability to prune from a full deploy (e.g. `arc deploy --prune`)
+- Respect `@static spa` setting in root proxy
+- Default root proxy now coldstarts faster by removing any globally defined layers
+- `deploy.static` now accepts optional AWS credentials object
+
+
+### Fixed
+
+- Fixed file pruning for projects with `@static folder` specified
+- Now checks to ensure `@static folder` exists, and errors if not found
+- Fixes `@static fingerprint ignore` with more recent versions of Architect Parser
+
+---
+
 ## [1.7.1] 2020-05-17
 
 ### Changed
