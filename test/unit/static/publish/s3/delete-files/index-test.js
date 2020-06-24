@@ -192,6 +192,7 @@ test('Prune respects both prefix & fingerprint settings together in nested folde
 
 test('Teardown', t => {
   t.plan(1)
-  awsMock.restore()
+  awsMock.restore('S3', 'listObjectsV2')
+  awsMock.restore('S3', 'deleteObjects')
   t.pass('Done')
 })

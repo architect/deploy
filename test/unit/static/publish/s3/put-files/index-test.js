@@ -94,6 +94,7 @@ test('Skip publishing files that have not been updated', t => {
 
 test('Teardown', t => {
   t.plan(1)
-  awsMock.restore()
+  awsMock.restore('S3', 'headObject')
+  awsMock.restore('S3', 'putObject')
   t.pass('Done')
 })
