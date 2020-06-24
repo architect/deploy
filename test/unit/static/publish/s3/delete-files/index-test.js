@@ -21,17 +21,19 @@ let files = [
   'index.js',
 ]
 let localFiles = arr => arr.map(f => join(join(process.cwd(), 'public', f)))
-let s3 = new aws.S3()
-let defaultParams = () => ({
-  Bucket: 'a-bucket',
-  files: localFiles(files),
-  fingerprint: false,
-  folder: 'public',
-  prefix: undefined,
-  region: 'us-west-1',
-  s3,
-  staticManifest: {}
-})
+let defaultParams = () => {
+  let s3 = new aws.S3()
+  return {
+    Bucket: 'a-bucket',
+    files: localFiles(files),
+    fingerprint: false,
+    folder: 'public',
+    prefix: undefined,
+    region: 'us-west-1',
+    s3,
+    staticManifest: {}
+  }
+}
 
 let filePath = join(process.cwd(), 'src', 'static', 'publish', 's3', 'delete-files')
 let sut = require(filePath)
