@@ -16,17 +16,13 @@ test('S3 put params', t => {
   let html = 'public/index.html'
   let json = 'public/something.json'
   let file = 'public/index.js'
-  let content = 'hi there'
-  mockFs({
-    [html]: Buffer.from(content),
-    [json]: Buffer.from(content),
-    [file]: Buffer.from(content),
-  })
+  let Body = Buffer.from('hi there')
 
   let Bucket = 'some-bucket'
   let params = {
     Bucket,
     Key: 'index.html',
+    Body,
     file: html
   }
 
@@ -36,7 +32,7 @@ test('S3 put params', t => {
   t.equal(result.Bucket, Bucket, 'Bucket is unchanged')
   t.equal(result.Key, 'index.html', 'Key is unchanged')
   t.equal(result.ContentType, 'text/html', 'Content type properly set')
-  t.equal(result.Body.toString(), content, 'File body is present')
+  t.equal(result.Body.toString(), Body.toString(), 'File body is present')
 
   // Ensure anti-caching of HTML + JSON
   let antiCache = 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'
