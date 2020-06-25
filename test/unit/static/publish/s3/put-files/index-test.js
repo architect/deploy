@@ -3,25 +3,33 @@ let proxyquire = require('proxyquire')
 let { join } = require('path')
 let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
+let crypto = require('crypto')
+let mockFs
 
 let headObjCalls = []
 let putObjCalls = []
-let head = {}
 awsMock.mock('S3', 'headObject', (params, callback) => {
   headObjCalls.push(params)
-  callback(null, head)
+  let ETag = crypto.createHash('md5').update(fileData[params.Key]).digest("hex")
+  callback(null, { ETag })
 })
 awsMock.mock('S3', 'putObject', (params, callback) => {
   putObjCalls.push(params)
   callback()
 })
 
-let files = [
-  'index.html',
-  'static.json',
-  'something.json',
-  'index.js',
-]
+function createFileData (diff) {
+  return {
+    'index.html': Buffer.from(`this is index.html + ${diff ? 'diff' : 'no diff'}`),
+    'static.json': Buffer.from(`this is static.json + ${diff ? 'diff' : 'no diff'}`),
+    'something.json': Buffer.from(`this is something.json + ${diff ? 'diff' : 'no diff'}`),
+    'index.js': Buffer.from(`this is index.js + ${diff ? 'diff' : 'no diff'}`),
+  }
+}
+// Benchmark file data to compare against in headObject calls
+let fileData = createFileData()
+let files = Object.keys(fileData)
+
 let s3 = new aws.S3()
 let params = {
   Bucket: 'a-bucket',
@@ -34,32 +42,37 @@ let params = {
   staticManifest: {}
 }
 
-let lstat = new Date()
-let lstatSync = () => lstat
-
 let putParams = ({ Bucket, Key }) => ({
   Bucket, Key
 })
 
 let filePath = join(process.cwd(), 'src', 'static', 'publish', 's3', 'put-files')
 let sut = proxyquire(filePath, {
-  fs: { lstatSync },
   './put-params': putParams
 })
+
+function setup (data) {
+  mockFs(data)
+}
 
 function reset () {
   headObjCalls = []
   putObjCalls = []
-  head = {}
+  mockFs.restore()
 }
 
 test('Module is present', t => {
   t.plan(1)
   t.ok(sut, 'S3 file put module is present')
+
+  // Set up mock-fs here outside global scope or it may blow up aws-sdk
+  // eslint-disable-next-line
+  mockFs = require('mock-fs')
 })
 
 test('Basic publish test', t => {
   t.plan(4)
+  setup(createFileData(true)) // True mutates file contents, causing an upload
 
   sut(params, (err, uploaded, notModified) => {
     if (err) t.fail(err)
@@ -77,8 +90,7 @@ test('Basic publish test', t => {
 
 test('Skip publishing files that have not been updated', t => {
   t.plan(4)
-
-  head = { LastModified: lstat++ }
+  setup(createFileData())
 
   sut(params, (err, uploaded, notModified) => {
     if (err) t.fail(err)

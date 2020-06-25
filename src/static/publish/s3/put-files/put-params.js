@@ -1,16 +1,15 @@
-let { readFileSync } = require('fs')
 let getContentType = require('./get-content-type')
 
 /**
  * Get proper parameters for a given file upload
  */
 module.exports = function putParams (params) {
-  let { Bucket, Key, file, fingerprint } = params
+  let { Bucket, Key, Body, file, fingerprint } = params
   let s3Params = {
     ACL: 'public-read',
     Bucket,
     Key,
-    Body: readFileSync(file),
+    Body,
   }
 
   // S3 requires content-type

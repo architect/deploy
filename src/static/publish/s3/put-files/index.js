@@ -1,4 +1,5 @@
-let { lstatSync } = require('fs')
+let { readFileSync } = require('fs')
+let crypto = require('crypto')
 let chalk = require('chalk')
 let series = require('run-series')
 let formatKey = require('./format-key')
@@ -23,12 +24,15 @@ module.exports = function putFiles (params, callback) {
   let tasks = files.map(file => {
     return function maybePublishToS3 (callback) {
 
-      // Get last modified + size
-      let stats = lstatSync(file)
+      // Get file hash
+      let Body = readFileSync(file)
+      let hash = crypto.createHash('md5').update(Body).digest("hex")
+
       // Post-run size warning
       function tooBig () {
-        if (stats.size >= 5750000) {
-          console.log(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
+        let size = Buffer.from(Body).toString('base64')
+        if (size >= 5750000) {
+          console.log(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB (base64)`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
         }
       }
 
@@ -50,10 +54,11 @@ module.exports = function putFiles (params, callback) {
 
           // Only upload if the file was modified since last upload
           // In theory we could use the ETag, but Amazon uses an unpublished chunk hashing algo
-          if (!headData || !headData.LastModified || stats.mtime > headData.LastModified) {
+          let isDifferent = hash !== headData.ETag
+          if (!headData || isDifferent) {
 
             // Get the params for the file to be uploaded
-            let params = putParams({ Bucket, Key, file, fingerprint })
+            let params = putParams({ Bucket, Key, Body, file, fingerprint })
 
             s3.putObject(params, function _putObj(err) {
               if (err && err.code === 'AccessDenied') {
