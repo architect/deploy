@@ -10,8 +10,8 @@ let headObjCalls = []
 let putObjCalls = []
 awsMock.mock('S3', 'headObject', (params, callback) => {
   headObjCalls.push(params)
-  let hash = crypto.createHash('md5').update(fileData[params.Key]).digest("hex")
-  let ETag = `"${hash}"`
+  let hash = crypto.createHash('md5').update(fileData[params.Key]).digest('hex')
+  let ETag = `"${hash}"` // AWS double quotes because lol
   callback(null, { ETag })
 })
 awsMock.mock('S3', 'putObject', (params, callback) => {

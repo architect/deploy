@@ -26,7 +26,7 @@ module.exports = function putFiles (params, callback) {
 
       // Get file hash
       let Body = readFileSync(file)
-      let hash = crypto.createHash('md5').update(Body).digest("hex")
+      let hash = crypto.createHash('md5').update(Body).digest('hex')
 
       // Post-run size warning
       function tooBig () {
@@ -53,7 +53,6 @@ module.exports = function putFiles (params, callback) {
           let url = `https://${Bucket}.s3.${region}.amazonaws.com/${Key}`
 
           // Only upload if the file was modified since last upload
-          // In theory we could use the ETag, but Amazon uses an unpublished chunk hashing algo
           let etag = headData && headData.ETag && headData.ETag.replace(/['"]/g, '')
           let isDifferent = hash !== etag
           if (!headData || isDifferent) {
