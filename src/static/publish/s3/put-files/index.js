@@ -54,7 +54,8 @@ module.exports = function putFiles (params, callback) {
 
           // Only upload if the file was modified since last upload
           // In theory we could use the ETag, but Amazon uses an unpublished chunk hashing algo
-          let isDifferent = hash !== headData.ETag
+          let etag = headData && headData.ETag && headData.ETag.replace(/['"]/g, '')
+          let isDifferent = hash !== etag
           if (!headData || isDifferent) {
 
             // Get the params for the file to be uploaded
