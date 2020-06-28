@@ -44,14 +44,14 @@ module.exports = function samDeploy (params, callback) {
 
   // API switching
   let legacyAPI // Default may be reassigned below
-
   let findAPIType = s => s[0] && s[0] === 'apigateway' && s[1]
-  let arcAPIType = arc.aws && arc.aws.find(findAPIType)
+  let arcAPIType = arc.aws && arc.aws.some(findAPIType) && arc.aws.find(findAPIType)[1]
   // CLI wins over @aws setting
   apiType = apiType || arcAPIType
   if (apiType) {
-    if (apiType !== 'http' || apiType !== 'rest') throw ReferenceError('API type must be http or rest')
+    if (apiType !== 'http' && apiType !== 'rest') throw ReferenceError('API type must be http or rest')
     if (apiType === 'rest') legacyAPI = true
+    else legacyAPI = false
   }
 
   let region = process.env.AWS_REGION
@@ -155,7 +155,7 @@ module.exports = function samDeploy (params, callback) {
     },
 
     /**
-     * Check to see if we're working with a legacy (REST) API
+     * Check to see if we're working with a legacy (REST) API (and any other backwards compat checks)
      */
     function legacyCompat (callback) {
       compat({
@@ -165,7 +165,9 @@ module.exports = function samDeploy (params, callback) {
         if (err) callback(err)
         else {
           // If specifed above by CLI flag or arc.aws setting, override result
-          legacyAPI = legacyAPI || result.legacyAPI
+          if (legacyAPI === undefined && result.legacyAPI) {
+            legacyAPI = result.legacyAPI
+          }
           callback()
         }
       })
