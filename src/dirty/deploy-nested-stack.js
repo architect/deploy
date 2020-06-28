@@ -6,41 +6,41 @@ let waterfall = require('run-waterfall')
 let deploy = require('./deploy-one')
 let pretty = require('./pretty')
 
-module.exports = function deploySAM({stackname, arc, ts, update, specificLambdasToDeploy}, callback) {
+module.exports = function deploySAM ({ stackname, arc, ts, update, specificLambdasToDeploy }, callback) {
   /**
    * To see a World in a Grain of Sand,
    * And a Heaven in a Wild Flower,
    * Hold Infinity in the palm of your hand,
    * And Eternity in an hour.
    */
-  let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
+  let cloudformation = new aws.CloudFormation({ region: process.env.AWS_REGION })
   waterfall([
 
-    function readStax(callback) {
+    function readStax (callback) {
       cloudformation.listStackResources({
         StackName: stackname
       },
-      function done(err, data) {
+      function done (err, data) {
         if (err) callback(err)
         else {
-          let find = i=> i.ResourceType === 'AWS::CloudFormation::Stack'
+          let find = i => i.ResourceType === 'AWS::CloudFormation::Stack'
           let stax = data.StackResourceSummaries.filter(find)
           callback(null, stax)
         }
       })
     },
 
-    function readSubStax(stax, callback) {
-      parallel(stax.map(stack=> {
-        return function getResources(callback) {
+    function readSubStax (stax, callback) {
+      parallel(stax.map(stack => {
+        return function getResources (callback) {
           let StackName = stack.PhysicalResourceId
           let results = []
-          function walk(params={}) {
-            cloudformation.listStackResources(params, function done(err, {NextToken, StackResourceSummaries}) {
+          function walk (params = {}) {
+            cloudformation.listStackResources(params, function done (err, { NextToken, StackResourceSummaries }) {
               if (err) callback(err)
               else if (NextToken) {
                 results = results.concat(StackResourceSummaries)
-                walk({StackName, NextToken})
+                walk({ StackName, NextToken })
               }
               else {
                 results = results.concat(StackResourceSummaries)
@@ -48,27 +48,27 @@ module.exports = function deploySAM({stackname, arc, ts, update, specificLambdas
               }
             })
           }
-          walk({StackName})
+          walk({ StackName })
         }
       }),
-      function done(err, result) {
+      function done (err, result) {
         if (err) callback(err)
         else {
-          let reduced = result.reduce((a, b)=> a.concat(b), [])
-          let isfun = i=> i.ResourceType === 'AWS::Lambda::Function'
+          let reduced = result.reduce((a, b) => a.concat(b), [])
+          let isfun = i => i.ResourceType === 'AWS::Lambda::Function'
           let fun = reduced.filter(isfun)
           callback(null, fun)
         }
       })
     },
 
-    function readLocal(functions, callback) {
+    function readLocal (functions, callback) {
       let localPaths = specificLambdasToDeploy.length ? specificLambdasToDeploy : utils.inventory(arc).localPaths
-      parallel(localPaths.map(pathToCode=> {
-        return function one(callback) {
+      parallel(localPaths.map(pathToCode => {
+        return function one (callback) {
           let folder = pathToCode.split('/').reverse().shift()
           let logicalID = utils.toLogicalID(folder.replace(/000/g, ''))
-          let found = functions.find(f=> f.LogicalResourceId === logicalID)
+          let found = functions.find(f => f.LogicalResourceId === logicalID)
           if (found) {
             let FunctionName = found.PhysicalResourceId
             deploy({
@@ -83,7 +83,7 @@ module.exports = function deploySAM({stackname, arc, ts, update, specificLambdas
           }
         }
       }),
-      function done(err) {
+      function done (err) {
         if (err) callback(err)
         else {
           pretty.success(ts, update)
@@ -92,16 +92,16 @@ module.exports = function deploySAM({stackname, arc, ts, update, specificLambdas
       })
     },
 
-    function readURL(callback) {
-      let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
+    function readURL (callback) {
+      let cloudformation = new aws.CloudFormation({ region: process.env.AWS_REGION })
       cloudformation.describeStacks({
         StackName: stackname
       },
-      function done(err, data) {
+      function done (err, data) {
         if (err) console.log(err)
         else if (data && Array.isArray(data.Stacks)) {
           let outs = data.Stacks[0].Outputs
-          let maybe = outs.find(o=> o.OutputKey === 'API')
+          let maybe = outs.find(o => o.OutputKey === 'API')
           if (maybe)
             pretty.url(maybe.OutputValue)
         }

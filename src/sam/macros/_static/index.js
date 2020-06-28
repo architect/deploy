@@ -1,7 +1,8 @@
 /**
  * Adds SPA, ARC_STATIC_PREFIX, etc. to `get /` (if defined)
  */
-module.exports = async function api(arc, cloudformation) {
+// eslint-disable-next-line
+module.exports = async function api (arc, cloudformation) {
   let cfn = cloudformation
 
   // Prefix
@@ -26,7 +27,7 @@ module.exports = async function api(arc, cloudformation) {
     try {
       delete cfn.Resources.GetIndex.Properties.Layers
     }
-    catch (err) { /*noop*/ }
+    catch (err) { /* noop*/ }
   }
 
   return cfn

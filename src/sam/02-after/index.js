@@ -5,7 +5,7 @@ let patchRestAPI = require('./02-patch-rest-api')
 let maybeInvalidate = require('./03-maybe-invalidate')
 let cleanup = require('./04-cleanup')
 
-module.exports = function after(params, callback) {
+module.exports = function after (params, callback) {
   let {
     appname,
     arc,

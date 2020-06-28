@@ -1,15 +1,15 @@
 let aws = require('aws-sdk')
 let waterfall = require('run-waterfall')
 
-module.exports = function enableCloudFrontDistribution({id}, callback) {
+module.exports = function enableCloudFrontDistribution ({ id }, callback) {
   let cf = new aws.CloudFront
   waterfall([
-    function(callback) {
+    function (callback) {
       cf.getDistributionConfig({
         Id: id
       }, callback)
     },
-    function(result, callback) {
+    function (result, callback) {
       let ETag = result.ETag
       let DistributionConfig = result.DistributionConfig
       if (DistributionConfig.Enabled == false) {
@@ -25,7 +25,7 @@ module.exports = function enableCloudFrontDistribution({id}, callback) {
       }
     }
   ],
-  function noop(err) {
+  function noop (err) {
     if (err) console.log(err)
     callback()
   })

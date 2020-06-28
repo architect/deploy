@@ -57,7 +57,7 @@ function reset () {
   mockFs.restore()
 }
 
-function setup() {
+function setup () {
   let html = 'public/index.html'
   let json = 'public/something.json'
   let file = 'public/index.js'

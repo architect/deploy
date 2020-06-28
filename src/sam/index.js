@@ -1,6 +1,6 @@
 let pkg = require('@architect/package')
 let utils = require('@architect/utils')
-let {readArc, toLogicalID, updater} = require('@architect/utils')
+let { readArc, toLogicalID, updater } = require('@architect/utils')
 let fingerprinter = utils.fingerprint
 let fingerprintConfig = fingerprinter.config
 let series = require('run-series')
@@ -21,17 +21,17 @@ let after = require('./02-after')
  * @param {Function} callback - a node-style errback
  * @returns {Promise} - if not callback is supplied
  */
-module.exports = function samDeploy(params, callback) {
-  let { apiType, isDryRun=false, name, production, prune, tags, verbose } = params
+module.exports = function samDeploy (params, callback) {
+  let { apiType, isDryRun = false, name, production, prune, tags, verbose } = params
 
   let stage = production ? 'production' : 'staging'
   let ts = Date.now()
   let log = true
-  let pretty = print({log, verbose})
+  let pretty = print({ log, verbose })
   let { arc } = readArc()
   let bucket // Assigned later
   let appname = arc.app[0]
-  let stackname = `${toLogicalID(appname)}${production? 'Production' : 'Staging'}`
+  let stackname = `${toLogicalID(appname)}${production ? 'Production' : 'Staging'}`
   let update = updater('Deploy')
 
   if (name)
@@ -60,8 +60,8 @@ module.exports = function samDeploy(params, callback) {
 
   let promise
   if (!callback) {
-    promise = new Promise(function ugh(res, rej) {
-      callback = function errback(err, result) {
+    promise = new Promise(function ugh (res, rej) {
+      callback = function errback (err, result) {
         if (err) rej(err)
         else res(result)
       }
@@ -77,7 +77,7 @@ module.exports = function samDeploy(params, callback) {
     /**
      * Maybe create a new deployment bucket
      */
-    function bucketSetup(callback) {
+    function bucketSetup (callback) {
       if (isDryRun) {
         bucket = 'N/A (dry-run)'
         callback()
@@ -95,7 +95,7 @@ module.exports = function samDeploy(params, callback) {
             region,
             update
           },
-          function next(err, result) {
+          function next (err, result) {
             if (err) callback(err)
             else {
               bucket = result
@@ -109,7 +109,7 @@ module.exports = function samDeploy(params, callback) {
     /**
      * Initialize operations
      */
-    function init(callback) {
+    function init (callback) {
       update.status(
         'Initializing deployment',
         `Stack ... ${stackname}`,
@@ -121,15 +121,15 @@ module.exports = function samDeploy(params, callback) {
     /**
      * Maybe write static asset manifest prior to cfn or hydration
      */
-    function maybeFingerprint(callback) {
-      let {fingerprint} = fingerprintConfig(arc)
+    function maybeFingerprint (callback) {
+      let { fingerprint } = fingerprintConfig(arc)
 
       if (fingerprint || verbose)
         update.done(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`)
 
       // Always run full fingerprinting op to ensure remnant static.json files are deleted
       // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
-      fingerprinter({}, function done(err) {
+      fingerprinter({}, function done (err) {
         if (err) {
           callback(err)
         }
@@ -142,14 +142,14 @@ module.exports = function samDeploy(params, callback) {
     /**
      * Hydrate dependencies
      */
-    function hydrateTheThings(callback) {
+    function hydrateTheThings (callback) {
       hydrate.install({}, callback)
     },
 
     /**
      * Generate cfn, which must be completed only after fingerprinting or files may not be present
      */
-    function generateCloudFormation(callback) {
+    function generateCloudFormation (callback) {
       cloudformation = pkg(arc)
       callback()
     },
@@ -157,11 +157,11 @@ module.exports = function samDeploy(params, callback) {
     /**
      * Check to see if we're working with a legacy (REST) API
      */
-    function legacyCompat(callback) {
+    function legacyCompat (callback) {
       compat({
         arc,
         stackname
-      }, function done(err, result={}) {
+      }, function done (err, result = {}) {
         if (err) callback(err)
         else {
           // If specifed above by CLI flag or arc.aws setting, override result
@@ -174,35 +174,35 @@ module.exports = function samDeploy(params, callback) {
     /**
      * Macros (both built-in + user)
      */
-    function runMacros(callback) {
+    function runMacros (callback) {
       let options = { legacyAPI }
       macros(
         arc,
         cloudformation,
         stage,
         options,
-      function done(err, _sam) {
-        if (err) callback(err)
-        else {
-          sam = _sam
-          nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
-          callback()
-        }
-      })
+        function done (err, _sam) {
+          if (err) callback(err)
+          else {
+            sam = _sam
+            nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
+            callback()
+          }
+        })
     },
 
     /**
      * Pre-deploy ops
      */
-    function beforeDeploy(callback) {
-      let params = {sam, nested, bucket, pretty, update, isDryRun}
+    function beforeDeploy (callback) {
+      let params = { sam, nested, bucket, pretty, update, isDryRun }
       before(params, callback)
     },
 
     /**
      * Deployment
      */
-    function theDeploy(callback) {
+    function theDeploy (callback) {
       if (isDryRun) {
         update.status('Skipping deployment to AWS')
         callback()
@@ -221,10 +221,10 @@ module.exports = function samDeploy(params, callback) {
       }
     },
 
-     /**
+    /**
       * Post-deploy ops
       */
-    function afterDeploy(callback) {
+    function afterDeploy (callback) {
       if (isDryRun) {
         update.status('Skipping post-deployment operations & cleanup')
         update.done('Dry run complete!')

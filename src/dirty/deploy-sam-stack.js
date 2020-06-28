@@ -6,32 +6,32 @@ let waterfall = require('run-waterfall')
 let deploy = require('./deploy-one')
 let pretty = require('./pretty')
 
-module.exports = function deploySAM({stackname, arc, specificLambdasToDeploy, ts, update}, callback) {
+module.exports = function deploySAM ({ stackname, arc, specificLambdasToDeploy, ts, update }, callback) {
   waterfall([
 
-    function readResources(callback) {
-      let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
+    function readResources (callback) {
+      let cloudformation = new aws.CloudFormation({ region: process.env.AWS_REGION })
       cloudformation.listStackResources({
         StackName: stackname
       },
-      function done(err, data) {
+      function done (err, data) {
         if (err) callback(err)
         else {
-          let find = i=> i.ResourceType === 'AWS::Lambda::Function'
+          let find = i => i.ResourceType === 'AWS::Lambda::Function'
           let functions = data.StackResourceSummaries.filter(find)
           callback(null, functions)
         }
       })
     },
 
-    function readLocal(functions, callback) {
+    function readLocal (functions, callback) {
       let localPaths = specificLambdasToDeploy.length ? specificLambdasToDeploy : utils.inventory(arc).localPaths
-      parallel(localPaths.map(pathToCode=> {
-        return function one(callback) {
+      parallel(localPaths.map(pathToCode => {
+        return function one (callback) {
           let folder = pathToCode.split('/').reverse().shift()
           let isWS = pathToCode.startsWith('src/ws')
-          let logicalID = utils.toLogicalID(isWS? `websocket-${folder.replace('000', '').replace('ws-', '')}` : folder.replace('000', ''))
-          let found = functions.find(f=> f.LogicalResourceId === logicalID)
+          let logicalID = utils.toLogicalID(isWS ? `websocket-${folder.replace('000', '').replace('ws-', '')}` : folder.replace('000', ''))
+          let found = functions.find(f => f.LogicalResourceId === logicalID)
           if (found) {
             let FunctionName = found.PhysicalResourceId
             deploy({
@@ -46,7 +46,7 @@ module.exports = function deploySAM({stackname, arc, specificLambdasToDeploy, ts
           }
         }
       }),
-      function done(err) {
+      function done (err) {
         if (err) callback(err)
         else {
           pretty.success(ts, update)
@@ -55,16 +55,16 @@ module.exports = function deploySAM({stackname, arc, specificLambdasToDeploy, ts
       })
     },
 
-    function readURL(callback) {
-      let cloudformation = new aws.CloudFormation({region: process.env.AWS_REGION})
+    function readURL (callback) {
+      let cloudformation = new aws.CloudFormation({ region: process.env.AWS_REGION })
       cloudformation.describeStacks({
         StackName: stackname
       },
-      function done(err, data) {
+      function done (err, data) {
         if (err) console.log(err)
         else if (Array.isArray(data.Stacks)) {
           let outs = data.Stacks[0].Outputs
-          let maybe = outs.find(o=> o.OutputKey === 'API')
+          let maybe = outs.find(o => o.OutputKey === 'API')
           if (maybe)
             pretty.url(maybe.OutputValue)
         }

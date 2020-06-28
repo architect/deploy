@@ -60,7 +60,7 @@ module.exports = function putFiles (params, callback) {
             // Get the params for the file to be uploaded
             let params = putParams({ Bucket, Key, Body, file, fingerprint })
 
-            s3.putObject(params, function _putObj(err) {
+            s3.putObject(params, function _putObj (err) {
               if (err && err.code === 'AccessDenied') {
                 callback(Error('access_denied'))
               }

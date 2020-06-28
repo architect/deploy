@@ -8,10 +8,10 @@ let isStatic =  opt => opt === 'static' || opt === '--static' || opt === '-s'
 let isVerbose = opt => opt === 'verbose' || opt === '--verbose' || opt === '-v'
 
 let tags =      arg => arg === '--tags' || arg === '-t' || arg === 'tags'
-let apiType =   arg => arg.startsWith('--apigateway=')
+let apiType =   arg => arg.startsWith('--apigateway')
 let name =      arg => arg === '--name' || arg === '-n' || arg === 'name' || arg.startsWith('--name=')
 
-module.exports = function options(opts) {
+module.exports = function options (opts) {
   return {
     prune: opts.some(isPrune),
     verbose: opts.some(isVerbose),
@@ -27,8 +27,8 @@ module.exports = function options(opts) {
   }
 }
 
-function getTags(list) {
-  let hasTags = process.argv.some(tags)
+function getTags (list) {
+  let hasTags = list.some(tags)
   if (!hasTags)
     return []
   let len = list.length
@@ -37,8 +37,8 @@ function getTags(list) {
   return left.filter(arg => /^[a-zA-Z0-9]+=[a-zA-Z0-9]+/.test(arg))
 }
 
-function getValue(list, predicate) {
-  let hasValue = process.argv.some(predicate)
+function getValue (list, predicate) {
+  let hasValue = list.some(predicate)
   if (!hasValue)
     return false
 
@@ -55,7 +55,7 @@ function getValue(list, predicate) {
   }
 }
 
-function getSrcDirs(list) {
+function getSrcDirs (list) {
   return list.reduce((acc, f) => {
     if (!f.startsWith('src')) return acc
     try {
@@ -64,6 +64,7 @@ function getSrcDirs(list) {
         acc.push(f)
       }
       return acc
-    } catch (e) { return acc }
+    }
+    catch (e) { return acc }
   }, [])
 }

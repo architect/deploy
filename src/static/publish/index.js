@@ -36,7 +36,7 @@ module.exports = function publishStaticAssets (params, callback) {
   waterfall([
 
     // Notices
-    function _notices(callback) {
+    function _notices (callback) {
       if ((!isFullDeploy && fingerprint) || (!isFullDeploy && verbose)) {
         update.done(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`)
       }
@@ -47,7 +47,7 @@ module.exports = function publishStaticAssets (params, callback) {
     },
 
     // Scan for files in the public directory
-    function _globFiles(callback) {
+    function _globFiles (callback) {
       let dir = pathToUnix(staticAssets)
       let opts = {
         dot: true,
@@ -58,14 +58,14 @@ module.exports = function publishStaticAssets (params, callback) {
     },
 
     // Filter based on default and user-specified @static ignore rules
-    function _filterFiles(globbed, callback) {
+    function _filterFiles (globbed, callback) {
       files = globbed
       let params = { files, ignore, publicDir }
       filterFiles(params, callback)
     },
 
     // Write, reuse, or possibly remove fingerprinted static asset manifest
-    function _maybeWriteStaticManifest(filtered, ignored, callback) {
+    function _maybeWriteStaticManifest (filtered, ignored, callback) {
       files = filtered
       ignore = ignored
       let params = { fingerprint, ignore, isFullDeploy, publicDir }
@@ -73,7 +73,7 @@ module.exports = function publishStaticAssets (params, callback) {
     },
 
     // Upload files to S3
-    function _put(manifest={}, callback) {
+    function _put (manifest = {}, callback) {
       // Fingerprinter may or may not return a manifest
       if (!callback) {
         callback = manifest
@@ -98,7 +98,7 @@ module.exports = function publishStaticAssets (params, callback) {
     },
 
     // Prune old files (if requested)
-    function _delete(uploadCount, notModifiedCount, callback) {
+    function _delete (uploadCount, notModifiedCount, callback) {
       uploaded = uploadCount
       notModified = notModifiedCount
 
@@ -116,7 +116,7 @@ module.exports = function publishStaticAssets (params, callback) {
       }
       else callback()
     }
-  ], function done(err) {
+  ], function done (err) {
     if (err && err.message === 'no_files_to_publish') {
       update.done('Done!', `No static assets found to deploy from ${folder}${sep}`)
       callback()

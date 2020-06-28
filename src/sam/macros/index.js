@@ -37,9 +37,9 @@ let { join } = require('path')
  * @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
  * @param {Function} callback - a Node style errback
  */
-module.exports = function macros(arc, cloudformation, stage, options, callback) {
+module.exports = function macros (arc, cloudformation, stage, options, callback) {
   exec(arc, cloudformation, stage, options)
-    .then(cfn=> callback(null, cfn))
+    .then(cfn => callback(null, cfn))
     .catch(callback)
 }
 
@@ -49,7 +49,7 @@ module.exports = function macros(arc, cloudformation, stage, options, callback) 
  * @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
  * @returns {AWS::Serverless}
  */
-async function exec(arc, cloudformation, stage, options) {
+async function exec (arc, cloudformation, stage, options) {
   let transforms = arc.macros || []
   // Always run the following internal macros:
   transforms.push('legacy-api') // Use legacy REST APIs instead of HTTP APIs for @http; must run before other macros
@@ -57,7 +57,7 @@ async function exec(arc, cloudformation, stage, options) {
   transforms.push('arc-env')    // Gets and sets env vars for functions
   transforms.push('static')     // Sets SPA, S3 prefix, etc. in root handler
   return await transforms.map(path)
-    .reduce(async function reducer(current, macro) {
+    .reduce(async function reducer (current, macro) {
       // eslint-disable-next-line
       let run = require(macro)
       let cloudformation = await current
@@ -75,7 +75,7 @@ async function exec(arc, cloudformation, stage, options) {
  * @param {String} name - the macro name
  * @returns {String} path - the path to the macro
  */
-function path(name) {
+function path (name) {
   let internal = join(__dirname, `_${name}`, 'index.js')
   let localPath = join(process.cwd(), 'src', 'macros', `${name}.js`)
   let localPath1 = join(process.cwd(), 'src', 'macros', name)

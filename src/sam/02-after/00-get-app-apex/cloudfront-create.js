@@ -1,6 +1,6 @@
 let aws = require('aws-sdk')
 
-module.exports = function createCloudFrontDistribution({domain, path, stage}, callback) {
+module.exports = function createCloudFrontDistribution ({ domain, path, stage }, callback) {
   let cf = new aws.CloudFront
   cf.createDistribution(config({
     DomainName: domain.replace(`/${stage}`, '').replace('https://', ''),
@@ -9,22 +9,22 @@ module.exports = function createCloudFrontDistribution({domain, path, stage}, ca
   }), callback)
 }
 
-function config({DomainName, OriginPath, stage}) {
+function config ({ DomainName, OriginPath, stage }) {
 
   let CallerReference = `edge-${Date.now()}`
-  let OriginProtocolPolicy = OriginPath === `/${stage}`? 'https-only' : 'http-only'
+  let OriginProtocolPolicy = OriginPath === `/${stage}` ? 'https-only' : 'http-only'
 
   let origin = {
     Id: CallerReference,
     DomainName,
-    CustomHeaders: {Quantity: 0, Items: []},
+    CustomHeaders: { Quantity: 0, Items: [] },
     CustomOriginConfig: {
       HTTPPort: 80,
       HTTPSPort: 443,
       OriginProtocolPolicy,
       OriginSslProtocols: {
         Quantity: 3,
-        Items: ['TLSv1', 'TLSv1.1', 'TLSv1.2'],
+        Items: [ 'TLSv1', 'TLSv1.1', 'TLSv1.2' ],
       },
       OriginReadTimeout: 30,
       OriginKeepaliveTimeout: 5, // NOTE FOR RYAN: up this for API edge config
@@ -43,16 +43,16 @@ function config({DomainName, OriginPath, stage}) {
       IsIPV6Enabled: true,
       HttpVersion: 'http2',
       PriceClass: 'PriceClass_All',
-      Aliases: {Quantity: 0, Items: []},
-      CacheBehaviors: {Quantity: 0, Items: []},
-      CustomErrorResponses: {Quantity: 0, Items: []},
-      Origins: {Quantity: 1, Items: [origin]},
+      Aliases: { Quantity: 0, Items: [] },
+      CacheBehaviors: { Quantity: 0, Items: [] },
+      CustomErrorResponses: { Quantity: 0, Items: [] },
+      Origins: { Quantity: 1, Items: [ origin ] },
 
       DefaultCacheBehavior: {
         TargetOriginId: CallerReference,
         ForwardedValues: {
           QueryString: true,
-          Cookies: {Forward: 'all'},
+          Cookies: { Forward: 'all' },
           Headers: {
             Quantity: 0,
             Items: [],
@@ -71,17 +71,17 @@ function config({DomainName, OriginPath, stage}) {
         MinTTL: 0,
         AllowedMethods: {
           Quantity: 7,
-          Items: ['GET', 'HEAD', 'DELETE', 'POST', 'PATCH', 'PUT', 'OPTIONS'],
+          Items: [ 'GET', 'HEAD', 'DELETE', 'POST', 'PATCH', 'PUT', 'OPTIONS' ],
           CachedMethods: {
             Quantity: 2,
-            Items: ['GET', 'HEAD'],
+            Items: [ 'GET', 'HEAD' ],
           },
         },
         SmoothStreaming: false,
         DefaultTTL: 86400,
         MaxTTL: 31536000,
         Compress: true, // Important!
-        LambdaFunctionAssociations: {Quantity: 0, Items: []},
+        LambdaFunctionAssociations: { Quantity: 0, Items: [] },
         FieldLevelEncryptionId: '',
       },
 

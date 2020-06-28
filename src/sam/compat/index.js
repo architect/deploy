@@ -1,5 +1,5 @@
 let aws = require('aws-sdk')
-let {toLogicalID} = require('@architect/utils')
+let { toLogicalID } = require('@architect/utils')
 let series = require('run-series')
 
 /**
@@ -13,14 +13,14 @@ module.exports = function compat (params, callback) {
 
   // Prefer describeStackResources against multiple specific known LogicalResourceIds (vs paginating & searching)
   series([
-    function getApiType(callback) {
+    function getApiType (callback) {
       if (arc.http) {
         // Look for a legacy REST API in the stack; HTTP API resource IDs are simply 'HTTP'
         let LogicalResourceId = toLogicalID(arc.app[0])
         cfn.describeStackResources({
           StackName,
           LogicalResourceId
-        }, function done(err, stack) {
+        }, function done (err, stack) {
           // First run
           if (err && err.message === `Stack with id ${StackName} does not exist`) callback()
           else if (err) callback(err)
@@ -33,7 +33,7 @@ module.exports = function compat (params, callback) {
       }
       else callback()
     }
-  ], function done(err) {
+  ], function done (err) {
     if (err) callback(err)
     else callback(null, result)
   })

@@ -1,7 +1,8 @@
 /**
  * Update API paths (and any callers to them) with stage-specific parts
  */
-module.exports = async function api(arc, cloudformation, stage) {
+// eslint-disable-next-line
+module.exports = async function api (arc, cloudformation, stage) {
   stage = defaultStage(stage)
   let cfn = cloudformation
 
@@ -58,7 +59,7 @@ module.exports = async function api(arc, cloudformation, stage) {
 }
 
 // If it's not 'staging' or 'production', then it should be 'staging'
-function defaultStage(stage) {
+function defaultStage (stage) {
   let staging = 'staging'
   let production = 'production'
   if (stage !== staging && stage !== production)

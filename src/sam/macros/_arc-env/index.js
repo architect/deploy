@@ -4,18 +4,18 @@ let utils = require('util')
 /**
  * reads SSM for env vars and resets NODE_ENV
  */
-module.exports = async function env(arc, cloudformation, stage) {
+module.exports = async function env (arc, cloudformation, stage) {
   stage = defaultStage(stage)
   let cfn = cloudformation
   let appname = arc.app[0]
   let getAll = utils.promisify(all)
   let variables = await getAll(appname)
-  let filtered = variables.filter(v=> v.env === stage)
-  Object.keys(cfn.Resources).forEach(r=> {
+  let filtered = variables.filter(v => v.env === stage)
+  Object.keys(cfn.Resources).forEach(r => {
     let isFunction = cfn.Resources[r].Type === 'AWS::Serverless::Function'
     if (isFunction) {
       cfn.Resources[r].Properties.Environment.Variables.NODE_ENV = stage
-      filtered.forEach(v=> {
+      filtered.forEach(v => {
         cfn.Resources[r].Properties.Environment.Variables[v.name] = v.value
       })
     }
@@ -27,14 +27,14 @@ module.exports = async function env(arc, cloudformation, stage) {
  * lifted from architect/env
  * reads all the env vars for a given appname
  */
-function all(appname, callback) {
+function all (appname, callback) {
 
-  let ssm = new aws.SSM({region: process.env.AWS_REGION})
+  let ssm = new aws.SSM({ region: process.env.AWS_REGION })
 
   // reset this every call..
   let result = []
 
-  function getSome(appname, NextToken, callback) {
+  function getSome (appname, NextToken, callback) {
     // base query to ssm
     let query = {
       Path: `/${appname}`,
@@ -47,13 +47,13 @@ function all(appname, callback) {
       query.NextToken = NextToken
     }
     // performs the query
-    ssm.getParametersByPath(query, function _query(err, data) {
+    ssm.getParametersByPath(query, function _query (err, data) {
       if (err) {
         callback(err)
       }
       else {
         // tidy up the response
-        result = result.concat(data.Parameters.map(function(param) {
+        result = result.concat(data.Parameters.map(function (param) {
           let bits = param.Name.split('/')
           return {
             app: appname,
@@ -74,7 +74,7 @@ function all(appname, callback) {
     })
   }
 
-  getSome(appname, false, function done(err, result) {
+  getSome(appname, false, function done (err, result) {
     if (err) callback(err)
     else {
       callback(null, result)
@@ -83,7 +83,7 @@ function all(appname, callback) {
 }
 
 // If it's not 'staging' or 'production', then it should be 'staging'
-function defaultStage(stage) {
+function defaultStage (stage) {
   let staging = 'staging'
   let production = 'production'
   if (stage !== staging && stage !== production)

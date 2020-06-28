@@ -5,6 +5,7 @@ let unexpress = require('./un-express-route')
 
 let forceStatic = require('./add-static-proxy')
 
+// eslint-disable-next-line
 module.exports = async function visitLegacyAPI (arc, cloudformation, stage, options) {
   let { legacyAPI } = options
   if (legacyAPI) {

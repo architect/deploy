@@ -19,6 +19,6 @@ module.exports = function maybeWriteStaticManifest (params, callback) {
   }
   // Let the fingerprinter sort out writing the manifest
   else {
-    fingerprinter({fingerprint, ignore}, callback)
+    fingerprinter({ fingerprint, ignore }, callback)
   }
 }
