@@ -1,6 +1,6 @@
 let pkg = require('@architect/package')
 let utils = require('@architect/utils')
-let {updater} = require('@architect/utils')
+let {readArc, toLogicalID, updater} = require('@architect/utils')
 let fingerprinter = utils.fingerprint
 let fingerprintConfig = fingerprinter.config
 let series = require('run-series')
@@ -8,6 +8,7 @@ let hydrate = require('@architect/hydrate')
 
 let print = require('./print')
 let getBucket = require('./bucket')
+let compat = require('./compat')
 let macros = require('./macros')
 let before = require('./00-before')
 let deploy = require('./01-deploy')
@@ -21,25 +22,37 @@ let after = require('./02-after')
  * @returns {Promise} - if not callback is supplied
  */
 module.exports = function samDeploy(params, callback) {
-  let {verbose, production, prune, tags, name, isDryRun=false} = params
+  let { apiType, isDryRun=false, name, production, prune, tags, verbose } = params
 
   let stage = production ? 'production' : 'staging'
   let ts = Date.now()
   let log = true
   let pretty = print({log, verbose})
-  let {arc} = utils.readArc()
+  let { arc } = readArc()
   let bucket // Assigned later
   let appname = arc.app[0]
-  let stackname = `${utils.toLogicalID(appname)}${production? 'Production' : 'Staging'}`
+  let stackname = `${toLogicalID(appname)}${production? 'Production' : 'Staging'}`
   let update = updater('Deploy')
 
   if (name)
-    stackname += utils.toLogicalID(name)
+    stackname += toLogicalID(name)
 
   // Assigned below
   let cloudformation
   let sam
   let nested
+
+  // API switching
+  let legacyAPI // Default may be reassigned below
+
+  let findAPIType = s => s[0] && s[0] === 'apigateway' && s[1]
+  let arcAPIType = arc.aws && arc.aws.find(findAPIType)
+  // CLI wins over @aws setting
+  apiType = apiType || arcAPIType
+  if (apiType) {
+    if (apiType !== 'http' || apiType !== 'rest') throw ReferenceError('API type must be http or rest')
+    if (apiType === 'rest') legacyAPI = true
+  }
 
   let region = process.env.AWS_REGION
   if (!region)
@@ -142,10 +155,33 @@ module.exports = function samDeploy(params, callback) {
     },
 
     /**
+     * Check to see if we're working with a legacy (REST) API
+     */
+    function legacyCompat(callback) {
+      compat({
+        arc,
+        stackname
+      }, function done(err, result={}) {
+        if (err) callback(err)
+        else {
+          // If specifed above by CLI flag or arc.aws setting, override result
+          legacyAPI = legacyAPI || result.legacyAPI
+          callback()
+        }
+      })
+    },
+
+    /**
      * Macros (both built-in + user)
      */
     function runMacros(callback) {
-      macros(arc, cloudformation, stage, function done(err, _sam) {
+      let options = { legacyAPI }
+      macros(
+        arc,
+        cloudformation,
+        stage,
+        options,
+      function done(err, _sam) {
         if (err) callback(err)
         else {
           sam = _sam

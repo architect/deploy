@@ -36,14 +36,12 @@ let { join } = require('path')
  * @param {AWS::Serverless} template - the current CloudFormation template
  * @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
  * @param {Function} callback - a Node style errback
- *
  */
-module.exports = function macros(arc, cloudformation, stage, callback) {
-  exec(arc, cloudformation, stage)
+module.exports = function macros(arc, cloudformation, stage, options, callback) {
+  exec(arc, cloudformation, stage, options)
     .then(cfn=> callback(null, cfn))
     .catch(callback)
 }
-
 
 /**
  * @param {Object} arc - the parsed .arc file in the current working directory
@@ -51,11 +49,11 @@ module.exports = function macros(arc, cloudformation, stage, callback) {
  * @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
  * @returns {AWS::Serverless}
  */
-async function exec(arc, cloudformation, stage) {
+async function exec(arc, cloudformation, stage, options) {
   let transforms = arc.macros || []
-  // always run the following internal macros:
-  transforms.push('set-stage')  // Sets cloudformation stage name for all resources
-  transforms.push('api-path')   // Updates @cdn, @http, @ws stage URL paths
+  // Always run the following internal macros:
+  transforms.push('legacy-api') // Use legacy REST APIs instead of HTTP APIs for @http; must run before other macros
+  transforms.push('api-path')   // Updates @cdn, @ws stage URL paths
   transforms.push('arc-env')    // Gets and sets env vars for functions
   transforms.push('static')     // Sets SPA, S3 prefix, etc. in root handler
   return await transforms.map(path)
@@ -63,7 +61,7 @@ async function exec(arc, cloudformation, stage) {
       // eslint-disable-next-line
       let run = require(macro)
       let cloudformation = await current
-      return await run(arc, cloudformation, stage)
+      return await run(arc, cloudformation, stage, options)
     }, Promise.resolve(cloudformation))
 }
 
