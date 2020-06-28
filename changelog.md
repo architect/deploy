@@ -2,6 +2,22 @@
 
 ---
 
+## [1.9.0] 2020-06-28
+
+### Added
+
+- `HTTP` APIs are the new default when provisioning API Gateway resources
+  - This only impacts Architect `@http`, which was formerly provisioned as `REST` APIs
+  - Added backwards compatibility for `REST` APIs with `--apigateway rest` or `@aws apigateway rest`
+  - More info: https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html
+  - Fixes #838
+
+
+### Changed
+
+- Internal change: implemented new code standard with `@architect/eslint-config`
+
+---
 ## [1.8.2] 2020-06-24
 
 ### Changed
