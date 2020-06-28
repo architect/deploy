@@ -1,11 +1,8 @@
-let {existsSync} = require('fs')
-let {join} = require('path')
+let { existsSync } = require('fs')
+let { join } = require('path')
 /**
  * Architect Macros
  * ---
- *
- * Exprimental feature for modifying the generated CloudFormation template before deployment.
- *
  * > NOTE: currently macros are Node modules; Python and Ruby are planned for a future release
  *
  * A macro are found in two places:
@@ -81,7 +78,7 @@ async function exec(arc, cloudformation, stage) {
  * @returns {String} path - the path to the macro
  */
 function path(name) {
-  let internal = join(__dirname, `_${name}.js`)
+  let internal = join(__dirname, `_${name}`, 'index.js')
   let localPath = join(process.cwd(), 'src', 'macros', `${name}.js`)
   let localPath1 = join(process.cwd(), 'src', 'macros', name)
   let modulePath = join(process.cwd(), 'node_modules', name)

@@ -5,20 +5,6 @@ module.exports = async function api(arc, cloudformation, stage) {
   stage = defaultStage(stage)
   let cfn = cloudformation
 
-  // @http path/stages
-  if (arc.http) {
-    // Set output
-    let outputsAPI =
-      cfn.Outputs &&
-      cfn.Outputs.API &&
-      cfn.Outputs.API.Value &&
-      cfn.Outputs.API.Value['Fn::Sub']
-    let API = outputsAPI && outputsAPI.findIndex(i => typeof i === 'string' && i.startsWith('https://') && i.includes('.execute-api.'))
-    if (outputsAPI && outputsAPI[API]) {
-      cfn.Outputs.API.Value['Fn::Sub'][API] = outputsAPI[API].replace('staging', stage)
-    }
-  }
-
   // @ws path/stages
   if (arc.ws) {
     // Set correct WS API name
