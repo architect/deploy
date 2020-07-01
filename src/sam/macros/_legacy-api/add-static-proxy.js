@@ -5,7 +5,7 @@ module.exports = function addStatic (arc, cloudformation) {
   let appname = toLogicalID(arc.app[0])
 
   cloudformation.Resources[appname].Properties.DefinitionBody.paths['/_static/{proxy+}'] = {
-    'x-amazon-apigateway-any-method': {
+    get: {
       parameters: [ {
         name: 'proxy',
         in: 'path',
@@ -30,7 +30,7 @@ module.exports = function addStatic (arc, cloudformation) {
           'integration.request.path.proxy': 'method.request.path.proxy'
         },
         passthroughBehavior: 'when_no_match',
-        httpMethod: 'ANY',
+        httpMethod: 'GET',
         cacheNamespace: 'xlr8r2',
         cacheKeyParameters: [
           'method.request.path.proxy'
