@@ -2,6 +2,16 @@
 
 ---
 
+## [1.8.3] 2020-07-01
+
+### Fixed
+
+- Fixed issue API Gateway issue that adds a default `Stage` stage
+- Corrected internal configuration for static proxy
+- Now ensure least privilege HTTP methods on `/_static/*`, allowing only `GET`
+
+---
+
 ## [1.8.2] 2020-06-24
 
 ### Changed
