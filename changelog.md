@@ -4,11 +4,15 @@
 
 ## [1.8.3] 2020-07-01
 
+### Changed
+
+- Apps now ensure least privilege HTTP methods on `/_static/*`, allowing only `GET`
+
+
 ### Fixed
 
-- Fixed issue API Gateway issue that adds a default `Stage` stage
+- Fixed API Gateway issue that adds an extra stage called `Stage`
 - Corrected internal configuration for static proxy
-- Now ensure least privilege HTTP methods on `/_static/*`, allowing only `GET`
 
 ---
 
