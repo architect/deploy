@@ -2,6 +2,14 @@
 
 ---
 
+## [1.8.4] 2020-07-15
+
+### Fixed
+
+- Fixed static asset deploy path issue; fixes #915, ht gyan!
+
+---
+
 ## [1.8.3] 2020-07-01
 
 ### Changed
