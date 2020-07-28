@@ -7,8 +7,11 @@
 ### Added
 
 - `HTTP` APIs are the new default when provisioning API Gateway resources
+  - Defaults to `http` setting, which uses the latest payload format, or manually specify `httpv2` or legacy `httpv1` payload formats
+    - Apply in CLI with `--apigateway http[v1|v2]`, or in project manifest with `@aws apigateway http[v1|v2]`
+  - Added backwards compatibility for `REST` APIs with `rest` setting
+    - Apply in CLI with `--apigateway rest`, or in project manifest with `@aws apigateway rest`
   - This only impacts Architect `@http`, which was formerly provisioned as `REST` APIs
-  - Added backwards compatibility for `REST` APIs with `--apigateway rest` or `@aws apigateway rest`
   - More info: https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api.html
   - Fixes #838
 

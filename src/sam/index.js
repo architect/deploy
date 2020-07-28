@@ -41,19 +41,7 @@ module.exports = function samDeploy (params, callback) {
   let cloudformation
   let sam
   let nested
-
-  // API switching
-  let legacyAPI // Default may be reassigned below
-  let findAPIType = s => s[0] && s[0] === 'apigateway' && s[1]
-  let arcAPIType = arc.aws && arc.aws.some(findAPIType) && arc.aws.find(findAPIType)[1]
-  // CLI wins over @aws setting
-  apiType = apiType || arcAPIType
-  if (apiType) {
-    let valid = [ 'http', 'httpv1', 'httpv2', 'rest' ]
-    if (valid.some(apiType)) throw ReferenceError('API type must be http[v1,v2], or rest')
-    if (apiType === 'rest') legacyAPI = true
-    else legacyAPI = false
-  }
+  let foundLegacyApi
 
   let region = process.env.AWS_REGION
   if (!region)
@@ -165,20 +153,44 @@ module.exports = function samDeploy (params, callback) {
       }, function done (err, result = {}) {
         if (err) callback(err)
         else {
-          // If specifed above by CLI flag or arc.aws setting, override result
-          if (legacyAPI === undefined && result.legacyAPI) {
-            legacyAPI = result.legacyAPI
-          }
+          foundLegacyApi = result.legacyApi
           callback()
         }
       })
     },
 
     /**
+     * Determine final API type
+     */
+    function setApiType (callback) {
+      // API switching
+      let findApiType = s => s[0] && s[0] === 'apigateway' && s[1]
+      let arcApiType = arc.aws && arc.aws.some(findApiType) && arc.aws.find(findApiType)[1]
+
+      // Priority: user specified API type > existing legacy API type > default API type
+      let specified = apiType || arcApiType // CLI wins over @aws
+      if (specified) {
+        apiType = specified
+      }
+      else if (foundLegacyApi) {
+        apiType = 'rest'
+      }
+      else {
+        apiType = 'http'
+      }
+
+      if (apiType) {
+        let valid = [ 'http', 'httpv1', 'httpv2', 'rest' ]
+        if (!valid.some(v => v === apiType)) throw ReferenceError(`API type must be 'http[v1|v2]', or 'rest'`)
+      }
+      callback()
+    },
+
+    /**
      * Macros (both built-in + user)
      */
     function runMacros (callback) {
-      let options = { legacyAPI }
+      let options = { apiType }
       macros(
         arc,
         cloudformation,

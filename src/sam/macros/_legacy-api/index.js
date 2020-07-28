@@ -7,8 +7,8 @@ let forceStatic = require('./add-static-proxy')
 
 // eslint-disable-next-line
 module.exports = async function visitLegacyAPI (arc, cloudformation, stage, options) {
-  let { legacyAPI } = options
-  if (legacyAPI) {
+  let { apiType } = options
+  if (apiType === 'rest' && arc.http.length) {
     // Copy arc.http to avoid get index mutation
     let http = JSON.parse(JSON.stringify(arc.http))
 

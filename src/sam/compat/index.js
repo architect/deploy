@@ -25,8 +25,8 @@ module.exports = function compat (params, callback) {
           if (err && err.message === `Stack with id ${StackName} does not exist`) callback()
           else if (err) callback(err)
           else {
-            let apiType = stack.StackResources[0] && stack.StackResources[0].ResourceType
-            result.legacyAPI = apiType === 'AWS::ApiGateway::RestApi' ? true : false
+            let api = stack.StackResources[0] && stack.StackResources[0].ResourceType
+            result.legacyApi = api === 'AWS::ApiGateway::RestApi' ? true : false
             callback()
           }
         })
