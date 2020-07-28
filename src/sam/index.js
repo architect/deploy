@@ -49,7 +49,8 @@ module.exports = function samDeploy (params, callback) {
   // CLI wins over @aws setting
   apiType = apiType || arcAPIType
   if (apiType) {
-    if (apiType !== 'http' && apiType !== 'rest') throw ReferenceError('API type must be http or rest')
+    let valid = [ 'http', 'httpv1', 'httpv2', 'rest' ]
+    if (valid.some(apiType)) throw ReferenceError('API type must be http[v1,v2], or rest')
     if (apiType === 'rest') legacyAPI = true
     else legacyAPI = false
   }
