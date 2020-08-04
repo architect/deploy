@@ -6,7 +6,7 @@ let unexpress = require('./un-express-route')
 let forceStatic = require('./add-static-proxy')
 
 // eslint-disable-next-line
-module.exports = async function visitLegacyAPI (arc, cloudformation, stage, options) {
+module.exports = async function legacyAPI (arc, cloudformation, stage, options) {
   let { apiType } = options
   if (apiType === 'rest' && arc.http.length) {
     // Copy arc.http to avoid get index mutation

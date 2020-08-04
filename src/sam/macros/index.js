@@ -52,11 +52,13 @@ module.exports = function macros (arc, cloudformation, stage, options, callback)
 async function exec (arc, cloudformation, stage, options) {
   let transforms = arc.macros || []
   // Always run the following internal macros:
-  transforms.push('legacy-api') // Use legacy REST APIs instead of HTTP APIs for @http; must run before other macros
-  transforms.push('http-ver')   // Reconfigure HTTP APIs to use legacy REST API payload format
-  transforms.push('api-path')   // Updates @cdn, @ws stage URL paths
-  transforms.push('arc-env')    // Gets and sets env vars for functions
-  transforms.push('static')     // Sets SPA, S3 prefix, etc. in root handler
+  transforms.push(
+    'legacy-api', // Use legacy REST APIs instead of HTTP APIs for @http; must run before other macros
+    'http-ver',   // Reconfigure HTTP APIs to use legacy REST API payload format
+    'api-path',   // Updates @cdn, @ws stage URL paths
+    'arc-env',    // Gets and sets env vars for functions
+    'static'      // Sets SPA, S3 prefix, etc. in root handler
+  )
   return await transforms.map(path)
     .reduce(async function reducer (current, macro) {
       // eslint-disable-next-line

@@ -1,5 +1,5 @@
 // eslint-disable-next-line
-module.exports = async function visitLegacyAPI (arc, cloudformation, stage, options) {
+module.exports = async function httpVersion (arc, cloudformation, stage, options) {
   let { apiType } = options
   if (apiType === 'httpv1' && arc.http.length) {
     // Start here

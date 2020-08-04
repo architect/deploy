@@ -2,7 +2,7 @@
  * Update API paths (and any callers to them) with stage-specific parts
  */
 // eslint-disable-next-line
-module.exports = async function api (arc, cloudformation, stage) {
+module.exports = async function apiPath (arc, cloudformation, stage) {
   stage = defaultStage(stage)
   let cfn = cloudformation
 
