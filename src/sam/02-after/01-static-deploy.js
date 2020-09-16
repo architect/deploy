@@ -9,7 +9,6 @@ module.exports = function staticDeploy (params, callback) {
 
   if (staticEnabled) {
     let update = updater('Deploy')
-    update.status('Deploying static assets...')
     statics({ verbose, stackname, production, prune, update }, callback)
   }
   else callback()

@@ -1,8 +1,8 @@
 let child = require('child_process')
 
 // spawn helper
-module.exports = function spawn(command, args, pretty, callback) {
-  let pkg = child.spawn(command, args, {shell: true})
+module.exports = function spawn (command, args, pretty, callback) {
+  let pkg = child.spawn(command, args, { shell: true })
   pretty.spawn(command, args)
   let output = []
   pkg.stdout.on('data', data => {
@@ -13,7 +13,7 @@ module.exports = function spawn(command, args, pretty, callback) {
     output.push(data)
     pretty.stderr(data)
   })
-  pkg.on('close', (code)=> {
+  pkg.on('close', (code) => {
     output = output.join('')
     let noChanges = output.includes('No changes to deploy.')
     if (code === 255 && noChanges) {

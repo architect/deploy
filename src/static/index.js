@@ -17,8 +17,8 @@ module.exports = function deployStatic (params, callback) {
   let {
     bucket: Bucket,
     credentials,
-    isDryRun=false,
-    isFullDeploy=true, // Prevents duplicate static manifest operations that could impact state
+    isDryRun = false,
+    isFullDeploy = true, // Prevents duplicate static manifest operations that could impact state
     name,
     production,
     region,
@@ -27,7 +27,7 @@ module.exports = function deployStatic (params, callback) {
     verbose,
     // `@static` settings
     prefix, // Enables `@static prefix` publishing prefix (not the same as `@static folder`)
-    prune=false,
+    prune = false,
   } = params
   if (!update) update = updater('Deploy')
 
@@ -57,7 +57,7 @@ module.exports = function deployStatic (params, callback) {
     let appname = arc.app[0]
 
     if (!stackname) {
-      stackname = `${toLogicalID(appname)}${production? 'Production' : 'Staging'}`
+      stackname = `${toLogicalID(appname)}${production ? 'Production' : 'Staging'}`
       if (name) stackname += toLogicalID(name)
     }
 
@@ -65,7 +65,7 @@ module.exports = function deployStatic (params, callback) {
 
     waterfall([
       // Parse settings
-      function(callback) {
+      function (callback) {
         // Bail early if this project doesn't have @static specified
         if (!staticEnabled) {
           callback(Error('cancel'))
@@ -99,21 +99,21 @@ module.exports = function deployStatic (params, callback) {
           // Published path prefixing
           prefix = prefix || setting('prefix')
 
-          callback(null, {fingerprint, ignore, folder})
+          callback(null, { fingerprint, ignore, folder })
         }
       },
 
       // Get the bucket PhysicalResourceId if not supplied
-      function(params, callback) {
+      function (params, callback) {
         if (!Bucket) {
           let cloudformation = new aws.CloudFormation(config)
           cloudformation.listStackResources({
             StackName: stackname
           },
-          function done(err, data) {
+          function done (err, data) {
             if (err) callback(err)
             else {
-              let find = i=> i.ResourceType === 'AWS::S3::Bucket' && i.LogicalResourceId === 'StaticBucket'
+              let find = i => i.ResourceType === 'AWS::S3::Bucket' && i.LogicalResourceId === 'StaticBucket'
               Bucket = data.StackResourceSummaries.find(find).PhysicalResourceId
               callback(null, params)
             }
@@ -122,7 +122,7 @@ module.exports = function deployStatic (params, callback) {
         else callback(null, params)
       },
 
-      function({fingerprint, ignore, folder}, callback) {
+      function ({ fingerprint, ignore, folder }, callback) {
         let s3 = new aws.S3(config)
 
         publish({
@@ -140,7 +140,7 @@ module.exports = function deployStatic (params, callback) {
         }, callback)
       }
     ],
-    function done(err) {
+    function done (err) {
       if (err && err.message === 'cancel') callback()
       else if (err) callback(err)
       else callback()

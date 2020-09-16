@@ -53,12 +53,12 @@ module.exports = function deleteFiles (params, callback) {
         }
 
         // TODO chunk requests to 1k
-        s3.deleteObjects(deleteParams, function(err, data) {
+        s3.deleteObjects(deleteParams, function (err, data) {
           if (err) {
             console.error('Deleting objects on S3 failed', err)
           }
           else {
-            data.Deleted.forEach(function(deletedFile) {
+            data.Deleted.forEach(function (deletedFile) {
               let last = `https://${Bucket}.s3.${region}.amazonaws.com/${deletedFile.Key}`
               console.log(`${chalk.red('[ ✗ Deleted  ]')} ${chalk.cyan(last)}`)
             })

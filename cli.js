@@ -1,10 +1,10 @@
 #!/usr/bin/env node
 let deploy = require('.')
-let {banner, updater} = require('@architect/utils')
+let { banner, updater } = require('@architect/utils')
 let create = require('@architect/create')
 let validate = require('./src/validate')
 let options = require('./src/options')
-let {version} = require('./package.json')
+let { version } = require('./package.json')
 let pauser = require('./src/utils/pause-sandbox')
 
 /**
@@ -20,7 +20,7 @@ let pauser = require('./src/utils/pause-sandbox')
  * -t|--tags|tags ............... add tags
  * -n|--name|name ............... customize stack name
  */
-async function cmd(opts=[]) {
+async function cmd (opts = []) {
 
   // Validate for expected env and args and check for potential creds issues
   validate(opts)
@@ -57,9 +57,9 @@ module.exports = cmd
 // Allow direct invoke
 if (require.main === module) {
   let args = options(process.argv)
-  ;(async function() {
+  ;(async function () {
     try {
-      banner({version: `Deploy ${version}`})
+      banner({ version: `Deploy ${version}` })
       await cmd(process.argv)
     }
     catch (err) {
@@ -70,5 +70,5 @@ if (require.main === module) {
       if (args.verbose)
         console.log(err)
     }
-  })();
+  })()
 }

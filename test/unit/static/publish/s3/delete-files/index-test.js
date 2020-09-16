@@ -125,7 +125,7 @@ test('Prune respects fingerprint setting', t => {
     { Key: 'index-df330f3f12.html' },
     { Key: 'something-df330f3f12.json' },
     { Key: pruneThis }
-  ]}
+  ] }
   sut(params, err => {
     if (err) t.fail(err)
     t.equal(listObjCalls.length, 1, 'S3.listObjectsV2 called once')
@@ -152,7 +152,7 @@ test('Prune respects both prefix & fingerprint settings together', t => {
     { Key: `${prefix}/index-df330f3f12.html`, },
     { Key: `${prefix}/something-df330f3f12.json` },
     { Key: pruneThis }
-  ]}
+  ] }
   sut(params, err => {
     if (err) t.fail(err)
     t.equal(listObjCalls.length, 1, 'S3.listObjectsV2 called once')
@@ -182,7 +182,7 @@ test('Prune respects both prefix & fingerprint settings together in nested folde
     { Key: `${prefix}/index-df330f3f12.html`, },
     { Key: `${prefix}/a-folder/something-df330f3f12.json` },
     { Key: pruneThis }
-  ]}
+  ] }
   sut(params, err => {
     if (err) t.fail(err)
     t.equal(listObjCalls.length, 1, 'S3.listObjectsV2 called once')

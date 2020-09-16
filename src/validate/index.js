@@ -1,4 +1,4 @@
-let {updater} = require('@architect/utils')
+let { updater } = require('@architect/utils')
 let path = require('path')
 let fs = require('fs')
 let update = updater('Deploy')
@@ -9,7 +9,7 @@ let messages = {
   missing_region: '@aws region / AWS_REGION must be configured',
 }
 
-module.exports = function validate(/*opts*/) {
+module.exports = function validate (/* opts*/) {
   try {
     if (process.env.ARC_AWS_CREDS === 'missing')
       throw Error('missing_creds')
@@ -20,14 +20,14 @@ module.exports = function validate(/*opts*/) {
     if (!process.env.AWS_REGION)
       throw Error('missing_region')
   }
-  catch(e) {
+  catch (e) {
     update.error(`Failed to deploy, ${messages[e.message]}`)
     process.exit(1)
   }
 }
 
-function binExists(bin) {
-  function getPaths(bin) {
+function binExists (bin) {
+  function getPaths (bin) {
     var envPath = (process.env.PATH || '')
     var envExt = (process.env.PATHEXT || '')
     return envPath.replace(/["]+/g, '').split(path.delimiter).map(function (chunk) {

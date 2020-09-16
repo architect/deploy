@@ -1,9 +1,8 @@
-let { readArc } = require('@architect/utils')
-
 /**
  * Adds SPA, ARC_STATIC_PREFIX, etc. to `get /` (if defined)
  */
-module.exports = async function api(arc, cloudformation) {
+// eslint-disable-next-line
+module.exports = async function api (arc, cloudformation) {
   let cfn = cloudformation
 
   // Prefix
@@ -23,14 +22,12 @@ module.exports = async function api(arc, cloudformation) {
   }
 
   // Delete global layers on root proxy
-  // TODO Package mutates the arc object, and we need the raw thing – this read should go away
-  let { arc: realArc } = readArc()
-  let noGetIndex = realArc.http && !realArc.http.some(r => r[0] === 'get' && r[1] === '/')
+  let noGetIndex = arc.http && !arc.http.some(r => r[0] === 'get' && r[1] === '/')
   if (noGetIndex && cfn.Resources.GetIndex) {
     try {
       delete cfn.Resources.GetIndex.Properties.Layers
     }
-    catch (err) { /*noop*/ }
+    catch (err) { /* noop*/ }
   }
 
   return cfn

@@ -1,5 +1,5 @@
 let chalk = require('chalk')
-let {chars} = require('@architect/utils')
+let { chars } = require('@architect/utils')
 
 module.exports = {
   url (v) {
@@ -13,7 +13,7 @@ module.exports = {
     update.done('Deployed directly to Lambda')
     let check = chalk.green(chars.done)
     let msg = chalk.grey('Success!')
-    let time = chalk.green(`Deployed in ${(Date.now() - ts)/1000} seconds`)
+    let time = chalk.green(`Deployed in ${(Date.now() - ts) / 1000} seconds`)
     console.log(check, msg, time)
   }
 }

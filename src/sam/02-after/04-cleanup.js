@@ -3,7 +3,7 @@ let path = require('path')
 let parallel = require('run-parallel')
 let rm = require('rimraf')
 
-module.exports = function cleanup({appname}, callback) {
+module.exports = function cleanup ({ appname }, callback) {
   let files = [
     `${appname}-cfn-events.json`,
     `${appname}-cfn-events.yaml`,
@@ -11,14 +11,14 @@ module.exports = function cleanup({appname}, callback) {
     `${appname}-cfn-http.yaml`,
     `${appname}-cfn.json`,
     `${appname}-cfn.yaml`,
-  ].map(f=> {
-    return function deletes(callback) {
-      fs.unlink(path.join(process.cwd(), f), function done() {
+  ].map(f => {
+    return function deletes (callback) {
+      fs.unlink(path.join(process.cwd(), f), function done () {
         callback()
       })
     }
   })
-  parallel(files, function almostDone(err) {
+  parallel(files, function almostDone (err) {
     if (err) console.log(err)
     // Clean up temp dir from root proxy + fingerprint
     rm(path.join(process.cwd(), '__ARC_TMP__'), callback)

@@ -4,20 +4,20 @@ let create = require('./cloudfront-create')
 let enable = require('./cloudfront-enable')
 let destroy = require('./cloudfront-destroy')
 
-module.exports = function getAppApex(params, callback) {
-  let {ts, arc, pretty, stackname, stage, update} = params
+module.exports = function getAppApex (params, callback) {
+  let { ts, arc, pretty, stackname, stage, update } = params
   reads({
     stackname,
     stage
   },
-  function done(err, result) {
+  function done (err, result) {
     if (err) {
       callback(err)
     }
     else {
       update.done('Deployed & built infrastructure')
       pretty.success(ts)
-      let {url, wssURL, bucketDomain, apiDomain, s3, apigateway, httpDomain} = result
+      let { url, wssURL, bucketDomain, apiDomain, s3, apigateway, httpDomain } = result
       let type = wssURL ? 'HTTP' : undefined
       if (arc.cdn && apigateway && apigateway.status !== 'InProgress') {
         pretty.url(`https://${apigateway.domain}`, type)
@@ -58,7 +58,7 @@ module.exports = function getAppApex(params, callback) {
         let destroyingApiGateway = typeof arc.cdn === 'undefined' && apigateway
 
         series([
-          function createS3(callback) {
+          function createS3 (callback) {
             if (creatingS3) {
               create({
                 domain: bucketDomain
@@ -69,15 +69,15 @@ module.exports = function getAppApex(params, callback) {
               callback()
             }
           },
-          function enableS3(callback) {
+          function enableS3 (callback) {
             if (enablingS3) enable(s3, callback)
             else callback()
           },
-          function destroyS3(callback) {
+          function destroyS3 (callback) {
             if (destroyingS3) destroy(s3, callback)
             else callback()
           },
-          function createApiGateway(callback) {
+          function createApiGateway (callback) {
             if (creatingApiGateway) {
               create({
                 domain: apiDomain,
@@ -89,16 +89,16 @@ module.exports = function getAppApex(params, callback) {
               callback()
             }
           },
-          function enableApiGateway(callback) {
+          function enableApiGateway (callback) {
             if (enablingApiGateway) enable(apigateway, callback)
             else callback()
           },
-          function destroyApiGateway(callback) {
+          function destroyApiGateway (callback) {
             if (destroyingApiGateway) destroy(apigateway, callback)
             else callback()
           }
         ],
-        function done(err) {
+        function done (err) {
           if (err) callback(err)
           else callback()
         })

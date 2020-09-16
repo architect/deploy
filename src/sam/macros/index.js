@@ -1,11 +1,8 @@
-let {existsSync} = require('fs')
-let {join} = require('path')
+let { existsSync } = require('fs')
+let { join } = require('path')
 /**
  * Architect Macros
  * ---
- *
- * Exprimental feature for modifying the generated CloudFormation template before deployment.
- *
  * > NOTE: currently macros are Node modules; Python and Ruby are planned for a future release
  *
  * A macro are found in two places:
@@ -39,14 +36,12 @@ let {join} = require('path')
  * @param {AWS::Serverless} template - the current CloudFormation template
  * @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
  * @param {Function} callback - a Node style errback
- *
  */
-module.exports = function macros(arc, cloudformation, stage, callback) {
-  exec(arc, cloudformation, stage)
-    .then(cfn=> callback(null, cfn))
+module.exports = function macros (arc, cloudformation, stage, options, callback) {
+  exec(arc, cloudformation, stage, options)
+    .then(cfn => callback(null, cfn))
     .catch(callback)
 }
-
 
 /**
  * @param {Object} arc - the parsed .arc file in the current working directory
@@ -54,19 +49,22 @@ module.exports = function macros(arc, cloudformation, stage, callback) {
  * @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
  * @returns {AWS::Serverless}
  */
-async function exec(arc, cloudformation, stage) {
+async function exec (arc, cloudformation, stage, options) {
   let transforms = arc.macros || []
-  // always run the following internal macros:
-  transforms.push('set-stage')  // Sets cloudformation stage name for all resources
-  transforms.push('api-path')   // Updates @cdn, @http, @ws stage URL paths
-  transforms.push('arc-env')    // Gets and sets env vars for functions
-  transforms.push('static')     // Sets SPA, S3 prefix, etc. in root handler
+  // Always run the following internal macros:
+  transforms.push(
+    'legacy-api', // Use legacy REST APIs instead of HTTP APIs for @http; must run before other macros
+    'http-ver',   // Reconfigure HTTP APIs to use legacy REST API payload format
+    'api-path',   // Updates @cdn, @ws stage URL paths
+    'arc-env',    // Gets and sets env vars for functions
+    'static'      // Sets SPA, S3 prefix, etc. in root handler
+  )
   return await transforms.map(path)
-    .reduce(async function reducer(current, macro) {
+    .reduce(async function reducer (current, macro) {
       // eslint-disable-next-line
       let run = require(macro)
       let cloudformation = await current
-      return await run(arc, cloudformation, stage)
+      return await run(arc, cloudformation, stage, options)
     }, Promise.resolve(cloudformation))
 }
 
@@ -80,8 +78,8 @@ async function exec(arc, cloudformation, stage) {
  * @param {String} name - the macro name
  * @returns {String} path - the path to the macro
  */
-function path(name) {
-  let internal = join(__dirname, `_${name}.js`)
+function path (name) {
+  let internal = join(__dirname, `_${name}`, 'index.js')
   let localPath = join(process.cwd(), 'src', 'macros', `${name}.js`)
   let localPath1 = join(process.cwd(), 'src', 'macros', name)
   let modulePath = join(process.cwd(), 'node_modules', name)

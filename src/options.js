@@ -1,4 +1,4 @@
-let fs = require('fs')
+let { statSync } = require('fs')
 
 let isDirty =   opt => opt === 'dirty' || opt === '--dirty' || opt === '-d'
 let isDryRun =  opt => opt === '--dry-run'
@@ -7,16 +7,18 @@ let isPrune =   opt => opt === 'prune' || opt === '--prune'
 let isStatic =  opt => opt === 'static' || opt === '--static' || opt === '-s'
 let isVerbose = opt => opt === 'verbose' || opt === '--verbose' || opt === '-v'
 
-let tags = arg => arg === '--tags' || arg === '-t' || arg === 'tags'
-let name = arg => arg === '--name' || arg === '-n' || arg === 'name' || arg.startsWith('--name=')
+let tags =      arg => arg === '--tags' || arg === '-t' || arg === 'tags'
+let apiType =   arg => arg.startsWith('--apigateway')
+let name =      arg => arg === '--name' || arg === '-n' || arg === 'name' || arg.startsWith('--name=')
 
-module.exports = function options(opts) {
+module.exports = function options (opts) {
   return {
     prune: opts.some(isPrune),
     verbose: opts.some(isVerbose),
     production: opts.some(isProd),
     tags: getTags(opts),
-    name: getName(opts),
+    apiType: getValue(opts, apiType),
+    name: getValue(opts, name),
     srcDirs: getSrcDirs(opts),
     isDirty: opts.some(isDirty),
     isDryRun: opts.some(isDryRun),
@@ -25,8 +27,8 @@ module.exports = function options(opts) {
   }
 }
 
-function getTags(list) {
-  let hasTags = process.argv.some(tags)
+function getTags (list) {
+  let hasTags = list.some(tags)
   if (!hasTags)
     return []
   let len = list.length
@@ -35,13 +37,13 @@ function getTags(list) {
   return left.filter(arg => /^[a-zA-Z0-9]+=[a-zA-Z0-9]+/.test(arg))
 }
 
-function getName(list) {
-  let hasName = process.argv.some(name)
-  if (!hasName)
+function getValue (list, predicate) {
+  let hasValue = list.some(predicate)
+  if (!hasValue)
     return false
 
   let len = list.length
-  let index = list.findIndex(name)
+  let index = list.findIndex(predicate)
   let left = list.slice(index, len)
   let operator = left.shift()
 
@@ -53,15 +55,16 @@ function getName(list) {
   }
 }
 
-function getSrcDirs(list) {
+function getSrcDirs (list) {
   return list.reduce((acc, f) => {
     if (!f.startsWith('src')) return acc
     try {
-      let s = fs.statSync(f)
+      let s = statSync(f)
       if (s.isDirectory()) {
         acc.push(f)
       }
       return acc
-    } catch (e) { return acc }
+    }
+    catch (e) { return acc }
   }, [])
 }
