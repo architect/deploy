@@ -6,7 +6,7 @@
 
 ### Added
 
-- `HTTP` APIs are the new default when provisioning API Gateway resources
+- `HTTP` APIs are the new default when provisioning new API Gateway resources
   - Defaults to `http` setting, which uses the latest payload format, or manually specify `httpv2` or legacy `httpv1` payload formats
     - Apply in CLI with `--apigateway http[v1|v2]`, or in project manifest with `@aws apigateway http[v1|v2]`
   - Added backwards compatibility for `REST` APIs with `rest` setting
@@ -21,6 +21,29 @@
 - Internal change: implemented new code standard with `@architect/eslint-config`
 
 ---
+
+## [1.8.4] 2020-07-15
+
+### Fixed
+
+- Fixed static asset deploy path issue; fixes #915, ht gyan!
+
+---
+
+## [1.8.3] 2020-07-01
+
+### Changed
+
+- Apps now ensure least privilege HTTP methods on `/_static/*`, allowing only `GET`
+
+
+### Fixed
+
+- Fixed API Gateway issue that adds an extra stage called `Stage`
+- Corrected internal configuration for static proxy
+
+---
+
 ## [1.8.2] 2020-06-24
 
 ### Changed
