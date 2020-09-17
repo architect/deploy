@@ -2,11 +2,12 @@
 
 ---
 
-## [1.9.1] 2020-09-17
+## [1.9.1 - 1.9.2] 2020-09-17
 
 ### Fixed
 
 - Fixed issue where in certain circumstances legacy (`REST`) APIs could be provisioned without `/_static`
+- Fixed issue where legacy (`REST`) APIs stage names was incorrectly set for production
 
 ---
 

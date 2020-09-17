@@ -21,7 +21,7 @@ module.exports = async function legacyAPI (arc, cloudformation, stage, options) 
 
     // Base props
     let Type = 'AWS::Serverless::Api'
-    let Properties = getApiProps(http)
+    let Properties = getApiProps(http, stage)
     let appname = toLogicalID(arc.app[0])
 
     // Ensure standard CF sections exist

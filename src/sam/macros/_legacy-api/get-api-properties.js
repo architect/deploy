@@ -1,9 +1,9 @@
 let { getLambdaName, toLogicalID } = require('@architect/utils')
 let unexpress = require('./un-express-route')
 
-module.exports = function getApiProperties (http) {
+module.exports = function getApiProperties (http, stage) {
   return {
-    StageName: 'staging',
+    StageName: stage,
     OpenApiVersion: '3.0.1',
     DefinitionBody: getOpenApi(http),
     EndpointConfiguration: 'REGIONAL',
