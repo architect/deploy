@@ -87,11 +87,8 @@ module.exports = async function legacyAPI (arc, cloudformation, stage, options) 
       Value: { Ref: appname }
     }
 
-    if (!arc.static) {
-      cloudformation = forceStatic(arc, cloudformation)
-    }
-
-    return cloudformation
+    // Add _static for static asset loading
+    cloudformation = forceStatic(arc, cloudformation)
   }
   return cloudformation
 }

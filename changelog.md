@@ -2,7 +2,15 @@
 
 ---
 
-## [1.9.0] 2020-06-28
+## [1.9.1] 2020-09-17
+
+### Fixed
+
+- Fixed issue where in certain circumstances legacy (`REST`) APIs could be provisioned without `/_static`
+
+---
+
+## [1.9.0] 2020-09-16
 
 ### Added
 
