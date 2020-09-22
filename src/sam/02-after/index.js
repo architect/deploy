@@ -21,7 +21,7 @@ module.exports = function after (params, callback) {
   } = params
 
   series([
-    appApex.bind({}, { ts, arc, pretty, stackname, stage, update }),
+    appApex.bind({}, { ts, arc, pretty, stackname, stage, update, legacyAPI }),
     staticDeploy.bind({}, { arc, verbose, stackname, production, prune }),
     patchRestAPI.bind({}, { legacyAPI, stackname, stage }),
     maybeInvalidate.bind({}, { arc, stackname, stage }),

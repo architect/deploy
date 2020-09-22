@@ -1,18 +1,14 @@
 let aws = require('aws-sdk')
 
-module.exports = function createCloudFrontDistribution ({ domain, path, stage }, callback) {
+module.exports = function createCloudFrontDistribution (params, callback) {
   let cf = new aws.CloudFront
-  cf.createDistribution(config({
-    DomainName: domain.replace(`/${stage}`, '').replace('https://', ''),
-    OriginPath: path,
-    stage
-  }), callback)
+  let config = createConfig(params)
+  cf.createDistribution(config, callback)
 }
 
-function config ({ DomainName, OriginPath, stage }) {
-
+function createConfig (params) {
+  let { domain: DomainName, insecure, legacyAPI, stage } = params
   let CallerReference = `edge-${Date.now()}`
-  let OriginProtocolPolicy = OriginPath === `/${stage}` ? 'https-only' : 'http-only'
 
   let origin = {
     Id: CallerReference,
@@ -21,7 +17,7 @@ function config ({ DomainName, OriginPath, stage }) {
     CustomOriginConfig: {
       HTTPPort: 80,
       HTTPSPort: 443,
-      OriginProtocolPolicy,
+      OriginProtocolPolicy: `http${insecure ? '' : 's'}-only`,
       OriginSslProtocols: {
         Quantity: 3,
         Items: [ 'TLSv1', 'TLSv1.1', 'TLSv1.2' ],
@@ -31,8 +27,10 @@ function config ({ DomainName, OriginPath, stage }) {
     }
   }
 
-  if (OriginPath === `/${stage}`)
-    origin.OriginPath = OriginPath
+  // Add origin path for REST APIs
+  if (legacyAPI) {
+    origin.OriginPath = `/${stage}`
+  }
 
   return {
     DistributionConfig: {
