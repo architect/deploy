@@ -5,7 +5,7 @@ let enable = require('./cloudfront-enable')
 let destroy = require('./cloudfront-destroy')
 
 module.exports = function getAppApex (params, callback) {
-  let { ts, arc, pretty, stackname, stage, update } = params
+  let { ts, arc, pretty, stackname, stage, update, legacyAPI } = params
   reads({
     stackname,
     stage
@@ -61,8 +61,10 @@ module.exports = function getAppApex (params, callback) {
           function createS3 (callback) {
             if (creatingS3) {
               create({
-                domain: bucketDomain
-                // FIXME: create requires 'path' param
+                domain: bucketDomain,
+                // When S3 buckets are configured as static sites, they are http/80
+                // TODO To fix this, we may want conditional static site configuration when S3 isn't the only thing being shipped
+                insecure: true
               }, callback)
             }
             else {
@@ -81,8 +83,8 @@ module.exports = function getAppApex (params, callback) {
             if (creatingApiGateway) {
               create({
                 domain: apiDomain,
-                path: `/${stage}`,
-                stage
+                stage,
+                legacyAPI
               }, callback)
             }
             else {

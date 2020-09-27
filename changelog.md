@@ -2,6 +2,15 @@
 
 ---
 
+## [1.9.3] 2020-09-21
+
+### Fixed
+
+- Fixed paths in `@cdn` origin configuration; fixes #965, ht @anatomic
+- Fixed legacy API binary encoding deploy-time patching
+
+---
+
 ## [1.9.1 - 1.9.2] 2020-09-17
 
 ### Fixed
