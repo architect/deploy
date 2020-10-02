@@ -6,7 +6,10 @@
 
 ### Added
 
-- Add support for `@http` catchall syntax (e.g. `get /api/*`)
+- Added support for `@http` catchall syntax (e.g. `get /api/*`)
+- Added support for `@http` `head` + `options` methods
+- Added support for `@http` `any` method syntax (e.g. `any /path`)
+- Added support for `@proxy`
 
 ---
 
