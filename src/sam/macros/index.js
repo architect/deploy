@@ -58,7 +58,7 @@ async function exec (arc, cloudformation, stage, options) {
     'api-path',   // Updates @cdn, @ws stage URL paths
     'arc-env',    // Gets and sets env vars for functions
     'static',     // Sets SPA, S3 prefix, etc. in root handler
-    'proxy',      // Update proxy stage for production deploys
+    'proxy',      // Update @proxy stage URLs
   )
   return await transforms.map(path)
     .reduce(async function reducer (current, macro) {
