@@ -57,7 +57,8 @@ async function exec (arc, cloudformation, stage, options) {
     'http-ver',   // Reconfigure HTTP APIs to use legacy REST API payload format
     'api-path',   // Updates @cdn, @ws stage URL paths
     'arc-env',    // Gets and sets env vars for functions
-    'static'      // Sets SPA, S3 prefix, etc. in root handler
+    'static',     // Sets SPA, S3 prefix, etc. in root handler
+    'proxy',      // Update proxy stage for production deploys
   )
   return await transforms.map(path)
     .reduce(async function reducer (current, macro) {

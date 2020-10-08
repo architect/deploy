@@ -55,7 +55,6 @@ module.exports = async function legacyAPI (arc, cloudformation, stage, options) 
     })
 
     // Add permissions for proxy+ resource aiming at GetIndex
-    delete cloudformation.Resources.InvokeDefaultPermission // So named for HTTP's $default
     cloudformation.Resources.InvokeProxyPermission = {
       Type: 'AWS::Lambda::Permission',
       Properties: {
