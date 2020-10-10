@@ -53,12 +53,12 @@ let sut = proxyquire(filePath, {
 })
 
 function setup (data) {
+  headObjCalls = []
+  putObjCalls = []
   mockFs(data)
 }
 
 function reset () {
-  headObjCalls = []
-  putObjCalls = []
   mockFs.restore()
 }
 
@@ -76,6 +76,7 @@ test('Basic publish test', t => {
   setup(createFileData(true)) // True mutates file contents, causing an upload
 
   sut(params, (err, uploaded, notModified) => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     let headCallsAreGood =  (headObjCalls.length === files.length) &&
                             files.every(f => headObjCalls.some(h => h.Key === f))
@@ -85,7 +86,6 @@ test('Basic publish test', t => {
     t.ok(putCallsAreGood, 'S3.putObject called once for each file')
     t.equal(notModified, 0, 'Returned correct quantity of skipped files')
     t.equal(putObjCalls.length, uploaded, 'Returned correct quantity of published files')
-    reset()
   })
 })
 
@@ -94,6 +94,7 @@ test('Skip publishing files that have not been updated', t => {
   setup(createFileData())
 
   sut(params, (err, uploaded, notModified) => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     let headCallsAreGood =  (headObjCalls.length === files.length) &&
                             files.every(f => headObjCalls.some(h => h.Key === f))
@@ -101,7 +102,6 @@ test('Skip publishing files that have not been updated', t => {
     t.equal(putObjCalls.length, 0, 'S3.putObject not called on updated files')
     t.equal(headObjCalls.length, notModified, 'Returned correct quantity of skipped files')
     t.equal(putObjCalls.length, uploaded, 'Returned correct quantity of published files')
-    reset()
   })
 })
 

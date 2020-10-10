@@ -31,8 +31,10 @@ let defaultParams = () => ({
 })
 let params = defaultParams()
 
-function reset () {
+function setup () {
   published = undefined
+}
+function reset () {
   mockFs.restore()
 }
 
@@ -46,34 +48,38 @@ test('Module is present', t => {
 
 test(`Skip static deploy if @static isn't defined`, t => {
   t.plan(1)
+  setup()
   let arc = '@app\n an-app'
   mockFs({ 'app.arc': arc })
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.notOk(published, 'Publish not called')
-    reset()
   })
 })
 
 test(`Skip static deploy if @http is defined, but public/ folder is not present`, t => {
   t.plan(1)
+  setup()
   let arc = '@app\n an-app\n @http'
   mockFs({ 'app.arc': arc })
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.notOk(published, 'Publish not called')
-    reset()
   })
 })
 
 test(`Publish static deploy if @static is defined`, t => {
   t.plan(8)
+  setup()
   let arc = '@app\n an-app\n @static'
   mockFs({
     'app.arc': arc,
     'public': {}
   })
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.equal(published.Bucket, params.bucket, 'Bucket is unchanged')
     t.equal(published.fingerprint, false, 'Fingerprint set to false by default')
@@ -83,54 +89,57 @@ test(`Publish static deploy if @static is defined`, t => {
     t.equal(published.prefix, false, 'Prefix set to false by default')
     t.equal(published.prune, params.prune, 'Prune is unchaged')
     t.equal(published.region, params.region, 'Region is unchaged')
-    reset()
   })
 })
 
 test(`Publish static deploy if @http is defined and public/ folder is present`, t => {
   t.plan(1)
+  setup()
   let arc = '@app\n an-app\n @http'
   mockFs({
     'app.arc': arc,
     'public': {}
   })
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.ok(published, 'Publish was called')
-    reset()
   })
 })
 
 test(`Respect @static fingerprint true`, t => {
   t.plan(1)
+  setup()
   let arc = '@app\n an-app\n @static\n fingerprint true'
   mockFs({
     'app.arc': arc,
     'public': {}
   })
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.equal(published.fingerprint, true, 'Fingerprint set to true')
-    reset()
   })
 })
 
 test(`Respect @static fingerprint external`, t => {
   t.plan(1)
+  setup()
   let arc = '@app\n an-app\n @static\n fingerprint external'
   mockFs({
     'app.arc': arc,
     'public': {}
   })
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.equal(published.fingerprint, 'external', 'Fingerprint set to external')
-    reset()
   })
 })
 
 test(`Respect @static ignore`, t => {
   t.plan(2)
+  setup()
   let arc = `
 @app
 an-app
@@ -144,15 +153,16 @@ ignore
     'public': {}
   })
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.equal(published.ignore[0], 'foo', 'Got correct ignore config')
     t.equal(published.ignore[1], 'bar', 'Got correct ignore config')
-    reset()
   })
 })
 
 test(`Respect prune param`, t => {
   t.plan(1)
+  setup()
   let arc = '@app\n an-app\n @static'
   mockFs({
     'app.arc': arc,
@@ -161,54 +171,58 @@ test(`Respect prune param`, t => {
   let params = defaultParams()
   params.prune = true
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.ok(published.prune, 'Prune is unchaged')
-    reset()
   })
 })
 
 test(`Respect prune setting in project manifest`, t => {
   t.plan(1)
+  setup()
   let arc = '@app\n an-app\n @static\n prune true'
   mockFs({
     'app.arc': arc,
     'public': {}
   })
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.ok(published.prune, 'Prune is enabled')
-    reset()
   })
 })
 
 test(`Respect folder setting in project manifest`, t => {
   t.plan(1)
+  setup()
   let arc = '@app\n an-app\n @static\n folder some-folder'
   mockFs({
     'app.arc': arc,
     'some-folder': {}
   })
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.equal(published.folder, 'some-folder', 'Got correct folder setting')
-    reset()
   })
 })
 
 test(`Error if static folder isn't present`, t => {
   t.plan(1)
+  setup()
   let arc = '@app\n an-app\n @static'
   mockFs({
     'app.arc': arc
   })
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.equal(err.message, '@static folder not found', 'Got error')
-    reset()
   })
 })
 
 test(`Respect prefix param`, t => {
   t.plan(1)
+  setup()
   let arc = '@app\n an-app\n @static'
   mockFs({
     'app.arc': arc,
@@ -217,22 +231,23 @@ test(`Respect prefix param`, t => {
   let params = defaultParams()
   params.prefix = 'some-prefix'
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.equal(published.prefix, 'some-prefix', 'Prefix is unchanged')
-    reset()
   })
 })
 
 test(`Respect prefix setting in project manifest`, t => {
   t.plan(1)
+  setup()
   let arc = '@app\n an-app\n @static\n prefix some-prefix'
   mockFs({
     'app.arc': arc,
     'public': {}
   })
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.equal(published.prefix, 'some-prefix', 'Got correct prefix setting')
-    reset()
   })
 })

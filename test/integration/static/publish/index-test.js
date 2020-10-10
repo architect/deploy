@@ -52,8 +52,6 @@ let defaultParams = () => ({
 let params = defaultParams()
 
 function reset () {
-  putted = undefined
-  deleted = undefined
   mockFs.restore()
 }
 
@@ -67,6 +65,8 @@ function setup () {
     [json]: Buffer.from(content),
     [file]: Buffer.from(content),
   })
+  putted = undefined
+  deleted = undefined
 }
 
 test('Set up env', t => {
@@ -78,6 +78,7 @@ test('Static asset publishing', t => {
   t.plan(7)
   setup()
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.equal(putted.files.length, 3, 'Passed files to be published')
     t.equal(putted.fingerprint, params.fingerprint, 'Passed fingerprint unmutated')
@@ -86,7 +87,6 @@ test('Static asset publishing', t => {
     t.equal(putted.region, params.region, 'Passed region unmutated')
     t.deepEqual(putted.staticManifest, {}, 'Passed empty staticManifest by default')
     t.notOk(deleted, 'No files pruned')
-    reset()
   })
 })
 
@@ -96,6 +96,7 @@ test('Static asset deletion', t => {
   let params = defaultParams()
   params.prune = true
   sut(params, err => {
+    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.equal(deleted.Bucket, params.Bucket, 'Passed bucket unmutated')
     t.equal(deleted.files.length, 3, 'Passed files to be published')
@@ -104,7 +105,6 @@ test('Static asset deletion', t => {
     t.equal(deleted.prefix, undefined, 'Passed prefix unmutated')
     t.equal(deleted.region, params.region, 'Passed region setting unmutated')
     t.deepEqual(deleted.staticManifest, {}, 'Passed empty staticManifest by default')
-    reset()
   })
 })
 
