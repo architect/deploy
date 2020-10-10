@@ -6,7 +6,8 @@
 
 ### Fixed
 
-- Fixed static asset deployments with fingerprinting enabled in Windows, should fix #782
+- Improved reliability of deploying static assets in Windows
+- Fixed static asset deployments with fingerprinting enabled in Windows, fixes #782
 
 ---
 
