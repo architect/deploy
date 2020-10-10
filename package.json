@@ -8,9 +8,9 @@
   },
   "scripts": {
     "test": "npm run lint && npm run test:integration && npm run coverage",
-    "test:unit": "tape 'test/unit/**/*-test.js' | tap-spec",
-    "test:slow": "tape 'test/slow/**/*-test.js' | tap-spec",
-    "test:integration": "tape 'test/integration/**/*-test.js' | tap-spec",
+    "test:unit": "cross-env tape 'test/unit/**/*-test.js' | tap-spec",
+    "test:slow": "cross-env tape 'test/slow/**/*-test.js' | tap-spec",
+    "test:integration": "cross-env tape 'test/integration/**/*-test.js' | tap-spec",
     "coverage": "nyc --reporter=lcov --reporter=text-summary npm run test:unit",
     "lint": "eslint . --fix",
     "rc": "npm version prerelease --preid RC"
@@ -57,6 +57,7 @@
     "@architect/eslint-config": "0.0.1",
     "aws-sdk-mock": "^5.1.0",
     "codecov": "^3.8.0",
+    "cross-env": "~7.0.2",
     "eslint": "~7.10.0",
     "mock-fs": "~4.13.0",
     "nyc": "^15.1.0",
