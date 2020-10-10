@@ -82,7 +82,7 @@ module.exports = function publishStaticAssets (params, callback) {
       staticManifest = manifest
       // static.json is intentionally ignored during fingerprinting; ensure it's uploaded
       if (fingerprint && (fingerprint !== 'external')) {
-        files.unshift(join(publicDir, 'static.json'))
+        files.unshift(pathToUnix(join(publicDir, 'static.json')))
       }
 
       putFiles({
