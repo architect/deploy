@@ -1,5 +1,5 @@
 let test = require('tape')
-let { join, sep } = require('path')
+let { join } = require('path')
 
 let filePath = join(process.cwd(), 'src', 'static', 'publish', 's3', 'delete-files', 'unformat-key.js')
 let sut = require(filePath)
@@ -25,10 +25,10 @@ test('Force pruning if prefix is specified and root files are found', t => {
   t.equal(result, `${file}-ARC_DELETE`, `Flagged file in root for deletion from prefixed assets`)
 })
 
-test('Platform normalize paths', t => {
+test('Unix normalize paths', t => {
   t.plan(1)
   let file = 'a/file/in/nested/dirs/index.html'
-  let normalized = `a${sep}file${sep}in${sep}nested${sep}dirs${sep}index.html`
+  let normalized = `a/file/in/nested/dirs/index.html`
   let result = sut(file)
   t.equal(result, normalized, `Normalized path to platform: ${normalized}`)
 })
