@@ -1,4 +1,3 @@
-let { sep } = require('path')
 let { pathToUnix } = require('@architect/utils')
 
 /**
@@ -7,12 +6,12 @@ let { pathToUnix } = require('@architect/utils')
 module.exports = function formatKey (params) {
   let { file, fingerprint, publicDir, prefix, staticManifest } = params
 
-  // At this point glob has passed us *nix-style paths even on Windows
+  // At this point glob has passed us *nix-style paths - even on Windows
   // Also Windows can use backslashes OR forward slashes in file reads (lol), renormalize path.sep in case glob ever changes that behavior
-  let filepath = pathToUnix(`${publicDir}${sep}`)
+  let filepath = pathToUnix(`${publicDir}/`)
   // Remove the public dir so the S3 path (called 'Key') is always relative
   let Key = file.replace(filepath, '')
-  if (Key.startsWith(sep)) Key = Key.substr(1)
+  if (Key.startsWith('/')) Key = Key.substr(1)
 
   // If fingerprint is set to 'external', don't mutate the Key, it's assumed to be fingerprinted
   let notStaticManifest = Key !== 'static.json'

@@ -1,6 +1,5 @@
 let test = require('tape')
 let { join } = require('path')
-let mockFs = require('mock-fs')
 
 let filePath = join(process.cwd(), 'src', 'static', 'publish', 's3', 'put-files', 'put-params.js')
 let sut = require(filePath)
@@ -50,6 +49,4 @@ test('S3 put params', t => {
   params.fingerprint = true
   result = sut(params)
   t.equal(result.CacheControl, 'max-age=315360000', `Fingerprinted file has long-lived cache: ${result.CacheControl}`)
-
-  mockFs.restore()
 })

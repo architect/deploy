@@ -15,8 +15,8 @@ module.exports = function unformatKey (Key, prefix) {
   // Strip leading slash from prefix or jic
   if (key.startsWith('/')) key = key.substr(1)
 
-  // Windowsify
-  key = key.replace('/', sep)
+  // Un-Windowsify (prob not necessary, but jic)
+  key = key.replace(sep, '/')
 
   return key
 }
