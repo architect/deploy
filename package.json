@@ -54,7 +54,7 @@
     "aws-sdk": "~2.644.0"
   },
   "devDependencies": {
-    "@architect/eslint-config": "0.0.1",
+    "@architect/eslint-config": "1.0.0",
     "aws-sdk-mock": "^5.1.0",
     "codecov": "^3.8.0",
     "cross-env": "~7.0.2",
