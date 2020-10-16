@@ -2,6 +2,14 @@
 
 ---
 
+## [2.0.2] 2020-10-15
+
+### Added
+
+- Adds support for symlink-aware hydration, ensures no symlinked shared code will ever be deployed to production
+
+---
+
 ## [2.0.1] 2020-10-10
 
 ### Fixed
