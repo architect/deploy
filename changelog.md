@@ -2,6 +2,14 @@
 
 ---
 
+## [2.0.4] 2020-10-26
+
+### Added
+
+- Added support for CloudFormation's new 500 resource limit! This makes us very happy! You can now ship much larger Architect projects.
+
+---
+
 ## [2.0.2 - 2.0.3] 2020-10-15
 
 ### Added

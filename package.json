@@ -33,8 +33,8 @@
   "homepage": "https://github.com/architect/deploy#readme",
   "dependencies": {
     "@architect/create": "~1.2.0",
-    "@architect/hydrate": "~1.6.0",
-    "@architect/package": "~3.0.1",
+    "@architect/hydrate": "~1.6.1",
+    "@architect/package": "~4.0.0",
     "@architect/parser": "~2.3.0",
     "@architect/utils": "~1.5.13",
     "chalk": "~4.1.0",
@@ -51,7 +51,7 @@
     "zipit": "~2.0.0"
   },
   "peerDependencies": {
-    "aws-sdk": "~2.644.0"
+    "aws-sdk": "2.712.0"
   },
   "devDependencies": {
     "@architect/eslint-config": "1.0.0",
