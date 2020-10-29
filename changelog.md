@@ -2,6 +2,14 @@
 
 ---
 
+## [2.0.5] 2020-10-29
+
+### Fixed
+
+- Fixed `StackResource` pagination for static deployments; fixes #996
+
+---
+
 ## [2.0.4] 2020-10-26
 
 ### Added
