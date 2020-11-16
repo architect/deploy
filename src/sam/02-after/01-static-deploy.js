@@ -4,9 +4,10 @@ let { updater } = require('@architect/utils')
 let statics = require('../../static')
 
 module.exports = function staticDeploy (params, callback) {
-  let { arc, stackname, verbose, production, prune } = params
-  let staticEnabled = arc.static || (arc.http && existsSync(join(process.cwd(), 'public')))
+  let { inventory, production, prune, stackname, verbose } = params
+  let { inv } = inventory
 
+  let staticEnabled = inv.static && existsSync(join(process.cwd(), inv.static.folder))
   if (staticEnabled) {
     let update = updater('Deploy')
     statics({ verbose, stackname, production, prune, update }, callback)

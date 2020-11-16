@@ -7,16 +7,16 @@ let series = require('run-series')
  */
 module.exports = function compat (params, callback) {
 
-  let { arc, stackname: StackName } = params
+  let { inv, stackname: StackName } = params
   let cfn = new aws.CloudFormation()
   let result = {}
 
   // Prefer describeStackResources against multiple specific known LogicalResourceIds (vs paginating & searching)
   series([
     function getApiType (callback) {
-      if (arc.http) {
+      if (inv.http) {
         // Look for a legacy REST API in the stack; HTTP API resource IDs are simply 'HTTP'
-        let LogicalResourceId = toLogicalID(arc.app[0])
+        let LogicalResourceId = toLogicalID(inv.app)
         cfn.describeStackResources({
           StackName,
           LogicalResourceId

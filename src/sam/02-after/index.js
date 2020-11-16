@@ -7,8 +7,7 @@ let cleanup = require('./04-cleanup')
 
 module.exports = function after (params, callback) {
   let {
-    appname,
-    arc,
+    inventory,
     legacyAPI,
     pretty,
     production,
@@ -21,10 +20,10 @@ module.exports = function after (params, callback) {
   } = params
 
   series([
-    appApex.bind({}, { ts, arc, pretty, stackname, stage, update, legacyAPI }),
-    staticDeploy.bind({}, { arc, verbose, stackname, production, prune }),
+    appApex.bind({}, { inventory, legacyAPI, pretty, stackname, stage, ts, update }),
+    staticDeploy.bind({}, { inventory, production, prune, stackname, verbose }),
     patchRestAPI.bind({}, { legacyAPI, stackname, stage }),
-    maybeInvalidate.bind({}, { arc, stackname, stage }),
-    cleanup.bind({}, { appname }),
+    maybeInvalidate.bind({}, { inventory, stackname, stage }),
+    cleanup,
   ], callback)
 }

@@ -3,27 +3,14 @@ let writeSAM = require('./write-sam')
 let writeCFN = require('./write-cfn')
 
 /**
- * package compiles an arc file into either a single stack or a nested stack
- *
- * a single stack will have the following files:
- *
+ * package compiles an arc file into a single stack with the following files:
  * - AWS::Serverless sam.json
  * - AWS::Cloudformation out.yaml
- *
- * a nested stack will have the following files:
- *
- * - AWS::Serverless appname-cfn.json
- * - AWS::Serverless appname-cfn-http.json
- * - AWS::Serverless appname-cfn-events.json
- * - AWS::Cloudformation appname-cfn.yaml
- * - AWS::Cloudformation appname-cfn-http.yaml
- * - AWS::Cloudformation appname-cfn-events.yaml
- *
  */
 module.exports = function pkg (params, callback) {
-  let { sam, nested, bucket, pretty, update, isDryRun } = params
+  let { sam, bucket, pretty, update, isDryRun } = params
   series([
-    writeSAM.bind({}, { sam, nested, update }),
-    writeCFN.bind({}, { sam, nested, bucket, pretty, update, isDryRun })
+    writeSAM.bind({}, { sam, update }),
+    writeCFN.bind({}, { sam, bucket, pretty, update, isDryRun })
   ], callback)
 }

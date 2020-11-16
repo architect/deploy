@@ -57,7 +57,6 @@ function getValue (list, predicate) {
 
 function getSrcDirs (list) {
   return list.reduce((acc, f) => {
-    if (!f.startsWith('src')) return acc
     try {
       let s = statSync(f)
       if (s.isDirectory()) {

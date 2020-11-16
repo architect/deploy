@@ -1,7 +1,8 @@
 let aws = require('aws-sdk')
 let waterfall = require('run-waterfall')
 
-module.exports = function patchApiGateway ({ legacyAPI, stackname, stage }, callback) {
+module.exports = function patchApiGateway (params, callback) {
+  let { legacyAPI, stackname, stage } = params
   if (legacyAPI) {
     waterfall([
       function (callback) {

@@ -37,8 +37,8 @@ let { join } = require('path')
  * @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
  * @param {Function} callback - a Node style errback
  */
-module.exports = function macros (arc, cloudformation, stage, options, callback) {
-  exec(arc, cloudformation, stage, options)
+module.exports = function macros (inventory, cloudformation, stage, callback) {
+  exec(inventory, cloudformation, stage)
     .then(cfn => callback(null, cfn))
     .catch(callback)
 }
@@ -49,7 +49,8 @@ module.exports = function macros (arc, cloudformation, stage, options, callback)
  * @param {String} stage - the current stage being deployed (generally staging or production, defaults to staging)
  * @returns {AWS::Serverless}
  */
-async function exec (arc, cloudformation, stage, options) {
+async function exec (inventory, cloudformation, stage) {
+  let arc = inventory.inv._project.arc
   let transforms = arc.macros || []
   // Always run the following internal macros:
   transforms.push(
@@ -65,7 +66,7 @@ async function exec (arc, cloudformation, stage, options) {
       // eslint-disable-next-line
       let run = require(macro)
       let cloudformation = await current
-      return await run(arc, cloudformation, stage, options)
+      return await run(arc, cloudformation, stage, inventory)
     }, Promise.resolve(cloudformation))
 }
 

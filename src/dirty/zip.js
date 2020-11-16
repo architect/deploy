@@ -1,5 +1,5 @@
 var series = require('run-waterfall')
-var path = require('path')
+var { join } = require('path')
 var glob = require('glob')
 var zipit = require('zipit')
 var zipdir = require('zip-dir')
@@ -8,7 +8,7 @@ var zipdir = require('zip-dir')
  * @param {String} pathIn - path to zip
  * @returns {Buffer} zipfile as a buffer
  */
-module.exports = function zip (pathIn, callback) {
+module.exports = function zipper (pathIn, callback) {
 
   function winzip (pathToCode, callback) {
     zipdir(pathToCode, callback)
@@ -17,7 +17,7 @@ module.exports = function zip (pathIn, callback) {
   function nixzip (pathToCode, callback) {
     series([
       function _read (callback) {
-        glob(path.join(process.cwd(), pathToCode, '/*'), { dot: true }, callback)
+        glob(join(pathToCode, '/*'), { dot: true }, callback)
       },
       function _zip (files, callback) {
         zipit({
@@ -27,7 +27,6 @@ module.exports = function zip (pathIn, callback) {
     ], callback)
   }
 
-  let zipt = process.platform.startsWith('win') ? winzip : nixzip
-  zipt(pathIn, callback)
+  let zip = process.platform.startsWith('win') ? winzip : nixzip
+  zip(pathIn, callback)
 }
-

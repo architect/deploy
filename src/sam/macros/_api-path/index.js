@@ -1,9 +1,9 @@
 /**
  * Update API paths (and any callers to them) with stage-specific parts
+ * TODO: we should make Inventory stage-aware, and move this logic into Package
  */
 // eslint-disable-next-line
 module.exports = async function apiPath (arc, cloudformation, stage) {
-  stage = defaultStage(stage)
   let cfn = cloudformation
 
   // @ws path/stages
@@ -56,13 +56,4 @@ module.exports = async function apiPath (arc, cloudformation, stage) {
   }
 
   return cfn
-}
-
-// If it's not 'staging' or 'production', then it should be 'staging'
-function defaultStage (stage) {
-  let staging = 'staging'
-  let production = 'production'
-  if (stage !== staging && stage !== production)
-    stage = staging
-  return stage
 }

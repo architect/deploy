@@ -2,6 +2,28 @@
 
 ---
 
+## [2.1.0] 2020-11-15
+
+### Added
+
+- Added support for custom file paths
+
+
+### Changed
+
+- Implemented Inventory (`@architect/inventory`)
+- Internal change: removed final remnants of old `nested` code path
+
+
+### Fixed
+
+- Fixed direct deployments on apps with enough CloudFormation resources to paginate
+- Fixed static deployments on apps with enough CloudFormation resources to paginate; fixes #996, thanks @samirrayani!
+- Fixed case where explicitly defining `@cdn false` does not disable the CDN; fixes #968
+- Fixed bug where Deploy would crash instead of bubbling a CloudFormation error
+
+---
+
 ## [2.0.4] 2020-10-26
 
 ### Added
