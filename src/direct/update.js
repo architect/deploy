@@ -54,7 +54,7 @@ function updateCode ({ FunctionName, lambda }, callback) {
  * reads path/to/code/.arc-config and direct updates lambda function config
  */
 function updateConfig (params, callback) {
-  let { FunctionName } = params
+  let { FunctionName, env } = params
   let { timeout, memory, runtime, handler, concurrency, layers, policies } = params.lambda.config
 
   let lambda = new aws.Lambda({ region: process.env.AWS_REGION })
@@ -65,15 +65,25 @@ function updateConfig (params, callback) {
     MemorySize: memory,
     Timeout: timeout,
     Runtime: runtime,
-    // TODO addme! (need stage)
-    // Environment: {
-    //   Variables: {}
-    // },
   }
   if (layers.length > 0) args.Layers = layers
   if (policies.length > 0) args.Policies = policies
 
   series([
+    function getFunctionConfiguration (callback) {
+      if (env) {
+        lambda.getFunctionConfiguration({ FunctionName }, function (err, config) {
+          if (err) callback(err)
+          else {
+            args.Environment = {
+              Variables: { ...config.Environment.Variables, ...env }
+            }
+            callback()
+          }
+        })
+      }
+      else callback()
+    },
     function updateFunctionConfiguration (callback) {
       setTimeout(function rateLimit () {
         lambda.updateFunctionConfiguration(args, callback)

@@ -51,6 +51,7 @@ module.exports = function directDeploy (inventory, params, callback) {
   else {
     deploy({
       inventory,
+      production,
       specificLambdasToDeploy,
       stackname,
       ts,

@@ -8,7 +8,7 @@ let pretty = require('./pretty')
 let getResources = require('../utils/get-cfn-resources')
 
 module.exports = function deploySAM (params, callback) {
-  let { inventory, stackname, specificLambdasToDeploy, ts, update } = params
+  let { inventory, production, stackname, specificLambdasToDeploy, ts, update } = params
   let { inv } = inventory
 
   waterfall([
@@ -46,6 +46,9 @@ module.exports = function deploySAM (params, callback) {
         })
       })
 
+      let stage = production ? 'production' : 'staging'
+      let env = inv._project.env && inv._project.env[stage]
+
       parallel(deploying.map(lambda => {
         return function one (callback) {
           let { name, type, src } = lambda
@@ -68,6 +71,7 @@ module.exports = function deploySAM (params, callback) {
             update.status(`Deploying directly to: ${name} (${dir})`)
             updateLambda({
               FunctionName,
+              env,
               lambda,
             }, callback)
           }
