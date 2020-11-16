@@ -27,9 +27,11 @@ module.exports = function samDeploy (inventory, params, callback) {
     production,
     prune,
     tags,
+    update,
     verbose,
   } = params
   let { inv } = inventory
+  if (!update) update = updater('Deploy')
 
   let stage = production ? 'production' : 'staging'
   let ts = Date.now()
@@ -38,7 +40,6 @@ module.exports = function samDeploy (inventory, params, callback) {
   let appname = inv.app
   let bucket = inv.aws.bucket
   let stackname = `${toLogicalID(appname)}${production ? 'Production' : 'Staging'}`
-  let update = updater('Deploy')
 
   if (name) {
     stackname += toLogicalID(name)

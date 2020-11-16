@@ -11,11 +11,11 @@ let pretty = require('./pretty')
  * @returns {Promise} if no callback is supplied
  */
 module.exports = function directDeploy (inventory, params, callback) {
-  let { isDryRun = false, srcDirs = [] } = params
+  let { isDryRun = false, production, srcDirs = [], update } = params
+  if (!update) update = updater('Deploy')
   let { inv } = inventory
 
   // update console output
-  let update = updater('Deploy')
   if (isDryRun) {
     update = updater('Deploy [dry-run]')
     update.status('Starting dry run!')
@@ -31,7 +31,8 @@ module.exports = function directDeploy (inventory, params, callback) {
   }
 
   let appname = inv.app
-  let stackname = `${toLogicalID(appname)}Staging`
+  let stage = production ? 'Production' : 'Staging'
+  let stackname = `${toLogicalID(appname)}${stage}`
 
   update.warn('Direct deployments should be considered temporary, and will be overwritten')
   update.status(
@@ -43,6 +44,7 @@ module.exports = function directDeploy (inventory, params, callback) {
   if (isDryRun) {
     let plural = srcDirs.length > 1 ? 's' : ''
     update.status(`Direct deploy to Lambda${plural}:`, ...srcDirs)
+    update.done(`Dry run complete!`)
     callback()
   }
 

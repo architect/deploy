@@ -67,6 +67,7 @@ if (require.main === module) {
       pauser.unpause()
       let update = updater('Deploy')
       update.error(err)
+      process.exit(1)
     }
   })()
 }

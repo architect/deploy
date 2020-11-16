@@ -1,4 +1,5 @@
 let inventory = require('@architect/inventory')
+let { updater } = require('@architect/utils')
 let direct = require('./src/direct')
 let sam = require('./src/sam')
 let _static = require('./src/static')
@@ -18,7 +19,10 @@ function run (mod) {
     // Get inventory, but don't fetch env vars if it's a dry-run
     inventory({ env: !options.isDryRun }, function (err, inv) {
       if (err) callback(err)
-      else mod(inv, options, callback)
+      else {
+        options.update = updater('Deploy')
+        mod(inv, options, callback)
+      }
     })
 
     return promise
