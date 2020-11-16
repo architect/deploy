@@ -7,20 +7,27 @@
 ### Added
 
 - Added support for custom file paths
+- Added support for direct deploys of multiple functions from a single source dir (with custom file paths)
+- Added support for direct deploys to production Lambdas
+- Added support for ensuring environment variables are updated during direct deploys
 
 
 ### Changed
 
 - Implemented Inventory (`@architect/inventory`)
+- An inventory object is now passed as the 4th parameter to Macros; please note that this is (for now) considered internal-only and may change in the future
+- Shored up AWS region throughout, now defers to `options`, and then Inventory region (which is itself may use `AWS_REGION`)
 - Internal change: removed final remnants of old `nested` code path
+- Internal change: retiring `dirty` nomenclature / API for `direct`
 
 
 ### Fixed
 
-- Fixed direct deployments on apps with enough CloudFormation resources to paginate
 - Fixed static deployments on apps with enough CloudFormation resources to paginate; fixes #996, thanks @samirrayani!
+  - Also fixed direct deployments on apps with enough CloudFormation resources to paginate
 - Fixed case where explicitly defining `@cdn false` does not disable the CDN; fixes #968
 - Fixed bug where Deploy would crash instead of bubbling a CloudFormation error
+- Fixed non-exiting CLI process when an error occurs
 
 ---
 
