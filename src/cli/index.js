@@ -1,11 +1,11 @@
 #!/usr/bin/env node
-let deploy = require('.')
+let deploy = require('../../')
 let { banner, updater } = require('@architect/utils')
 let create = require('@architect/create')
-let validate = require('./src/validate')
-let _options = require('./src/options')
-let { version } = require('./package.json')
-let pauser = require('./src/utils/pause-sandbox')
+let validate = require('./validate')
+let _options = require('./options')
+let { version } = require('../../package.json')
+let pauser = require('../utils/pause-sandbox')
 
 /**
  * `arc deploy`

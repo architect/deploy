@@ -1,5 +1,5 @@
 let test = require('tape')
-let options = require('../../src/options')
+let options = require('../../src/cli/options')
 
 test('should return isDirect option', t => {
   t.plan(3)
