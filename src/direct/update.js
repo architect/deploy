@@ -12,7 +12,7 @@ let aws = require('aws-sdk')
  * @param {String} params.FunctionName - a valid lambda function name or arn
  * @param {String} params.lambda - Inventory Lambda object
  */
-module.exports = function directDeployOne (params, callback) {
+module.exports = function updateLambda (params, callback) {
   parallel({
     code (callback) {
       updateCode(params, callback)

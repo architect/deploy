@@ -1,6 +1,6 @@
 let { toLogicalID, updater } = require('@architect/utils')
 let { sep } = require('path')
-let deploySAM = require('./deploy-sam')
+let deploy = require('./deploy')
 let pretty = require('./pretty')
 
 /**
@@ -47,7 +47,7 @@ module.exports = function directDeploy (inventory, params, callback) {
   }
 
   else {
-    deploySAM({
+    deploy({
       inventory,
       specificLambdasToDeploy,
       stackname,

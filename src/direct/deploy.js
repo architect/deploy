@@ -3,7 +3,7 @@ let { getLambdaName, toLogicalID } = require('@architect/utils')
 let parallel = require('run-parallel')
 let waterfall = require('run-waterfall')
 
-let deploy = require('./deploy-one')
+let updateLambda = require('./update')
 let pretty = require('./pretty')
 let getResources = require('../utils/get-cfn-resources')
 
@@ -66,7 +66,7 @@ module.exports = function deploySAM (params, callback) {
           if (found) {
             let FunctionName = found.PhysicalResourceId
             update.status(`Deploying directly to: ${name} (${dir})`)
-            deploy({
+            updateLambda({
               FunctionName,
               lambda,
             }, callback)
