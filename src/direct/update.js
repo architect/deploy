@@ -30,14 +30,14 @@ module.exports = function updateLambda (params, callback) {
 /**
  * zip path/to/code and direct updates lambda function
  */
-function updateCode ({ FunctionName, lambda }, callback) {
+function updateCode ({ FunctionName, lambda, region }, callback) {
   let { src } = lambda
   sploot([
     function (callback) {
       zip(src, callback)
     },
     function (buffer, callback) {
-      let lambda = new aws.Lambda({ region: process.env.AWS_REGION })
+      let lambda = new aws.Lambda({ region })
       lambda.updateFunctionCode({
         FunctionName,
         ZipFile: buffer
@@ -54,10 +54,10 @@ function updateCode ({ FunctionName, lambda }, callback) {
  * reads path/to/code/.arc-config and direct updates lambda function config
  */
 function updateConfig (params, callback) {
-  let { FunctionName, env } = params
+  let { FunctionName, env, region } = params
   let { timeout, memory, runtime, handler, concurrency, layers, policies } = params.lambda.config
 
-  let lambda = new aws.Lambda({ region: process.env.AWS_REGION })
+  let lambda = new aws.Lambda({ region })
 
   let args = {
     FunctionName,

@@ -5,7 +5,6 @@ let { existsSync } = require('fs')
 let messages = {
   missing_aws_cli: 'missing aws from PATH, please install the aws-cli',
   missing_creds: 'missing or invalid AWS credentials or credentials file',
-  missing_region: '@aws region / AWS_REGION must be configured',
 }
 
 /**
@@ -19,10 +18,6 @@ module.exports = function validate () {
 
     if (!binExists('aws')) {
       throw ReferenceError('missing_aws_cli')
-    }
-
-    if (!process.env.AWS_REGION) {
-      throw Error('missing_region')
     }
   }
   catch (e) {

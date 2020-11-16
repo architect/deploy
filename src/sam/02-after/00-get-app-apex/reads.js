@@ -9,13 +9,13 @@ let list = require('./cloudfront-list')
  * @param {String} params.stackname - the name of the currently deployed stack
  * @param {Function} callback - node errback (err, {url, s3, apigateway})=>
  */
-module.exports = function reads ({ stackname, stage }, callback){
+module.exports = function reads ({ region, stackname, stage }, callback){
 
   let clean = str => str.replace(`/${stage}`, '').replace('http://', '').replace('https://', '')
 
   parallel({
     cfn (callback) {
-      let cloudformation = new aws.CloudFormation({ region: process.env.AWS_REGION })
+      let cloudformation = new aws.CloudFormation({ region })
       cloudformation.describeStacks({
         StackName: stackname
       }, callback)

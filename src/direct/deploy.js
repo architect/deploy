@@ -8,13 +8,13 @@ let pretty = require('./pretty')
 let getResources = require('../utils/get-cfn-resources')
 
 module.exports = function deploySAM (params, callback) {
-  let { inventory, production, stackname, specificLambdasToDeploy, ts, update } = params
+  let { inventory, production, region, stackname, specificLambdasToDeploy, ts, update } = params
   let { inv } = inventory
 
   waterfall([
 
     function readResources (callback) {
-      getResources({ stackname }, function (err, resources) {
+      getResources({ region, stackname }, function (err, resources) {
         if (err) callback(err)
         else {
           let find = i => i.ResourceType === 'AWS::Lambda::Function'
@@ -73,6 +73,7 @@ module.exports = function deploySAM (params, callback) {
               FunctionName,
               env,
               lambda,
+              region,
             }, callback)
           }
           else {
@@ -91,7 +92,7 @@ module.exports = function deploySAM (params, callback) {
     },
 
     function readURL (callback) {
-      let cloudformation = new aws.CloudFormation({ region: process.env.AWS_REGION })
+      let cloudformation = new aws.CloudFormation({ region })
       cloudformation.describeStacks({
         StackName: stackname
       },

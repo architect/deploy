@@ -3,7 +3,7 @@ let aws = require('aws-sdk')
 module.exports = function getCloudFormationResources (params, callback) {
   let { credentials, region, stackname: StackName } = params
 
-  let config = { region: region || process.env.AWS_REGION }
+  let config = { region }
   if (credentials) config.credentials = credentials
   let cloudformation = new aws.CloudFormation(config)
 

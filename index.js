@@ -21,6 +21,7 @@ function run (mod) {
       if (err) callback(err)
       else {
         options.update = updater('Deploy')
+        options.region = options.region || inv.inv.aws.region
         mod(inv, options, callback)
       }
     })

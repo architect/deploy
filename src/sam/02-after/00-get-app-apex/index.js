@@ -5,10 +5,11 @@ let enable = require('./cloudfront-enable')
 let destroy = require('./cloudfront-destroy')
 
 module.exports = function getAppApex (params, callback) {
-  let { inventory, legacyAPI, pretty, stackname, stage, ts, update } = params
+  let { inventory, legacyAPI, pretty, region, stackname, stage, ts, update } = params
   let { inv } = inventory
   let arc = inv._project.arc // TODO cut this code path over to Inventory
   reads({
+    region,
     stackname,
     stage
   },

@@ -3,7 +3,7 @@ let aws = require('aws-sdk')
 let list = require('./00-get-app-apex/cloudfront-list')
 
 module.exports = function maybeInvalidateDists (params, callback) {
-  let { inventory, stackname, stage } = params
+  let { inventory, region, stackname, stage } = params
   let { inv } = inventory
 
   // Allow users to disable Architect's CDN checks so they can configure / manage their own via Macros
@@ -12,7 +12,7 @@ module.exports = function maybeInvalidateDists (params, callback) {
     // read the cloudformation stack to get the s3 and apigateway urls
     parallel({
       cfn (callback) {
-        let cloudformation = new aws.CloudFormation({ region: process.env.AWS_REGION })
+        let cloudformation = new aws.CloudFormation({ region })
         cloudformation.describeStacks({
           StackName: stackname
         }, callback)

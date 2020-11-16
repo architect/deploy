@@ -26,6 +26,7 @@ module.exports = function samDeploy (inventory, params, callback) {
     name,
     production,
     prune,
+    region,
     tags,
     update,
     verbose,
@@ -49,11 +50,6 @@ module.exports = function samDeploy (inventory, params, callback) {
   let cloudformation
   let sam
   let foundLegacyApi
-
-  let region = process.env.AWS_REGION
-  if (!region) {
-    throw ReferenceError('AWS region must be configured to deploy')
-  }
 
   if (isDryRun) {
     update = updater('Deploy [dry-run]')
@@ -238,6 +234,7 @@ module.exports = function samDeploy (inventory, params, callback) {
           pretty,
           production,
           prune,
+          region,
           stackname,
           stage,
           ts,

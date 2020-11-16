@@ -88,7 +88,7 @@ module.exports = function deployStatic (inventory, params, callback) {
       },
 
       function ({ fingerprint, ignore, folder }, callback) {
-        let config = { region: region || process.env.AWS_REGION }
+        let config = { region }
         if (credentials) config.credentials = credentials
         let s3 = new aws.S3(config)
 
