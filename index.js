@@ -1,5 +1,5 @@
 let inventory = require('@architect/inventory')
-let dirty = require('./src/dirty')
+let direct = require('./src/direct')
 let sam = require('./src/sam')
 let _static = require('./src/static')
 
@@ -26,7 +26,8 @@ function run (mod) {
 }
 
 module.exports = {
-  dirty:  run(dirty),
+  direct: run(direct),
+  dirty:  run(direct), // Deprecated name
   sam:    run(sam),
   static: run(_static)
 }

@@ -12,7 +12,7 @@ let aws = require('aws-sdk')
  * @param {String} params.FunctionName - a valid lambda function name or arn
  * @param {String} params.lambda - Inventory Lambda object
  */
-module.exports = function dirtyDeployOne (params, callback) {
+module.exports = function directDeployOne (params, callback) {
   parallel({
     code (callback) {
       updateCode(params, callback)
@@ -28,7 +28,7 @@ module.exports = function dirtyDeployOne (params, callback) {
 }
 
 /**
- * zip path/to/code and dirty updates lambda function
+ * zip path/to/code and direct updates lambda function
  */
 function updateCode ({ FunctionName, lambda }, callback) {
   let { src } = lambda
@@ -51,7 +51,7 @@ function updateCode ({ FunctionName, lambda }, callback) {
 }
 
 /**
- * reads path/to/code/.arc-config and dirty updates lambda function config
+ * reads path/to/code/.arc-config and direct updates lambda function config
  */
 function updateConfig (params, callback) {
   let { FunctionName } = params

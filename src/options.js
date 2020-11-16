@@ -1,6 +1,7 @@
 let { statSync } = require('fs')
 
-let isDirty =   opt => opt === 'dirty' || opt === '--dirty' || opt === '-d'
+let isDirect =  opt => opt === 'direct' || opt === '--direct' ||
+                       opt === 'dirty' || opt === '--dirty' || opt === '-d'
 let isDryRun =  opt => opt === '--dry-run'
 let isProd =    opt => opt === 'production' || opt === '--production' || opt === '-p'
 let isPrune =   opt => opt === 'prune' || opt === '--prune'
@@ -20,7 +21,7 @@ module.exports = function options (opts) {
     apiType: getValue(opts, apiType),
     name: getValue(opts, name),
     srcDirs: getSrcDirs(opts),
-    isDirty: opts.some(isDirty),
+    isDirect: opts.some(isDirect),
     isDryRun: opts.some(isDryRun),
     isStatic: opts.some(isStatic),
     isFullDeploy: opts.some(isStatic) ? false : true

@@ -4,13 +4,13 @@ let deploySAM = require('./deploy-sam')
 let pretty = require('./pretty')
 
 /**
- * attempts to resolve logical ids for all resources in the given stack
- * then attempts to updateFunctionCode for those resources
+ * Resolve logical IDs for all resources in the given stack
+ * then `updateFunctionCode` for those resources
  *
  * @param {Function} callback - node style errback
  * @returns {Promise} if no callback is supplied
  */
-module.exports = function dirty (inventory, params, callback) {
+module.exports = function directDeploy (inventory, params, callback) {
   let { isDryRun = false, srcDirs = [] } = params
   let { inv } = inventory
 
@@ -25,7 +25,7 @@ module.exports = function dirty (inventory, params, callback) {
   let ts = Date.now()
   let specificLambdasToDeploy = []
   if (srcDirs.length && inv.lambdaSrcDirs.length) {
-    // Strip trailing slashes
+    // Normalize paths by stripping trailing slashes
     srcDirs = srcDirs.map(d => d.endsWith(sep) ? d.substr(0, d.length - 1) : d)
     specificLambdasToDeploy = srcDirs.filter(d => inv.lambdaSrcDirs.some(p => p.endsWith(d)))
   }

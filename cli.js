@@ -14,8 +14,8 @@ let pauser = require('./src/utils/pause-sandbox')
  *
  * options
  * -p|--production|production ... deploys to AppNameProduction
- * -d|--dirty|dirty ............. *staging only* dirty deploy function code/config
- * -s|--static|static ........... dirty deploys /public to s3 bucket
+ * -d|--direct|direct ........... direct deploy function code/config
+ * -s|--static|static ........... direct deploys /public to s3 bucket
  * -v|--verbose|verbose ......... prints all output to console
  * -t|--tags|tags ............... add tags
  * -n|--name|name ............... customize stack name
@@ -35,8 +35,8 @@ async function cmd () {
   // create any missing local infra
   await create({})
 
-  if (options.isDirty || options.srcDirs.length) {
-    let result = await deploy.dirty(options)
+  if (options.isDirect || options.srcDirs.length) {
+    let result = await deploy.direct(options)
     pauser.unpause()
     return result
   }
