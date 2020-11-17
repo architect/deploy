@@ -19,6 +19,7 @@
 - Shored up AWS region throughout, now defers to `options`, and then Inventory region (which is itself may use `AWS_REGION`)
 - Internal change: removed final remnants of old `nested` code path
 - Internal change: retiring `dirty` nomenclature / API for `direct`
+- Added validation checks for `@http` `any` + `catchall` syntax with legacy `REST` APIs
 
 
 ### Fixed

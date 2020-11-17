@@ -42,9 +42,23 @@ module.exports = async function legacyAPI (arc, cloudformation, stage, inventory
       let path = unexpress(route[1]) // from /foo/:bar to /foo/{bar}
       let name = toLogicalID(`${method}${getLambdaName(route[1]).replace(/000/g, '')}`) // GetIndex
 
+      // We don't support any + catchall in older REST APIs
+      if (method === 'any') {
+        throw ReferenceError(`'any' method not supported by Architect in legacy REST APIs: ${method} ${path}`)
+      }
+      if (path.endsWith('/*')) {
+        throw ReferenceError(`Catchall syntax ('/*') not supported by Architect in legacy REST APIs: ${method} ${path}`)
+      }
+
+      // Normalize resource naming from pre 8.3 to minimize potential impact
+      let routeLambdaOld = name
+      let routeLambdaNew = `${name}HTTPLambda`
+      let routeEventOld = `${name}Event`
+      let routeEventNew = `${name}HTTPEvent`
+
       // Reconstruct the event source so SAM can wire the permissions
-      let eventName = `${name}Event`
-      cloudformation.Resources[name].Properties.Events[eventName] = {
+      cloudformation.Resources[routeLambdaOld] = cloudformation.Resources[routeLambdaNew]
+      cloudformation.Resources[routeLambdaOld].Properties.Events[routeEventOld] = {
         Type: 'Api',
         Properties: {
           Path: path,
@@ -52,6 +66,8 @@ module.exports = async function legacyAPI (arc, cloudformation, stage, inventory
           RestApiId: { Ref: appname }
         }
       }
+      delete cloudformation.Resources[routeLambdaNew]
+      delete cloudformation.Resources[routeLambdaOld].Properties.Events[routeEventNew]
     })
 
     // Add permissions for proxy+ resource aiming at GetIndex
