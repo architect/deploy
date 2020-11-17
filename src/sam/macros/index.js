@@ -55,6 +55,7 @@ async function exec (inventory, cloudformation, stage) {
   // Always run the following internal macros:
   transforms.push(
     'legacy-api', // Use legacy REST APIs instead of HTTP APIs for @http; must run before other macros
+    'old-ws',     // Use older WebSocket route resource names due to an API Gateway / cfn bug
     'http-ver',   // Reconfigure HTTP APIs to use legacy REST API payload format
     'api-path',   // Updates @cdn, @ws stage URL paths
     'arc-env',    // Gets and sets env vars for functions

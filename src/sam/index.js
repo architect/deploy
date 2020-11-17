@@ -50,6 +50,7 @@ module.exports = function samDeploy (inventory, params, callback) {
   let cloudformation
   let sam
   let foundLegacyApi
+  let foundEarlierWS
 
   if (isDryRun) {
     update = updater('Deploy [dry-run]')
@@ -136,15 +137,16 @@ module.exports = function samDeploy (inventory, params, callback) {
      */
     function legacyCompat (callback) {
       // Skip check if specified
-      if (arcApiType) callback()
+      if (arcApiType && !inv.ws) callback()
       else {
         compat({
           inv,
           stackname
-        }, function done (err, result = {}) {
+        }, function done (err, result) {
           if (err) callback(err)
           else {
             foundLegacyApi = result.legacyApi
+            foundEarlierWS = result.earlierWS
             callback()
           }
         })
@@ -152,7 +154,7 @@ module.exports = function samDeploy (inventory, params, callback) {
     },
 
     /**
-     * Determine final API type
+     * Determine final API types
      */
     function setApiType (callback) {
       // Priority: user specified API type > existing legacy API type > default API type
@@ -167,7 +169,7 @@ module.exports = function samDeploy (inventory, params, callback) {
         apiType = 'http'
       }
       // Special workflow-specific case where we'll additively mutate the inventory object
-      inv._deploy = { apiType }
+      inv._deploy = { apiType, foundEarlierWS }
       callback()
     },
 
