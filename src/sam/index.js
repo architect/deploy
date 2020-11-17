@@ -49,8 +49,6 @@ module.exports = function samDeploy (inventory, params, callback) {
   // Assigned below
   let cloudformation
   let sam
-  let foundLegacyApi
-  let foundEarlierWS
 
   if (isDryRun) {
     update = updater('Deploy [dry-run]')
@@ -136,21 +134,17 @@ module.exports = function samDeploy (inventory, params, callback) {
      * Check to see if we're working with a legacy (REST) API (and any other backwards compat checks)
      */
     function legacyCompat (callback) {
-      // Skip check if specified
-      if (arcApiType && !inv.ws) callback()
-      else {
-        compat({
-          inv,
-          stackname
-        }, function done (err, result) {
-          if (err) callback(err)
-          else {
-            foundLegacyApi = result.legacyApi
-            foundEarlierWS = result.earlierWS
-            callback()
-          }
-        })
-      }
+      compat({
+        inv,
+        stackname
+      }, function done (err, result) {
+        if (err) callback(err)
+        else {
+          // Special workflow-specific case where we'll additively mutate the inventory object
+          inv._deploy = result
+          callback()
+        }
+      })
     },
 
     /**
@@ -162,14 +156,12 @@ module.exports = function samDeploy (inventory, params, callback) {
       if (specified) {
         apiType = specified
       }
-      else if (foundLegacyApi) {
+      else if (inv._deploy.foundLegacyApi) {
         apiType = 'rest'
       }
       else {
         apiType = 'http'
       }
-      // Special workflow-specific case where we'll additively mutate the inventory object
-      inv._deploy = { apiType, foundEarlierWS }
       callback()
     },
 

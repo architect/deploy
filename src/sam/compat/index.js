@@ -16,7 +16,7 @@ module.exports = function compat (params, callback) {
         let resource = toLogicalID(inv.app)
         getResources(resource, stackname, callback, resources => {
           let api = resources[0] && resources[0].ResourceType
-          result.legacyApi = api === 'AWS::ApiGateway::RestApi' ? true : false
+          result.foundLegacyApi = api === 'AWS::ApiGateway::RestApi' ? true : false
           callback()
         })
       }
@@ -29,7 +29,19 @@ module.exports = function compat (params, callback) {
         // Look for older (pre Arc 8.3) WebSocket resources in the stack
         let resource = 'WebsocketDefaultRoute'
         getResources(resource, stackname, callback, resources => {
-          result.earlierWS = resources.length ? true : false
+          result.foundEarlierWS = resources.length ? true : false
+          callback()
+        })
+      }
+      else callback()
+    },
+
+    function getEventsParam (callback) {
+      if (inv.events) {
+        // Look for older (pre Arc 8.3) WebSocket resources in the stack
+        let resource = `${toLogicalID(inv.events[0].name)}TopicParam`
+        getResources(resource, stackname, callback, resources => {
+          result.foundEarlierEvents = resources.length ? true : false
           callback()
         })
       }
