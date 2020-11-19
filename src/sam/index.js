@@ -6,7 +6,6 @@ let hydrate = require('@architect/hydrate')
 
 let print = require('./print')
 let getBucket = require('./bucket')
-let env = require('./env')
 let compat = require('./compat')
 let macros = require('./macros')
 let before = require('./00-before')
@@ -128,7 +127,6 @@ module.exports = function samDeploy (inventory, params, callback) {
      */
     function generateCloudFormation (callback) {
       cloudformation = pkg(inventory)
-      cloudformation = env({ cloudformation, inventory, stage })
       callback()
     },
 

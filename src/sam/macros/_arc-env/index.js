@@ -5,19 +5,25 @@
 // eslint-disable-next-line
 module.exports = async function env (arc, cloudformation, stage, inventory) {
   let { inv } = inventory
-  let cfn = cloudformation
+
+  // Bail if no env vars are configured for this environment
   let envVars = inv._project.env && inv._project.env[stage]
-  Object.keys(cfn.Resources).forEach(r => {
-    let isFunction = cfn.Resources[r].Type === 'AWS::Serverless::Function'
-    if (isFunction) {
-      cfn.Resources[r].Properties.Environment.Variables.NODE_ENV = stage
-      if (envVars) {
-        Object.entries(envVars).forEach(envVar => {
-          let { name, value } = envVar
-          cfn.Resources[r].Properties.Environment.Variables[name] = value
-        })
-      }
+  if (!envVars) return cloudformation
+
+  let cfn = cloudformation
+  Object.entries(cfn.Resources).forEach(([ resource, value ]) => {
+    if (value.Type !== 'AWS::Serverless::Function') return
+    // Assume we've already got a baseline set of env vars
+    try {
+      Object.entries(envVars).forEach(([ k, v ]) => {
+        cfn.Resources[resource].Properties.Environment.Variables[k] = v
+      })
+    }
+    catch (err) {
+      let msg = `Failed adding env vars to ${resource}:` + (err.message ? err.message : '')
+      throw Error(msg)
     }
   })
+
   return cfn
 }
