@@ -20,7 +20,11 @@
 - Internal change: removed final remnants of old `nested` code path
 - Internal change: retiring `dirty` nomenclature / API for `direct`
 - Added validation checks for `@http` `any` + `catchall` syntax with legacy `REST` APIs
-
+- Deploy no longer creates missing Lambda resources by default; to reenable that, add to your preferences file:
+```arc
+@create
+autocreate true
+```
 
 ### Fixed
 

@@ -1,10 +1,12 @@
 let pkg = require('@architect/package')
 let { toLogicalID, updater, fingerprint: fingerprinter } = require('@architect/utils')
 let { config: fingerprintConfig } = fingerprinter
-let series = require('run-series')
+let create = require('@architect/create')
 let hydrate = require('@architect/hydrate')
+let series = require('run-series')
 
-let print = require('./print')
+let print = require('./utils/print')
+let handlerCheck = require('../utils/handler-check')
 let getBucket = require('./bucket')
 let compat = require('./compat')
 let macros = require('./macros')
@@ -40,6 +42,7 @@ module.exports = function samDeploy (inventory, params, callback) {
   let pretty = print({ log, verbose })
   let appname = inv.app
   let bucket = inv.aws.bucket
+  let prefs = inv._project.preferences
   let stackname = `${toLogicalID(appname)}${production ? 'Production' : 'Staging'}`
 
   if (name) {
@@ -59,6 +62,25 @@ module.exports = function samDeploy (inventory, params, callback) {
   let arcApiType = inv.aws.apigateway
 
   series([
+    /**
+     * Maybe auto-init resources
+     */
+    function createFiles (callback) {
+      let autocreateEnabled = prefs && prefs.create && prefs.create.autocreate
+      if (autocreateEnabled) {
+        // create any missing local infra
+        create({}, callback)
+      }
+      else callback()
+    },
+
+    /**
+     * Check existence of handlers
+     */
+    function checkHandlers (callback) {
+      handlerCheck(inv.lambdaSrcDirs, update, callback)
+    },
+
     /**
      * Maybe create a new deployment bucket
      */

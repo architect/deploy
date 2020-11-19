@@ -1,7 +1,6 @@
 #!/usr/bin/env node
 let deploy = require('../../')
 let { banner, updater } = require('@architect/utils')
-let create = require('@architect/create')
 let validate = require('./validate')
 let _options = require('./options')
 let { version } = require('../../package.json')
@@ -31,9 +30,6 @@ async function cmd () {
 
   // Pause the Sandbox watcher
   pauser.pause()
-
-  // create any missing local infra
-  await create({})
 
   if (options.isDirect || options.srcDirs.length) {
     let result = await deploy.direct(options)

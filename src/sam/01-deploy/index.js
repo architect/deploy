@@ -1,4 +1,4 @@
-let spawn = require('../spawn')
+let spawn = require('../utils/spawn')
 
 module.exports = function deploy (params, callback) {
   let { stackname, bucket, pretty, region, update, tags } = params

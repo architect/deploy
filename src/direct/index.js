@@ -21,13 +21,22 @@ module.exports = function directDeploy (inventory, params, callback) {
     update.status('Starting dry run!')
   }
 
-  // time the deploy
+  // Time the deploy
   let ts = Date.now()
+
+  // Collect all the Lambdas
   let specificLambdasToDeploy = []
   if (srcDirs.length && inv.lambdaSrcDirs.length) {
     // Normalize paths by stripping trailing slashes
-    srcDirs = srcDirs.map(d => d.endsWith(sep) ? d.substr(0, d.length - 1) : d)
+    // Relativize by stripping leading relative path + `.`, `/`, `./`, `\`, `.\`
+    srcDirs = srcDirs
+      .map(d => d.endsWith(sep) ? d.substr(0, d.length - 1) : d)
+      .map(d => d.replace(process.cwd(), '').replace(/^\.?\/?\\?/, ''))
     specificLambdasToDeploy = srcDirs.filter(d => inv.lambdaSrcDirs.some(p => p.endsWith(d)))
+  }
+  if (!specificLambdasToDeploy.length) {
+    update.error('No Lambdas found to deploy')
+    process.exit(1)
   }
 
   let appname = inv.app
