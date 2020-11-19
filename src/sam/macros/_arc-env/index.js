@@ -15,6 +15,8 @@ module.exports = async function env (arc, cloudformation, stage, inventory) {
     if (value.Type !== 'AWS::Serverless::Function') return
     // Assume we've already got a baseline set of env vars
     try {
+      cfn.Resources[resource].Properties.Environment.Variables.ARC_ENV = stage
+      cfn.Resources[resource].Properties.Environment.Variables.NODE_ENV = stage
       Object.entries(envVars).forEach(([ k, v ]) => {
         cfn.Resources[resource].Properties.Environment.Variables[k] = v
       })
