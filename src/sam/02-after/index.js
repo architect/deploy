@@ -22,7 +22,7 @@ module.exports = function after (params, callback) {
 
   series([
     appApex.bind({}, { inventory, legacyAPI, pretty, region, stackname, stage, ts, update }),
-    staticDeploy.bind({}, { inventory, production, prune, stackname, verbose }),
+    staticDeploy.bind({}, { inventory, production, prune, region, stackname, verbose }),
     patchRestAPI.bind({}, { legacyAPI, region, stackname, stage }),
     maybeInvalidate.bind({}, { inventory, region, stackname, stage }),
     cleanup,
