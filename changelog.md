@@ -10,6 +10,7 @@
 - Added support for direct deploys of multiple functions from a single source dir (with custom file paths)
 - Added support for direct deploys to production Lambdas
 - Added support for ensuring environment variables are updated during direct deploys
+- Added support for `ARC_ENV` env var
 
 
 ### Changed

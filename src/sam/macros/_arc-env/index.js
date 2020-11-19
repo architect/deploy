@@ -17,9 +17,12 @@ module.exports = async function env (arc, cloudformation, stage, inventory) {
     try {
       cfn.Resources[resource].Properties.Environment.Variables.ARC_ENV = stage
       cfn.Resources[resource].Properties.Environment.Variables.NODE_ENV = stage
-      Object.entries(envVars).forEach(([ k, v ]) => {
-        cfn.Resources[resource].Properties.Environment.Variables[k] = v
-      })
+      let disableEnvVars = cfn.Resources[resource].Properties.Environment.Variables.ARC_DISABLE_ENV_VARS
+      if (!disableEnvVars) {
+        Object.entries(envVars).forEach(([ k, v ]) => {
+          cfn.Resources[resource].Properties.Environment.Variables[k] = v
+        })
+      }
     }
     catch (err) {
       let msg = `Failed adding env vars to ${resource}:` + (err.message ? err.message : '')
