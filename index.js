@@ -17,7 +17,7 @@ function run (mod) {
     }
 
     // Get inventory, but don't fetch env vars if it's a dry-run
-    inventory({ env: !options.isDryRun }, function (err, inv) {
+    inventory({ env: true }, function (err, inv) {
       if (err) callback(err)
       else {
         options.update = updater('Deploy')
