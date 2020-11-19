@@ -2,7 +2,6 @@ let series = require('run-series')
 let parse = require('@architect/parser')
 let fs = require('fs')
 let path = require('path')
-let parallel = require('run-parallel')
 let sploot = require('run-waterfall')
 let zip = require('./zip')
 let aws = require('aws-sdk')
@@ -16,20 +15,20 @@ let aws = require('aws-sdk')
  * @param {String} params.pathToCode - path on filesystem to function code
  */
 module.exports = function dirtyDeployOne ({ FunctionName, pathToCode }, callback) {
-  parallel({
-    code (callback) {
+  series([
+    function code (callback) {
       updateCode({
         FunctionName,
         pathToCode,
       }, callback)
     },
-    config (callback) {
+    function config (callback) {
       updateConfig({
         FunctionName,
         pathToCode,
       }, callback)
     }
-  },
+  ],
   function done (err) {
     if (err) callback(err)
     else callback()
