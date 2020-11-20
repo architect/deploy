@@ -71,7 +71,9 @@ function updateConfig (params, callback) {
 
   series([
     function getFunctionConfiguration (callback) {
-      if (env) {
+      let updateEnv = env && (params.lambda.config.env !== false)
+      // TODO probably want to warn here somehow? Because of how Lambda config updates work and the env vars we have access to at this time, we can only reliably add/update env vars, not remove
+      if (updateEnv) {
         lambda.getFunctionConfiguration({ FunctionName }, function (err, config) {
           if (err) callback(err)
           else {
