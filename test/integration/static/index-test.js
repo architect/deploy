@@ -49,7 +49,8 @@ function staticDeploy (t, callback) {
   inventory({}, function (err, result) {
     if (err) t.fail(err)
     else {
-      staticDeployMod(result, params, err => {
+      params.inventory = result
+      staticDeployMod(params, err => {
         reset() // Must be reset before any tape tests are resolved because mock-fs#201
         callback(err)
       })
@@ -96,7 +97,7 @@ test(`Static deploy error if @http is defined, but public/ folder is not present
 })
 
 test(`Publish static deploy if @static is defined`, t => {
-  t.plan(8)
+  t.plan(6)
   setup()
   let arc = '@app\n an-app\n @static'
   mockFs({
@@ -106,9 +107,7 @@ test(`Publish static deploy if @static is defined`, t => {
   staticDeploy(t, err => {
     if (err) t.fail(err)
     t.equal(published.Bucket, params.bucket, 'Bucket is unchanged')
-    t.equal(published.fingerprint, false, 'Fingerprint set to false by default')
     t.equal(published.folder, 'public', 'Folder set to public by default')
-    t.equal(published.ignore.length, 0, 'Ignore is empty by default')
     t.equal(published.isFullDeploy, params.isFullDeploy, 'isFullDeploy is unchaged')
     t.equal(published.prefix, null, 'Prefix set to null by default')
     t.equal(published.prune, null, 'Prune set to null by default')
@@ -127,56 +126,6 @@ test(`Publish static deploy if @http is defined and public/ folder is present`, 
   staticDeploy(t, err => {
     if (err) t.fail(err)
     t.ok(published, 'Publish was called')
-  })
-})
-
-test(`Respect @static fingerprint true`, t => {
-  t.plan(1)
-  setup()
-  let arc = '@app\n an-app\n @static\n fingerprint true'
-  mockFs({
-    'app.arc': arc,
-    'public': {}
-  })
-  staticDeploy(t, err => {
-    if (err) t.fail(err)
-    t.equal(published.fingerprint, true, 'Fingerprint set to true')
-  })
-})
-
-test(`Respect @static fingerprint external`, t => {
-  t.plan(1)
-  setup()
-  let arc = '@app\n an-app\n @static\n fingerprint external'
-  mockFs({
-    'app.arc': arc,
-    'public': {}
-  })
-  staticDeploy(t, err => {
-    if (err) t.fail(err)
-    t.equal(published.fingerprint, 'external', 'Fingerprint set to external')
-  })
-})
-
-test(`Respect @static ignore`, t => {
-  t.plan(2)
-  setup()
-  let arc = `
-@app
-an-app
-@static
-ignore
-  foo
-  bar
-`
-  mockFs({
-    'app.arc': arc,
-    'public': {}
-  })
-  staticDeploy(t, err => {
-    if (err) t.fail(err)
-    t.equal(published.ignore[0], 'foo', 'Got correct ignore config')
-    t.equal(published.ignore[1], 'bar', 'Got correct ignore config')
   })
 })
 

@@ -1,12 +1,12 @@
 let { existsSync, readFileSync } = require('fs')
 let { join } = require('path')
-let { fingerprint: fingerprinter } = require('@architect/utils')
+let { fingerprint } = require('@architect/utils')
 
 /**
  * Write, reuse, or possibly remove fingerprinted static asset manifest
  */
 module.exports = function maybeWriteStaticManifest (params, callback) {
-  let { fingerprint, ignore, isFullDeploy, publicDir } = params
+  let { ignore, inventory, isFullDeploy, publicDir } = params
 
   let staticFile = join(publicDir, 'static.json')
   let staticFileExists = existsSync(staticFile)
@@ -19,6 +19,6 @@ module.exports = function maybeWriteStaticManifest (params, callback) {
   }
   // Let the fingerprinter sort out writing the manifest
   else {
-    fingerprinter({ fingerprint, ignore }, callback)
+    fingerprint({ ignore, inventory }, callback)
   }
 }

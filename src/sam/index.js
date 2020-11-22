@@ -1,6 +1,5 @@
 let pkg = require('@architect/package')
-let { toLogicalID, updater, fingerprint: fingerprinter } = require('@architect/utils')
-let { config: fingerprintConfig } = fingerprinter
+let { toLogicalID, updater, fingerprint } = require('@architect/utils')
 let create = require('@architect/create')
 let hydrate = require('@architect/hydrate')
 let series = require('run-series')
@@ -21,9 +20,10 @@ let after = require('./02-after')
  * @param {Function} callback - a node-style errback
  * @returns {Promise} - if not callback is supplied
  */
-module.exports = function samDeploy (inventory, params, callback) {
+module.exports = function samDeploy (params, callback) {
   let {
     apiType,
+    inventory,
     isDryRun = false,
     name,
     production,
@@ -33,7 +33,7 @@ module.exports = function samDeploy (inventory, params, callback) {
     update,
     verbose,
   } = params
-  let { inv } = inventory
+  let { inv, get } = inventory
   if (!update) update = updater('Deploy')
 
   let stage = production ? 'production' : 'staging'
@@ -124,17 +124,14 @@ module.exports = function samDeploy (inventory, params, callback) {
      * Maybe write static asset manifest prior to cfn or hydration
      */
     function maybeFingerprint (callback) {
-      let { fingerprint } = fingerprintConfig(inv._project.arc)
-
-      if (fingerprint || verbose)
-        update.done(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`)
-
-      // Always run full fingerprinting op to ensure remnant static.json files are deleted
-      // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
-      fingerprinter({}, function done (err) {
-        if (err) callback(err)
-        else callback()
-      })
+      let enabled = get.static(fingerprint) === true
+      if (verbose) update.done(`Static asset fingerpringing ${enabled ? 'enabled' : 'disabled'}`)
+      if (enabled) {
+        // Always run full fingerprinting op to ensure remnant static.json files are deleted
+        // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
+        fingerprint({ inventory }, callback)
+      }
+      else callback()
     },
 
     /**

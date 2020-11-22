@@ -1,4 +1,4 @@
-let inventory = require('@architect/inventory')
+let _inventory = require('@architect/inventory')
 let { updater } = require('@architect/utils')
 let direct = require('./src/direct')
 let sam = require('./src/sam')
@@ -16,15 +16,20 @@ function run (mod) {
       })
     }
 
-    // Get inventory, but don't fetch env vars if it's a dry-run
-    inventory({ env: true }, function (err, inv) {
-      if (err) callback(err)
-      else {
-        options.update = updater('Deploy')
-        options.region = options.region || inv.inv.aws.region
-        mod(inv, options, callback)
-      }
-    })
+    // Entered via CLI (or something that supplied inventory)
+    if (options.inventory) mod(options, callback)
+    else {
+      // Get inventory, but don't fetch env vars if it's a dry-run
+      _inventory({ env: true }, function (err, inv) {
+        if (err) callback(err)
+        else {
+          options.update = updater('Deploy')
+          options.region = options.region || inv.inv.aws.region
+          options.inventory = inv
+          mod(options, callback)
+        }
+      })
+    }
 
     return promise
   }

@@ -1,6 +1,6 @@
 let series = require('run-series')
 let appApex  = require('./00-get-app-apex')
-let staticDeploy = require('./01-static-deploy')
+let staticDeploy = require('../../static')
 let patchRestAPI = require('./02-patch-rest-api')
 let maybeInvalidate = require('./03-maybe-invalidate')
 let cleanup = require('./04-cleanup')
@@ -22,7 +22,7 @@ module.exports = function after (params, callback) {
 
   series([
     appApex.bind({}, { inventory, legacyAPI, pretty, region, stackname, stage, ts, update }),
-    staticDeploy.bind({}, { inventory, production, prune, region, stackname, verbose }),
+    staticDeploy.bind({}, { inventory, isFullDeploy: true, production, prune, region, stackname, verbose, update }),
     patchRestAPI.bind({}, { legacyAPI, region, stackname, stage }),
     maybeInvalidate.bind({}, { inventory, region, stackname, stage }),
     cleanup,

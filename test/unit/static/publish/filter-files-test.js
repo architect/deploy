@@ -12,26 +12,26 @@ test('Module is present', t => {
 test('File filtering', t => {
   t.plan(5)
 
-  let files = [
+  let globbed = [
     'public/index.html',
     'public/static.json',
     'public/something.json'
   ]
   let ignore = []
 
-  sut({ files, ignore }, (err, filtered) => {
+  sut({ globbed, ignore }, (err, filtered) => {
     if (err) t.fail(err)
     t.equal(filtered.length, 2, 'Correct files ignored')
-    t.notOk(filtered.includes(files[1]), 'static.json ignored')
+    t.notOk(filtered.includes(globbed[1]), 'static.json ignored')
   })
 
   let file = 'public/some-file.txt'
-  files.push(file)
+  globbed.push(file)
   ignore.push(file)
-  sut({ files, ignore }, (err, filtered) => {
+  sut({ globbed, ignore }, (err, filtered) => {
     if (err) t.fail(err)
-    t.ok(files.length === 4 && ignore.length === 1, 'New file was passed to files + ignore list')
+    t.ok(globbed.length === 4 && ignore.length === 1, 'New file was passed to files + ignore list')
     t.equal(filtered.length, 2, 'New file was ignored')
-    t.notOk(filtered.includes(files[1]), 'static.json ignored')
+    t.notOk(filtered.includes(globbed[1]), 'static.json ignored')
   })
 })

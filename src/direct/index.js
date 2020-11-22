@@ -10,8 +10,8 @@ let pretty = require('./pretty')
  * @param {Function} callback - node style errback
  * @returns {Promise} if no callback is supplied
  */
-module.exports = function directDeploy (inventory, params, callback) {
-  let { isDryRun = false, production, region, srcDirs = [], update } = params
+module.exports = function directDeploy (options, callback) {
+  let { inventory, isDryRun = false, production, region, srcDirs = [], update } = options
   if (!update) update = updater('Deploy')
   let { inv } = inventory
 

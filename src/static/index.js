@@ -1,9 +1,8 @@
 let aws = require('aws-sdk')
 let { join } = require('path')
 let { existsSync } = require('fs')
-let waterfall = require('run-waterfall')
-let { fingerprint: fingerprinter, toLogicalID, updater } = require('@architect/utils')
-let { config: fingerprintConfig } = fingerprinter
+let series = require('run-series')
+let { toLogicalID, updater } = require('@architect/utils')
 let publish = require('./publish')
 let getResources = require('../utils/get-cfn-resources')
 
@@ -14,10 +13,11 @@ let getResources = require('../utils/get-cfn-resources')
  * @param {Function} callback - a node-style errback
  * @returns {Promise} - if no callback is supplied
  */
-module.exports = function deployStatic (inventory, params, callback) {
+module.exports = function deployStatic (params, callback) {
   let {
     bucket: Bucket,
     credentials,
+    inventory,
     isDryRun = false,
     isFullDeploy = true, // Prevents duplicate static manifest operations that could impact state
     name,
@@ -47,56 +47,53 @@ module.exports = function deployStatic (inventory, params, callback) {
       if (name) stackname += toLogicalID(name)
     }
 
-    waterfall([
+    let folder
+    series([
       // Parse settings
       function (callback) {
         // Bail early if this project doesn't have @static specified
         if (!inv.static) callback(Error('cancel'))
         else {
-          // Fingerprinting + ignore any specified files
-          let { fingerprint, ignore } = fingerprintConfig(inv._project.arc)
-
           // Asset pruning: delete files not present in public/ folder
           prune = prune || inv.static.prune
 
           // Project folder remap
-          let folder = inv.static.folder
+          folder = inv.static.folder
           if (!existsSync(join(process.cwd(), folder))) {
             callback(Error('@static folder not found'))
           }
           else {
             // Published path prefixing
             prefix = prefix || inv.static.prefix
-            callback(null, { fingerprint, ignore, folder })
+            callback()
           }
         }
       },
 
       // Get the bucket PhysicalResourceId if not supplied
-      function (params, callback) {
+      function (callback) {
         if (!Bucket) {
           getResources({ credentials, region, stackname }, function (err, resources) {
             if (err) callback(err)
             else {
               let find = i => i.ResourceType === 'AWS::S3::Bucket' && i.LogicalResourceId === 'StaticBucket'
               Bucket = resources.find(find).PhysicalResourceId
-              callback(null, params)
+              callback()
             }
           })
         }
-        else callback(null, params)
+        else callback()
       },
 
-      function ({ fingerprint, ignore, folder }, callback) {
+      function (callback) {
         let config = { region }
         if (credentials) config.credentials = credentials
         let s3 = new aws.S3(config)
 
         publish({
           Bucket,
-          fingerprint,
           folder,
-          ignore,
+          inventory,
           isFullDeploy,
           prefix,
           prune,
@@ -108,7 +105,10 @@ module.exports = function deployStatic (inventory, params, callback) {
       }
     ],
     function done (err) {
-      if (err && err.message === 'cancel') callback()
+      if (err && err.message === 'cancel') {
+        if (!isFullDeploy) update.done('No static assets to deploy')
+        callback()
+      }
       else if (err) callback(err)
       else callback()
     })

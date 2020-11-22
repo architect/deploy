@@ -1,10 +1,12 @@
 #!/usr/bin/env node
 let deploy = require('../../')
+let _inventory = require('@architect/inventory')
 let { banner, updater } = require('@architect/utils')
 let validate = require('./validate')
 let _options = require('./options')
 let { version } = require('../../package.json')
 let pauser = require('../utils/pause-sandbox')
+let update = updater('Deploy')
 
 /**
  * `arc deploy`
@@ -20,13 +22,21 @@ let pauser = require('../utils/pause-sandbox')
  * -n|--name|name ............... customize stack name
  */
 async function cmd () {
+  let inventory = await _inventory({})
+  banner({ inventory, version: `Deploy ${version}` })
+
   let opts = process.argv || []
 
   // Validate for expected env and args and check for potential creds issues
   validate()
 
   // Populate options, read args into `prune`, `verbose`, `production`, `tags`, `name`, `isFullDeploy`, etc.
-  let options = _options(opts)
+  let options = {
+    inventory,
+    update,
+    region: inventory.inv.aws.region,
+    ..._options(opts)
+  }
 
   // Pause the Sandbox watcher
   pauser.pause()
@@ -55,13 +65,11 @@ module.exports = cmd
 if (require.main === module) {
   (async function () {
     try {
-      banner({ version: `Deploy ${version}` })
       await cmd()
     }
     catch (err) {
       // Unpause the Sandbox watcher
       pauser.unpause()
-      let update = updater('Deploy')
       update.error(err)
       process.exit(1)
     }
