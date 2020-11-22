@@ -77,6 +77,7 @@ function setup () {
 test('Set up env', async t => {
   t.plan(2)
   setup()
+  mockFs.restore()
   t.ok(sut, 'S3 publish module is present')
   inventory = await _inventory({})
   t.ok(inventory, 'Got inventory obj')
