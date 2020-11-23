@@ -1,5 +1,5 @@
 let aws = require('aws-sdk')
-let { join } = require('path')
+let { join, sep } = require('path')
 let { existsSync } = require('fs')
 let series = require('run-series')
 let { toLogicalID, updater } = require('@architect/utils')
@@ -60,7 +60,7 @@ module.exports = function deployStatic (params, callback) {
           // Project folder remap
           folder = inv.static.folder
           if (!existsSync(join(process.cwd(), folder))) {
-            callback(Error('@static folder not found'))
+            callback(Error('no_folder'))
           }
           else {
             // Published path prefixing
@@ -105,7 +105,11 @@ module.exports = function deployStatic (params, callback) {
       }
     ],
     function done (err) {
-      if (err && err.message === 'cancel') {
+      if (err && err.message === 'no_folder') {
+        update.status(`@static folder (${folder}${sep}) not found, skipping static asset deployment`)
+        callback()
+      }
+      else if (err && err.message === 'cancel') {
         if (!isFullDeploy) update.done('No static assets to deploy')
         callback()
       }
