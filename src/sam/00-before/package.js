@@ -1,4 +1,4 @@
-let spawn = require('../spawn')
+let spawn = require('../utils/spawn')
 
 module.exports = function samPackage ({ filename, bucket, pretty }, callback) {
   spawn('aws', [ 'cloudformation', 'package',

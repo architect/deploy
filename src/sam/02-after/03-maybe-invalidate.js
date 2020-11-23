@@ -1,20 +1,18 @@
 let parallel = require('run-parallel')
 let aws = require('aws-sdk')
-
 let list = require('./00-get-app-apex/cloudfront-list')
 
-module.exports = function maybeInvalidateDists ({ arc, stackname, stage }, callback) {
+module.exports = function maybeInvalidateDists (params, callback) {
+  let { inventory, region, stackname, stage } = params
+  let { inv } = inventory
+
   // Allow users to disable Architect's CDN checks so they can configure / manage their own via Macros
-  let cdn = arc.cdn && arc.cdn[0]
-  let cdnBypass = cdn === false || cdn === 'disable' || cdn === 'disabled'
-  if (cdnBypass) {
-    callback()
-  }
+  if (!inv.cdn) callback()
   else {
     // read the cloudformation stack to get the s3 and apigateway urls
     parallel({
       cfn (callback) {
-        let cloudformation = new aws.CloudFormation({ region: process.env.AWS_REGION })
+        let cloudformation = new aws.CloudFormation({ region })
         cloudformation.describeStacks({
           StackName: stackname
         }, callback)

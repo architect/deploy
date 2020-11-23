@@ -1,92 +1,34 @@
-let aws = require('aws-sdk')
-let utils = require('util')
-
 /**
- * reads SSM for env vars and resets NODE_ENV
+ * Plugs env vars into Lambdae based on stage and resets NODE_ENV
+ * TODO: we should make Inventory stage-aware, and move this logic into Package; but don't forget to backport this into _legacy-api macro!
  */
-module.exports = async function env (arc, cloudformation, stage) {
-  stage = defaultStage(stage)
+// eslint-disable-next-line
+module.exports = async function env (arc, cloudformation, stage, inventory) {
+  let { inv } = inventory
+
+  // Bail if no env vars are configured for this environment
+  let envVars = inv._project.env && inv._project.env[stage]
+  if (!envVars) return cloudformation
+
   let cfn = cloudformation
-  let appname = arc.app[0]
-  let getAll = utils.promisify(all)
-  let variables = await getAll(appname)
-  let filtered = variables.filter(v => v.env === stage)
-  Object.keys(cfn.Resources).forEach(r => {
-    let isFunction = cfn.Resources[r].Type === 'AWS::Serverless::Function'
-    if (isFunction) {
-      cfn.Resources[r].Properties.Environment.Variables.NODE_ENV = stage
-      filtered.forEach(v => {
-        cfn.Resources[r].Properties.Environment.Variables[v.name] = v.value
-      })
+  Object.entries(cfn.Resources).forEach(([ resource, value ]) => {
+    if (value.Type !== 'AWS::Serverless::Function') return
+    // Assume we've already got a baseline set of env vars
+    try {
+      cfn.Resources[resource].Properties.Environment.Variables.ARC_ENV = stage
+      cfn.Resources[resource].Properties.Environment.Variables.NODE_ENV = stage
+      let disableEnvVars = cfn.Resources[resource].Properties.Environment.Variables.ARC_DISABLE_ENV_VARS
+      if (!disableEnvVars) {
+        Object.entries(envVars).forEach(([ k, v ]) => {
+          cfn.Resources[resource].Properties.Environment.Variables[k] = v
+        })
+      }
+    }
+    catch (err) {
+      let msg = `Failed adding env vars to ${resource}:` + (err.message ? err.message : '')
+      throw Error(msg)
     }
   })
+
   return cfn
-}
-
-/**
- * lifted from architect/env
- * reads all the env vars for a given appname
- */
-function all (appname, callback) {
-
-  let ssm = new aws.SSM({ region: process.env.AWS_REGION })
-
-  // reset this every call..
-  let result = []
-
-  function getSome (appname, NextToken, callback) {
-    // base query to ssm
-    let query = {
-      Path: `/${appname}`,
-      Recursive: true,
-      MaxResults: 10,
-      WithDecryption: true
-    }
-    // check if we're paginating
-    if (NextToken) {
-      query.NextToken = NextToken
-    }
-    // performs the query
-    ssm.getParametersByPath(query, function _query (err, data) {
-      if (err) {
-        callback(err)
-      }
-      else {
-        // tidy up the response
-        result = result.concat(data.Parameters.map(function (param) {
-          let bits = param.Name.split('/')
-          return {
-            app: appname,
-            env: bits[2],
-            name: bits[3],
-            value: param.Value,
-          }
-        }))
-        // check for more data and, if so, recurse
-        if (data.NextToken) {
-          getSome(appname, data.NextToken, callback)
-        }
-        else {
-          // otherwise callback
-          callback(null, result)
-        }
-      }
-    })
-  }
-
-  getSome(appname, false, function done (err, result) {
-    if (err) callback(err)
-    else {
-      callback(null, result)
-    }
-  })
-}
-
-// If it's not 'staging' or 'production', then it should be 'staging'
-function defaultStage (stage) {
-  let staging = 'staging'
-  let production = 'production'
-  if (stage !== staging && stage !== production)
-    stage = staging
-  return stage
 }

@@ -1,6 +1,6 @@
 // eslint-disable-next-line
-module.exports = async function httpVersion (arc, cloudformation, stage, options) {
-  let { apiType } = options
+module.exports = async function httpVersion (arc, cloudformation, stage, inventory) {
+  let { apiType } = inventory.inv._deploy
   if (apiType === 'httpv1' && arc.http.length) {
     // Start here
     let paths = cloudformation.Resources.HTTP.Properties.DefinitionBody.paths

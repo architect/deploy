@@ -2,20 +2,15 @@
  * Update proxy stage for production deploys
  */
 // eslint-disable-next-line
-module.exports = async function api (arc, cloudformation, stage) {
+module.exports = async function api (arc, cloudformation, stage, inventory) {
+  let { inv } = inventory
+  let cfn = cloudformation
 
-  if (arc.proxy && stage === 'production') {
-    let production = arc.proxy.find(e => e[0] === 'production')
-    // lol
-
-    if (!production) {
-      throw SyntaxError(`@proxy missing 'production' setting`)
-    }
-
-    cloudformation.Resources.HTTP.Properties.DefinitionBody
+  if (inv.proxy && stage === 'production') {
+    cfn.Resources.HTTP.Properties.DefinitionBody
       .paths['/$default']['x-amazon-apigateway-any-method']['x-amazon-apigateway-integration']
-      .uri = production[1]
+      .uri = inv.proxy.production
   }
 
-  return cloudformation
+  return cfn
 }

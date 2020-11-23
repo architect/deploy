@@ -1,14 +1,14 @@
 let test = require('tape')
-let options = require('../../src/options')
+let options = require('../../src/cli/options')
 
-test('should return dirty option', t => {
+test('should return isDirect option', t => {
   t.plan(3)
-  t.ok(options([ 'arc', 'deploy', 'dirty', 'staging' ]).isDirty, '"dirty" param sets isDirty')
-  t.ok(options([ 'arc', 'deploy', '--dirty', 'staging' ]).isDirty, '"--dirty" param sets isDirty')
-  t.ok(options([ 'arc', 'deploy', '-d', 'staging' ]).isDirty, '"-d" param sets isDirty')
+  t.ok(options([ 'arc', 'deploy', 'direct', 'staging' ]).isDirect, '"direct" param sets isDirect')
+  t.ok(options([ 'arc', 'deploy', '--direct', 'staging' ]).isDirect, '"--direct" param sets isDirect')
+  t.ok(options([ 'arc', 'deploy', '-d', 'staging' ]).isDirect, '"-d" param sets isDirect')
 })
 
-test('should return dryrun option', t => {
+test('should return isDryRun option', t => {
   t.plan(1)
   t.ok(options([ 'arc', 'deploy', '--dry-run', 'staging' ]).isDryRun, '"--dry-run" param sets isDryRun')
 })
@@ -20,7 +20,7 @@ test('should return production option', t => {
   t.ok(options([ 'arc', 'deploy', '-p' ]).production, '"-p" param sets production')
 })
 
-test('should return static option', t => {
+test('should return isStatic option', t => {
   t.plan(3)
   t.ok(options([ 'arc', 'deploy', 'static' ]).isStatic, '"static" param sets isStatic')
   t.ok(options([ 'arc', 'deploy', '--static' ]).isStatic, '"--static" param sets isStatic')

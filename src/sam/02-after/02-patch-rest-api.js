@@ -1,11 +1,12 @@
 let aws = require('aws-sdk')
 let waterfall = require('run-waterfall')
 
-module.exports = function patchApiGateway ({ legacyAPI, stackname, stage }, callback) {
+module.exports = function patchApiGateway (params, callback) {
+  let { legacyAPI, region, stackname, stage } = params
   if (legacyAPI) {
     waterfall([
       function (callback) {
-        let cloudformation = new aws.CloudFormation({ region: process.env.AWS_REGION })
+        let cloudformation = new aws.CloudFormation({ region })
         cloudformation.describeStacks({
           StackName: stackname
         },
@@ -24,7 +25,7 @@ module.exports = function patchApiGateway ({ legacyAPI, stackname, stage }, call
       },
       function (restApiId, callback) {
         // update binary media types to */*
-        let apigateway = new aws.APIGateway({ region: process.env.AWS_REGION })
+        let apigateway = new aws.APIGateway({ region })
         apigateway.updateRestApi({
           restApiId,
           patchOperations: [ {
@@ -38,7 +39,7 @@ module.exports = function patchApiGateway ({ legacyAPI, stackname, stage }, call
         })
       },
       function (restApiId, callback) {
-        let apigateway = new aws.APIGateway({ region: process.env.AWS_REGION })
+        let apigateway = new aws.APIGateway({ region })
         apigateway.createDeployment({
           restApiId,
           stageName: stage

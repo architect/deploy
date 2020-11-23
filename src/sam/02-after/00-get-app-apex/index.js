@@ -5,15 +5,16 @@ let enable = require('./cloudfront-enable')
 let destroy = require('./cloudfront-destroy')
 
 module.exports = function getAppApex (params, callback) {
-  let { ts, arc, pretty, stackname, stage, update, legacyAPI } = params
+  let { inventory, legacyAPI, pretty, region, stackname, stage, ts, update } = params
+  let { inv } = inventory
+  let arc = inv._project.arc // TODO cut this code path over to Inventory
   reads({
+    region,
     stackname,
     stage
   },
   function done (err, result) {
-    if (err) {
-      callback(err)
-    }
+    if (err) callback(err)
     else {
       update.done('Deployed & built infrastructure')
       pretty.success(ts)
@@ -39,11 +40,7 @@ module.exports = function getAppApex (params, callback) {
       console.log()
 
       // Allow users to disable Architect's CDN checks so they can configure / manage their own via Macros
-      let cdn = arc.cdn && arc.cdn[0]
-      let cdnBypass = cdn === false || cdn === 'disable' || cdn === 'disabled'
-      if (cdnBypass) {
-        callback()
-      }
+      if (!inv.cdn) callback()
       else {
         // create cdns if cdn is defined
         let creatingS3 = arc.static && arc.cdn && s3 === false

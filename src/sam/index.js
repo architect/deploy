@@ -1,12 +1,11 @@
 let pkg = require('@architect/package')
-let utils = require('@architect/utils')
-let { readArc, toLogicalID, updater } = require('@architect/utils')
-let fingerprinter = utils.fingerprint
-let fingerprintConfig = fingerprinter.config
-let series = require('run-series')
+let { toLogicalID, updater, fingerprint } = require('@architect/utils')
+let create = require('@architect/create')
 let hydrate = require('@architect/hydrate')
+let series = require('run-series')
 
-let print = require('./print')
+let print = require('./utils/print')
+let handlerCheck = require('../utils/handler-check')
 let getBucket = require('./bucket')
 let compat = require('./compat')
 let macros = require('./macros')
@@ -22,17 +21,29 @@ let after = require('./02-after')
  * @returns {Promise} - if not callback is supplied
  */
 module.exports = function samDeploy (params, callback) {
-  let { apiType, isDryRun = false, name, production, prune, tags, verbose } = params
+  let {
+    apiType,
+    inventory,
+    isDryRun = false,
+    name,
+    production,
+    prune,
+    region,
+    tags,
+    update,
+    verbose,
+  } = params
+  let { inv, get } = inventory
+  if (!update) update = updater('Deploy')
 
   let stage = production ? 'production' : 'staging'
   let ts = Date.now()
   let log = true
   let pretty = print({ log, verbose })
-  let { arc } = readArc()
-  let bucket // Assigned later
-  let appname = arc.app[0]
+  let appname = inv.app
+  let bucket = inv.aws.bucket
+  let prefs = inv._project.preferences
   let stackname = `${toLogicalID(appname)}${production ? 'Production' : 'Staging'}`
-  let update = updater('Deploy')
 
   if (name) {
     stackname += toLogicalID(name)
@@ -41,22 +52,6 @@ module.exports = function samDeploy (params, callback) {
   // Assigned below
   let cloudformation
   let sam
-  let nested
-  let foundLegacyApi
-
-  let region = process.env.AWS_REGION
-  if (!region)
-    throw ReferenceError('AWS region must be configured to deploy')
-
-  let promise
-  if (!callback) {
-    promise = new Promise(function ugh (res, rej) {
-      callback = function errback (err, result) {
-        if (err) rej(err)
-        else res(result)
-      }
-    })
-  }
 
   if (isDryRun) {
     update = updater('Deploy [dry-run]')
@@ -64,10 +59,28 @@ module.exports = function samDeploy (params, callback) {
   }
 
   // API switching
-  let findApiType = s => s[0] && s[0] === 'apigateway' && s[1]
-  let arcApiType = arc.aws && arc.aws.some(findApiType) && arc.aws.find(findApiType)[1]
+  let arcApiType = inv.aws.apigateway
 
   series([
+    /**
+     * Maybe auto-init resources
+     */
+    function createFiles (callback) {
+      let autocreateEnabled = prefs && prefs.create && prefs.create.autocreate
+      if (autocreateEnabled) {
+        // create any missing local infra
+        create({}, callback)
+      }
+      else callback()
+    },
+
+    /**
+     * Check existence of handlers
+     */
+    function checkHandlers (callback) {
+      handlerCheck(inv.lambdaSrcDirs, update, callback)
+    },
+
     /**
      * Maybe create a new deployment bucket
      */
@@ -77,13 +90,8 @@ module.exports = function samDeploy (params, callback) {
         callback()
       }
       else {
-        let bucketProvided = arc.aws && arc.aws.some(o => o[0] === 'bucket')
-        if (bucketProvided) {
-          bucket = arc.aws.find(o => o[0] === 'bucket')[1]
-          callback()
-        }
+        if (bucket) callback()
         else {
-          let appname = arc.app[0]
           getBucket({
             appname,
             region,
@@ -116,21 +124,14 @@ module.exports = function samDeploy (params, callback) {
      * Maybe write static asset manifest prior to cfn or hydration
      */
     function maybeFingerprint (callback) {
-      let { fingerprint } = fingerprintConfig(arc)
-
-      if (fingerprint || verbose)
-        update.done(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`)
-
-      // Always run full fingerprinting op to ensure remnant static.json files are deleted
-      // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
-      fingerprinter({}, function done (err) {
-        if (err) {
-          callback(err)
-        }
-        else {
-          callback()
-        }
-      })
+      let enabled = get.static(fingerprint) === true
+      if (verbose) update.done(`Static asset fingerpringing ${enabled ? 'enabled' : 'disabled'}`)
+      if (enabled) {
+        // Always run full fingerprinting op to ensure remnant static.json files are deleted
+        // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
+        fingerprint({ inventory }, callback)
+      }
+      else callback()
     },
 
     /**
@@ -144,7 +145,7 @@ module.exports = function samDeploy (params, callback) {
      * Generate cfn, which must be completed only after fingerprinting or files may not be present
      */
     function generateCloudFormation (callback) {
-      cloudformation = pkg(arc)
+      cloudformation = pkg(inventory)
       callback()
     },
 
@@ -152,24 +153,21 @@ module.exports = function samDeploy (params, callback) {
      * Check to see if we're working with a legacy (REST) API (and any other backwards compat checks)
      */
     function legacyCompat (callback) {
-      // Skip check if specified
-      if (arcApiType) callback()
-      else {
-        compat({
-          arc,
-          stackname
-        }, function done (err, result = {}) {
-          if (err) callback(err)
-          else {
-            foundLegacyApi = result.legacyApi
-            callback()
-          }
-        })
-      }
+      compat({
+        inv,
+        stackname
+      }, function done (err, result) {
+        if (err) callback(err)
+        else {
+          // Special workflow-specific case where we'll additively mutate the inventory object
+          inv._deploy = result
+          callback()
+        }
+      })
     },
 
     /**
-     * Determine final API type
+     * Determine final API types
      */
     function setApiType (callback) {
       // Priority: user specified API type > existing legacy API type > default API type
@@ -177,16 +175,11 @@ module.exports = function samDeploy (params, callback) {
       if (specified) {
         apiType = specified
       }
-      else if (foundLegacyApi) {
+      else if (inv._deploy.foundLegacyApi) {
         apiType = 'rest'
       }
       else {
         apiType = 'http'
-      }
-
-      if (apiType) {
-        let valid = [ 'http', 'httpv1', 'httpv2', 'rest' ]
-        if (!valid.some(v => v === apiType)) throw ReferenceError(`API type must be 'http[v1|v2]', or 'rest'`)
       }
       callback()
     },
@@ -195,17 +188,14 @@ module.exports = function samDeploy (params, callback) {
      * Macros (both built-in + user)
      */
     function runMacros (callback) {
-      let options = { apiType }
       macros(
-        arc,
+        inventory,
         cloudformation,
         stage,
-        options,
         function done (err, _sam) {
           if (err) callback(err)
           else {
             sam = _sam
-            nested = Object.prototype.hasOwnProperty.call(sam, `${appname}-cfn.json`)
             callback()
           }
         })
@@ -215,7 +205,7 @@ module.exports = function samDeploy (params, callback) {
      * Pre-deploy ops
      */
     function beforeDeploy (callback) {
-      let params = { sam, nested, bucket, pretty, update, isDryRun }
+      let params = { sam, bucket, pretty, update, isDryRun }
       before(params, callback)
     },
 
@@ -231,7 +221,6 @@ module.exports = function samDeploy (params, callback) {
         deploy({
           appname,
           stackname,
-          nested,
           bucket,
           pretty,
           region,
@@ -253,12 +242,12 @@ module.exports = function samDeploy (params, callback) {
       else {
         let legacyAPI = apiType === 'rest'
         let params = {
-          appname,
-          arc,
+          inventory,
           legacyAPI,
           pretty,
           production,
           prune,
+          region,
           stackname,
           stage,
           ts,
@@ -270,6 +259,4 @@ module.exports = function samDeploy (params, callback) {
     }
 
   ], callback)
-
-  return promise
 }

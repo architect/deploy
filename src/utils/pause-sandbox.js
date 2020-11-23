@@ -1,14 +1,14 @@
-let fs = require('fs')
-let path = require('path')
+let { existsSync, unlinkSync, writeFileSync } = require('fs')
+let { join } = require('path')
 let osPath = require('ospath')
-let pauseFile = path.join(osPath.tmp(), '_pause-architect-sandbox-watcher')
+let pauseFile = join(osPath.tmp(), '_pause-architect-sandbox-watcher')
 
 module.exports = {
   pause: () => {
     try {
       // Pause the Sandbox watcher so deploy ops don't do anything funky
-      if (!fs.existsSync(pauseFile)) {
-        fs.writeFileSync(pauseFile, '\n')
+      if (!existsSync(pauseFile)) {
+        writeFileSync(pauseFile, '\n')
       }
     }
     catch (err) { /* noop */ }
@@ -16,8 +16,8 @@ module.exports = {
   unpause: () => {
     try {
       // Cleanup after any past runs
-      if (fs.existsSync(pauseFile)) {
-        fs.unlinkSync(pauseFile)
+      if (existsSync(pauseFile)) {
+        unlinkSync(pauseFile)
       }
     }
     catch (err) { /* noop */ }

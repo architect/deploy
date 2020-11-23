@@ -12,9 +12,8 @@ let deleteFiles = require('./s3/delete-files')
 module.exports = function publishStaticAssets (params, callback) {
   let {
     Bucket,
-    fingerprint,
     folder,
-    ignore,
+    inventory,
     isFullDeploy,
     prefix,
     prune,
@@ -23,6 +22,7 @@ module.exports = function publishStaticAssets (params, callback) {
     update,
     verbose,
   } = params
+  let { get } = inventory
 
   let publicDir = pathToUnix(join(process.cwd(), folder))
   let staticAssets = join(publicDir, '/**/*')
@@ -32,6 +32,10 @@ module.exports = function publishStaticAssets (params, callback) {
   let staticManifest
   let uploaded
   let notModified
+
+  // Settings
+  let fingerprint = get.static('fingerprint')
+  let ignore = get.static('ignore') ? [ ...get.static('ignore') ] : [] // Copy for mutation later
 
   waterfall([
 
@@ -59,8 +63,7 @@ module.exports = function publishStaticAssets (params, callback) {
 
     // Filter based on default and user-specified @static ignore rules
     function _filterFiles (globbed, callback) {
-      files = globbed
-      let params = { files, ignore, publicDir }
+      let params = { globbed, ignore, publicDir }
       filterFiles(params, callback)
     },
 
@@ -68,7 +71,7 @@ module.exports = function publishStaticAssets (params, callback) {
     function _maybeWriteStaticManifest (filtered, ignored, callback) {
       files = filtered
       ignore = ignored
-      let params = { fingerprint, ignore, isFullDeploy, publicDir }
+      let params = { ignore, inventory, isFullDeploy, publicDir }
       writeStaticManifest(params, callback)
     },
 
