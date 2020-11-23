@@ -36,7 +36,7 @@
     "@architect/hydrate": "~1.6.1",
     "@architect/package": "~4.0.0",
     "@architect/parser": "~2.3.0",
-    "@architect/utils": "~1.5.13",
+    "@architect/utils": "~2.0.0",
     "chalk": "~4.1.0",
     "glob": "~7.1.6",
     "mime-types": "~2.1.27",
