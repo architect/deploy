@@ -82,17 +82,14 @@ test(`Skip static deploy if @static isn't defined`, t => {
   })
 })
 
-test(`Static deploy error if @http is defined, but public/ folder is not present`, t => {
-  t.plan(2)
+test(`Static deploy exits gracefully if @http is defined, but public/ folder is not present`, t => {
+  t.plan(1)
   setup()
   let arc = '@app\n an-app\n @http'
   mockFs({ 'app.arc': arc })
   staticDeploy(t, err => {
-    if (err) {
-      t.ok(err.message.includes('@static folder not found'))
-      t.notOk(published, 'Publish not called')
-    }
-    else t.fail('Did not find error')
+    if (err) t.fail(err)
+    t.notOk(published, 'Publish not called')
   })
 })
 
@@ -169,18 +166,6 @@ test(`Respect folder setting in project manifest`, t => {
   staticDeploy(t, err => {
     if (err) t.fail(err)
     t.equal(published.folder, 'some-folder', 'Got correct folder setting')
-  })
-})
-
-test(`Error if static folder isn't present`, t => {
-  t.plan(1)
-  setup()
-  let arc = '@app\n an-app\n @static'
-  mockFs({
-    'app.arc': arc
-  })
-  staticDeploy(t, err => {
-    if (err) t.equal(err.message, '@static folder not found', 'Got error')
   })
 })
 
