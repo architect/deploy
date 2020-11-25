@@ -2,11 +2,12 @@
 
 ---
 
-## [2.1.1] 2020-11-25
+## [2.1.1 - 2.2.1] 2020-11-25
 
 ### Fixed
 
 - Fixes env var population when Deploy is run via CLI
+- Fixed double banner print when being called from `@architect/architect`
 
 ---
 
