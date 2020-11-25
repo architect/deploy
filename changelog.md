@@ -8,6 +8,7 @@
 
 - Fixes env var population when Deploy is run via CLI
 - Fixed double banner print when being called from `@architect/architect`
+- Fixed direct deploys when project does not have an explicit @http root handler
 
 ---
 
