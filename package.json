@@ -47,7 +47,7 @@
     "run-series": "~1.1.9",
     "run-waterfall": "~1.1.7",
     "sha": "~3.0.0",
-    "zip-dir": "~1.0.2",
+    "zip-dir": "~2.0.0",
     "zipit": "~2.0.0"
   },
   "peerDependencies": {
