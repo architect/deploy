@@ -27,20 +27,7 @@ let sut = proxyquire(filePath, {
   './s3/delete-files': deleteFiles
 })
 
-awsMock.mock('S3', 'headObject', (params, callback) => {
-  callback()
-})
-awsMock.mock('S3', 'putObject', (params, callback) => {
-  callback()
-})
-awsMock.mock('S3', 'listObjectsV2', (params, callback) => {
-  callback()
-})
-awsMock.mock('S3', 'deleteObjects', (params, callback) => {
-  callback()
-})
-
-let s3 = new aws.S3()
+let s3
 let defaultParams = () => ({
   Bucket: 'a-bucket',
   folder: 'public',
@@ -81,6 +68,20 @@ test('Set up env', async t => {
   t.ok(sut, 'S3 publish module is present')
   inventory = await _inventory({})
   t.ok(inventory, 'Got inventory obj')
+
+  awsMock.mock('S3', 'headObject', (params, callback) => {
+    callback()
+  })
+  awsMock.mock('S3', 'putObject', (params, callback) => {
+    callback()
+  })
+  awsMock.mock('S3', 'listObjectsV2', (params, callback) => {
+    callback()
+  })
+  awsMock.mock('S3', 'deleteObjects', (params, callback) => {
+    callback()
+  })
+  s3 = new aws.S3()
 })
 
 test('Static asset publishing', t => {

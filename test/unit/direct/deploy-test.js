@@ -4,15 +4,10 @@ let { updater } = require('@architect/utils')
 let inventory = require('@architect/inventory')
 const { join } = require('path')
 let mocks = { resources: [] }
-let mockFs = require('mock-fs')
 
 // Necessary to run test solo
 let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
-awsMock.mock('CloudFormation', 'describeStacks', function (params, callback) {
-  callback(null, { Stacks: false })
-})
-new aws.CloudFormation()
 
 function fakeGetResources (params, callback) {
   callback(null, mocks.resources)
@@ -34,10 +29,9 @@ let defaultParams = () => ({
 let params = defaultParams()
 function reset () {
   params = defaultParams()
-  mockFs.restore()
 }
-function directDeploy (t, lambdas, callback) {
-  inventory({}, function (err, result) {
+function directDeploy (t, rawArc, lambdas, callback) {
+  inventory({ rawArc }, function (err, result) {
     if (err) t.fail(err)
     else {
       params.inventory = result
@@ -50,24 +44,27 @@ function directDeploy (t, lambdas, callback) {
   })
 }
 
-test('Module is present', t => {
+test('Set up env', t => {
   t.plan(1)
   t.ok(directDeployMod, 'Direct deployment module is present')
+
+  awsMock.mock('CloudFormation', 'describeStacks', function (params, callback) {
+    callback(null, { Stacks: false })
+  })
+  new aws.CloudFormation()
 })
 
 test('Should be able to deploy an HTTP POST function directly when a root handler function is defined', t => {
   t.plan(1)
-  let arc = '@app\n an-app\n@http\npost /accounts\nget /'
-  mockFs({ 'app.arc': arc })
-  directDeploy(t, [ 'src/http/post-accounts' ], err => {
+  let rawArc = '@app\n an-app\n@http\npost /accounts\nget /'
+  directDeploy(t, rawArc, [ 'src/http/post-accounts' ], err => {
     t.notOk(err)
   })
 })
 test('Should be able to deploy an HTTP function directly when @static present', t => {
   t.plan(1)
-  let arc = '@app\n an-app\n@http\npost /accounts\n@static'
-  mockFs({ 'app.arc': arc })
-  directDeploy(t, [ 'src/http/post-accounts' ], err => {
+  let rawArc = '@app\n an-app\n@http\npost /accounts\n@static'
+  directDeploy(t, rawArc, [ 'src/http/post-accounts' ], err => {
     t.notOk(err)
   })
 })
@@ -75,6 +72,5 @@ test('Should be able to deploy an HTTP function directly when @static present', 
 test('Teardown', t => {
   t.plan(1)
   awsMock.restore()
-  mockFs.restore()
   t.pass('Done')
 })

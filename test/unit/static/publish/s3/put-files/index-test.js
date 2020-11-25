@@ -8,16 +8,6 @@ let mockFs
 
 let headObjCalls = []
 let putObjCalls = []
-awsMock.mock('S3', 'headObject', (params, callback) => {
-  headObjCalls.push(params)
-  let hash = crypto.createHash('md5').update(fileData[params.Key]).digest('hex')
-  let ETag = `"${hash}"` // AWS double quotes because lol
-  callback(null, { ETag })
-})
-awsMock.mock('S3', 'putObject', (params, callback) => {
-  putObjCalls.push(params)
-  callback()
-})
 
 function createFileData (diff) {
   return {
@@ -31,7 +21,6 @@ function createFileData (diff) {
 let fileData = createFileData()
 let files = Object.keys(fileData)
 
-let s3 = new aws.S3()
 let params = {
   Bucket: 'a-bucket',
   files,
@@ -39,7 +28,6 @@ let params = {
   publicDir: 'public',
   prefix: undefined,
   region: 'us-west-1',
-  s3,
   staticManifest: {}
 }
 
@@ -62,9 +50,21 @@ function reset () {
   mockFs.restore()
 }
 
-test('Module is present', t => {
+test('Set up env', t => {
   t.plan(1)
   t.ok(sut, 'S3 file put module is present')
+
+  awsMock.mock('S3', 'headObject', (params, callback) => {
+    headObjCalls.push(params)
+    let hash = crypto.createHash('md5').update(fileData[params.Key]).digest('hex')
+    let ETag = `"${hash}"` // AWS double quotes because lol
+    callback(null, { ETag })
+  })
+  awsMock.mock('S3', 'putObject', (params, callback) => {
+    putObjCalls.push(params)
+    callback()
+  })
+  params.s3 = new aws.S3()
 
   // Set up mock-fs here outside global scope or it may blow up aws-sdk
   // eslint-disable-next-line

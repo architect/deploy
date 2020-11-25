@@ -40,7 +40,7 @@ module.exports = function deploySAM (params, callback) {
       }
       Object.entries(lambdae).forEach(([ pragma, type ]) => {
         if (inv[pragma]) inv[pragma].filter(lambda => {
-          if (!lambda.arcStaticAssetProxy && dirs.some(d => lambda.src.endsWith(d))) {
+          if (dirs.some(d => lambda.src && lambda.src.endsWith(d))) {
             deploying.push({ ...lambda, type })
           }
         })
