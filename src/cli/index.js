@@ -22,7 +22,7 @@ let update = updater('Deploy')
  * -n|--name|name ............... customize stack name
  */
 async function cmd () {
-  let inventory = await _inventory({})
+  let inventory = await _inventory({ env: true })
   banner({ inventory, version: `Deploy ${version}` })
 
   let opts = process.argv || []
