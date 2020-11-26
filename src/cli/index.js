@@ -23,7 +23,6 @@ let update = updater('Deploy')
  */
 async function cmd () {
   let inventory = await _inventory({ env: true })
-  banner({ inventory, version: `Deploy ${version}` })
 
   let opts = process.argv || []
 
@@ -65,6 +64,8 @@ module.exports = cmd
 if (require.main === module) {
   (async function () {
     try {
+      let inventory = await _inventory({})
+      banner({ inventory, version: `Deploy ${version}` })
       await cmd()
     }
     catch (err) {

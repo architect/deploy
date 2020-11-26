@@ -6,14 +6,6 @@ let awsMock = require('aws-sdk-mock')
 let listObjCalls = []
 let delObjCalls = []
 let filesOnS3 = { Contents: [] }
-awsMock.mock('S3', 'listObjectsV2', (params, callback) => {
-  listObjCalls.push(params)
-  callback(null, filesOnS3)
-})
-awsMock.mock('S3', 'deleteObjects', (params, callback) => {
-  delObjCalls.push(params)
-  callback(null, { Deleted: params.Delete.Objects })
-})
 
 let files = [
   'index.html',
@@ -44,9 +36,17 @@ function reset () {
   filesOnS3 = { Contents: [] }
 }
 
-test('Module is present', t => {
+test('Set up env', t => {
   t.plan(1)
   t.ok(sut, 'S3 file delete module is present')
+  awsMock.mock('S3', 'listObjectsV2', (params, callback) => {
+    listObjCalls.push(params)
+    callback(null, filesOnS3)
+  })
+  awsMock.mock('S3', 'deleteObjects', (params, callback) => {
+    delObjCalls.push(params)
+    callback(null, { Deleted: params.Delete.Objects })
+  })
 })
 
 test('Do not prune if there is nothing to prune', t => {

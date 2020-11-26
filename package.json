@@ -1,6 +1,6 @@
 {
   "name": "@architect/deploy",
-  "version": "2.1.1",
+  "version": "2.1.2-RC.0",
   "description": "deploys @architect projects",
   "main": "index.js",
   "bin": {
@@ -11,7 +11,7 @@
     "test:unit": "cross-env tape 'test/unit/**/*-test.js' | tap-spec",
     "test:slow": "cross-env tape 'test/slow/**/*-test.js' | tap-spec",
     "test:integration": "cross-env tape 'test/integration/**/*-test.js' | tap-spec",
-    "coverage": "nyc --reporter=lcov --reporter=text-summary npm run test:unit",
+    "coverage": "nyc --reporter=lcov --reporter=text npm run test:unit",
     "lint": "eslint . --fix",
     "rc": "npm version prerelease --preid RC"
   },

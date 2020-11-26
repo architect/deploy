@@ -8,7 +8,6 @@ let mockFs = require('mock-fs')
 // Necessary to run test solo
 let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
-new aws.S3()
 
 let published
 function publish (params, callback) {
@@ -66,9 +65,10 @@ function staticDeploy (t, callback) {
  *   - However, mock-fs doesn't play nicely with aws-sdk(-mock)
  */
 
-test('Module is present', t => {
+test('Set up env', t => {
   t.plan(1)
   t.ok(staticDeployMod, 'Static asset deployment module is present')
+  new aws.S3()
 })
 
 test(`Skip static deploy if @static isn't defined`, t => {
