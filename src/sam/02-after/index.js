@@ -3,7 +3,7 @@ let appApex  = require('./00-get-app-apex')
 let staticDeploy = require('../../static')
 let patchRestAPI = require('./02-patch-rest-api')
 let maybeInvalidate = require('./03-maybe-invalidate')
-let cleanup = require('./04-cleanup')
+let cleanup = require('./05-cleanup')
 
 module.exports = function after (params, callback) {
   let {
