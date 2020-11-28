@@ -124,14 +124,10 @@ module.exports = function samDeploy (params, callback) {
      * Maybe write static asset manifest prior to cfn or hydration
      */
     function maybeFingerprint (callback) {
-      let enabled = get.static(fingerprint) === true
-      if (verbose) update.done(`Static asset fingerpringing ${enabled ? 'enabled' : 'disabled'}`)
-      if (enabled) {
-        // Always run full fingerprinting op to ensure remnant static.json files are deleted
-        // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
-        fingerprint({ inventory }, callback)
-      }
-      else callback()
+      if (verbose) update.done(`Static asset fingerpringing ${get.static('fingerprint') ? 'enabled' : 'disabled'}`)
+      // Always run full fingerprinting op to ensure remnant static.json files are deleted
+      // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
+      fingerprint({ inventory }, callback)
     },
 
     /**

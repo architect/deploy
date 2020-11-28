@@ -15,6 +15,7 @@ function publish (params, callback) {
   callback(null, params)
 }
 
+let node_modules = { '@architect': { asap: { dist: { 'index.js': 'hi' } } } }
 let staticDeployPath = join(process.cwd(), 'src', 'static', 'index.js')
 let staticDeployMod = proxyquire(staticDeployPath, {
   './publish': publish
@@ -86,7 +87,7 @@ test(`Static deploy exits gracefully if @http is defined, but public/ folder is 
   t.plan(1)
   setup()
   let arc = '@app\n an-app\n @http'
-  mockFs({ 'app.arc': arc })
+  mockFs({ 'app.arc': arc, node_modules })
   staticDeploy(t, err => {
     if (err) t.fail(err)
     t.notOk(published, 'Publish not called')
@@ -118,7 +119,8 @@ test(`Publish static deploy if @http is defined and public/ folder is present`, 
   let arc = '@app\n an-app\n @http'
   mockFs({
     'app.arc': arc,
-    'public': {}
+    'public': {},
+    node_modules
   })
   staticDeploy(t, err => {
     if (err) t.fail(err)

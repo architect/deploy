@@ -2,7 +2,20 @@
 
 ---
 
-## [2.1.1 - 2.2.2] 2020-11-25
+## [2.2.0] 2020-11-28
+
+### Added
+
+- Moved ASAP + fingerprinting from Package into Deploy (finally)
+
+
+### Fixed
+
+- Fixed `fingerprint` check that could cause false negative fingerprinting
+
+---
+
+## [2.1.1 - 2.1.2] 2020-11-25
 
 ### Fixed
 
