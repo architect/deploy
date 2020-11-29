@@ -61,6 +61,7 @@ async function exec (inventory, cloudformation, stage) {
     'arc-env',    // Gets and sets env vars for functions
     'static',     // Sets SPA, S3 prefix, etc. in root handler
     'proxy',      // Update @proxy stage URLs
+    'asap',       // Handle fingerprinting + ASAP
   )
   return await transforms.map(path)
     .reduce(async function reducer (current, macro) {
