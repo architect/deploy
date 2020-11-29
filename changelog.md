@@ -12,6 +12,7 @@
 ### Fixed
 
 - Fixed `fingerprint` check that could cause false negative fingerprinting
+- Improved reliability of direct deploys; thanks @filmaj!
 
 ---
 
