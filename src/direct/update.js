@@ -1,5 +1,4 @@
 let series = require('run-series')
-let parallel = require('run-parallel')
 let sploot = require('run-waterfall')
 let zip = require('./zip')
 let aws = require('aws-sdk')
@@ -13,14 +12,14 @@ let aws = require('aws-sdk')
  * @param {String} params.lambda - Inventory Lambda object
  */
 module.exports = function updateLambda (params, callback) {
-  parallel({
-    code (callback) {
+  series([
+    function code (callback) {
       updateCode(params, callback)
     },
-    config (callback) {
+    function config (callback) {
       updateConfig(params, callback)
     }
-  },
+  ],
   function done (err) {
     if (err) callback(err)
     else callback()
