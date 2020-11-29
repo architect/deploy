@@ -2,6 +2,14 @@
 
 ---
 
+## [2.2.1] 2020-11-29
+
+### Fixed
+
+- Fix bug where `NODE_ENV` would not be updated to `production` if `production` environment had no other env vars; thanks @barryf!
+
+---
+
 ## [2.2.0] 2020-11-28
 
 ### Added

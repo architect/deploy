@@ -8,7 +8,6 @@ module.exports = async function env (arc, cloudformation, stage, inventory) {
 
   // Bail if no env vars are configured for this environment
   let envVars = inv._project.env && inv._project.env[stage]
-  if (!envVars) return cloudformation
 
   let cfn = cloudformation
   Object.entries(cfn.Resources).forEach(([ resource, value ]) => {
@@ -18,7 +17,7 @@ module.exports = async function env (arc, cloudformation, stage, inventory) {
       cfn.Resources[resource].Properties.Environment.Variables.ARC_ENV = stage
       cfn.Resources[resource].Properties.Environment.Variables.NODE_ENV = stage
       let disableEnvVars = cfn.Resources[resource].Properties.Environment.Variables.ARC_DISABLE_ENV_VARS
-      if (!disableEnvVars) {
+      if (!disableEnvVars && envVars) {
         Object.entries(envVars).forEach(([ k, v ]) => {
           cfn.Resources[resource].Properties.Environment.Variables[k] = v
         })
