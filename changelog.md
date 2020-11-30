@@ -2,6 +2,14 @@
 
 ---
 
+## [2.2.2] 2020-11-30
+
+### Changed
+
+- Removed printing unnecessary static asset deploy status
+
+---
+
 ## [2.2.1] 2020-11-29
 
 ### Fixed

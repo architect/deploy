@@ -31,15 +31,16 @@ module.exports = function deployStatic (params, callback) {
     prune = false,
   } = params
   if (!update) update = updater('Deploy')
+  let { inv } = inventory
 
-  if (isDryRun) {
+  if (!inv.static) callback()
+  else if (isDryRun) {
     // TODO implement static deploy dry run?
     update.status('Static dry run not yet available, skipping static deploy...')
     callback()
   }
   else {
     update.status('Deploying static assets...')
-    let { inv } = inventory
     let appname = inv.app
 
     if (!stackname) {
