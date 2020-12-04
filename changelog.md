@@ -2,11 +2,12 @@
 
 ---
 
-## [2.2.2] 2020-11-30
+## [2.2.2] 2020-12-04
 
 ### Changed
 
 - Removed printing unnecessary static asset deploy status
+- Updated dependencies
 
 ---
 
