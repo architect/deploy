@@ -20,7 +20,7 @@ function run (mod) {
 
     // Always attempt to clean up after ourselves before exiting
     function clean (err, result) {
-      cleanup(options.inventory)
+      cleanup()
       if (err) callback(err)
       else callback(null, result)
     }
