@@ -2,6 +2,14 @@
 
 ---
 
+## [2.3.0] 2020-12-06
+
+### Added
+
+- Added support for automated dependency management via Hydrate autoinstall
+
+---
+
 ## [2.2.2] 2020-12-04
 
 ### Changed

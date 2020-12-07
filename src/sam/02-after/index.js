@@ -27,6 +27,6 @@ module.exports = function after (params, callback) {
     patchRestAPI.bind({}, { legacyAPI, region, stackname, stage }),
     maybeInvalidate.bind({}, { inventory, region, stackname, stage }),
     deployWS.bind({}, { inventory, region, stackname, stage }),
-    cleanup,
+    cleanup.bind({}, { inventory }),
   ], callback)
 }
