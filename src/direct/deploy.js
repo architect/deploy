@@ -74,6 +74,7 @@ module.exports = function deploySAM (params, callback) {
               env,
               lambda,
               region,
+              src,
             }, callback)
           }
           else {

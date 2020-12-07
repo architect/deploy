@@ -2,7 +2,8 @@ let { existsSync, readFileSync } = require('fs')
 let { join } = require('path')
 let { sync: rm } = require('rimraf')
 
-module.exports = function cleanup ({ inventory }, callback) {
+// Best effort local artifact cleanup
+module.exports = function cleanup (inventory) {
   try {
     // Destroy any auto-installed artifacts
     let { inv } = inventory
@@ -18,10 +19,6 @@ module.exports = function cleanup ({ inventory }, callback) {
 
     // Clean up temp dir from root proxy + fingerprint
     rm(join(process.cwd(), '__ARC_TMP__'))
-
-    callback()
   }
-  catch (err) {
-    callback(err)
-  }
+  catch (err) { null } // Swallow errors, we may have to bubble something else
 }

@@ -6,7 +6,17 @@
 
 ### Added
 
-- Added support for automated dependency management via Hydrate autoinstall
+- Added support for automated dependency management via Hydrate autoinstall to full and direct deploys
+
+
+### Changed
+
+- Deploy artifact cleaner now makes a best effort run after every deployment, whether or not it succeeded
+
+
+### Fixed
+
+- Added missing dependency hydration step to direct deploys
 
 ---
 
