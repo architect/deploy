@@ -177,6 +177,13 @@ module.exports = function samDeploy (params, callback) {
       else {
         apiType = 'http'
       }
+      // Validate API type in case it was passed via CLI
+      if (apiType) {
+        let valid = [ 'http', 'httpv1', 'httpv2', 'rest' ]
+        if (!valid.includes(apiType)) throw ReferenceError(`API type must be 'http[v1|v2]', or 'rest'`)
+      }
+      // Add the API type for macros (API payload version, legacy API transform, etc.)
+      inv._deploy.apiType = apiType
       callback()
     },
 

@@ -20,6 +20,14 @@
 
 ---
 
+## [2.2.3] 2020-12-09
+
+### Fixed
+
+- Fixed inaccurate API type specification in certain circumstances
+
+---
+
 ## [2.2.2] 2020-12-04
 
 ### Changed
