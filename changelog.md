@@ -17,6 +17,7 @@
 ### Fixed
 
 - Added missing dependency hydration step to direct deploys
+- Fixed inability to deploy static asset-only apps
 
 ---
 
