@@ -2,6 +2,7 @@ let series = require('run-series')
 let sploot = require('run-waterfall')
 let zip = require('./zip')
 let aws = require('aws-sdk')
+let hydrate = require('@architect/hydrate')
 
 /**
  * zips and uploads the function; overwrites its configuration based on any .arc-config found
@@ -13,6 +14,9 @@ let aws = require('aws-sdk')
  */
 module.exports = function updateLambda (params, callback) {
   series([
+    function deps (callback) {
+      hydrateLambda(params, callback)
+    },
     function code (callback) {
       updateCode(params, callback)
     },
@@ -24,6 +28,10 @@ module.exports = function updateLambda (params, callback) {
     if (err) callback(err)
     else callback()
   })
+}
+
+function hydrateLambda ({ src }, callback) {
+  hydrate.install({ autoinstall: true, basepath: src }, callback)
 }
 
 /**

@@ -134,7 +134,7 @@ module.exports = function samDeploy (params, callback) {
      * Hydrate dependencies
      */
     function hydrateTheThings (callback) {
-      hydrate.install({}, callback)
+      hydrate.install({ autoinstall: true }, callback)
     },
 
     /**

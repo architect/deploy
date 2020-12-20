@@ -2,6 +2,25 @@
 
 ---
 
+## [2.3.0] 2020-12-06
+
+### Added
+
+- Added support for automated dependency management via Hydrate autoinstall to full and direct deploys
+
+
+### Changed
+
+- Deploy artifact cleaner now makes a best effort run after every deployment, whether or not it succeeded
+
+
+### Fixed
+
+- Added missing dependency hydration step to direct deploys
+- Fixed inability to deploy static asset-only apps; thanks @thedersen!
+
+---
+
 ## [2.2.3] 2020-12-09
 
 ### Fixed
