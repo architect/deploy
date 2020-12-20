@@ -6,7 +6,7 @@
 
 ### Added
 
-- Added support for automated dependency management via Hydrate autoinstall to full and direct deploys
+- Added support for automated dependency management via Hydrate autoinstall to normal and direct deploys
 
 
 ### Changed
