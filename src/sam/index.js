@@ -9,6 +9,7 @@ let handlerCheck = require('../utils/handler-check')
 let getBucket = require('./bucket')
 let compat = require('./compat')
 let macros = require('./macros')
+let sizeReport = require('../utils/size-report')
 let before = require('./00-before')
 let deploy = require('./01-deploy')
 let after = require('./02-after')
@@ -202,6 +203,13 @@ module.exports = function samDeploy (params, callback) {
             callback()
           }
         })
+    },
+
+    /**
+     * Print a size report
+     */
+    function chonkyBois (callback) {
+      sizeReport({ inventory, update }, callback)
     },
 
     /**

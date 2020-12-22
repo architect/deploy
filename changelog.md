@@ -2,6 +2,14 @@
 
 ---
 
+## [2.3.2] 2020-12-21
+
+### Added
+
+- Added Lambda code payload size report for full deploys
+
+---
+
 ## [2.3.0 - 2.3.1] 2020-12-06
 
 ### Added
