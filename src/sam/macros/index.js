@@ -93,5 +93,5 @@ function path (name) {
   if (existsSync(localPath1)) return localPath1
   if (existsSync(modulePath)) return modulePath
   if (existsSync(modulePath1)) return modulePath1
-  throw ReferenceError(name + ' macro defined in .arc not found')
+  throw ReferenceError(name + ' macro defined in project manifest not found')
 }

@@ -2,6 +2,14 @@
 
 ---
 
+## [2.3.3] 2021-01-07
+
+### Fixed
+
+- Typo in error log statement
+
+---
+
 ## [2.3.2] 2020-12-21
 
 ### Added
