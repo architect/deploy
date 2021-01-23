@@ -26,6 +26,7 @@ module.exports = function samDeploy (params, callback) {
     apiType,
     inventory,
     isDryRun = false,
+    shouldHydrate = true,
     name,
     production,
     prune,
@@ -135,7 +136,8 @@ module.exports = function samDeploy (params, callback) {
      * Hydrate dependencies
      */
     function hydrateTheThings (callback) {
-      hydrate.install({ autoinstall: true }, callback)
+      if (shouldHydrate) hydrate.install({ autoinstall: true }, callback)
+      else callback()
     },
 
     /**
