@@ -15,11 +15,13 @@ let update = updater('Deploy')
  *
  * options
  * -p|--production|production ... deploys to AppNameProduction
- * -d|--direct|direct ........... direct deploy function code/config
- * -s|--static|static ........... direct deploys /public to s3 bucket
+ * -d|--direct|direct ........... direct deploy a specific function code/config
+ * -s|--static|static ........... direct deploys /public to static s3 bucket
  * -v|--verbose|verbose ......... prints all output to console
  * -t|--tags|tags ............... add tags
  * -n|--name|name ............... customize stack name
+ * --prune ...................... remove files that exist in static s3 bucket but do not exist in local /public folder
+ * --dry-run .................... assemble CloudFormation sam.json but do not deploy remotely (useful for testing macros)
  */
 async function cmd () {
   let inventory = await _inventory({ env: true })

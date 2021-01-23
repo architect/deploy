@@ -2,6 +2,14 @@
 
 ---
 
+## [2.3.4] 2021-01-23
+
+### Added
+
+- Added `--no-hydrate` CLI flag to skip hydration before a deploy
+
+---
+
 ## [2.3.3] 2021-01-07
 
 ### Fixed

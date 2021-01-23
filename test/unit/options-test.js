@@ -27,6 +27,12 @@ test('should return isStatic option', t => {
   t.ok(options([ 'arc', 'deploy', '-s' ]).isStatic, '"-s" param sets isStatic')
 })
 
+test('should return shouldHydrate option', t => {
+  t.plan(2)
+  t.notOk(options([ 'arc', 'deploy', '--no-hydrate' ]).shouldHydrate, '"--no-hydrate" param sets shouldHydrate to false')
+  t.ok(options([ 'arc', 'deploy' ]).shouldHydrate, 'lack of "--no-hydrate" param sets shouldHydrate to true')
+})
+
 test('should return apiType', t => {
   t.plan(1)
   t.equal(options([ 'arc', 'deploy', '--apigateway', 'http' ]).apiType, 'http', '"--apigatewa" param sets isStatic')

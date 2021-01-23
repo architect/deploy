@@ -7,6 +7,7 @@ let isProd =    opt => opt === 'production' || opt === '--production' || opt ===
 let isPrune =   opt => opt === 'prune' || opt === '--prune'
 let isStatic =  opt => opt === 'static' || opt === '--static' || opt === '-s'
 let isVerbose = opt => opt === 'verbose' || opt === '--verbose' || opt === '-v'
+let isNoHydrate = opt => opt === '--no-hydrate'
 
 let tags =      arg => arg === '--tags' || arg === '-t' || arg === 'tags'
 let apiType =   arg => arg.startsWith('--apigateway')
@@ -24,7 +25,8 @@ module.exports = function options (opts) {
     isDirect: opts.some(isDirect),
     isDryRun: opts.some(isDryRun),
     isStatic: opts.some(isStatic),
-    isFullDeploy: opts.some(isStatic) ? false : true
+    isFullDeploy: opts.some(isStatic) ? false : true,
+    shouldHydrate: opts.some(isNoHydrate) ? false : true
   }
 }
 
