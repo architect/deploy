@@ -44,7 +44,7 @@
     "ospath": "~1.2.2",
     "path-sort": "~0.1.0",
     "rimraf": "~3.0.2",
-    "run-parallel": "~1.1.10",
+    "run-parallel": "~1.2.0",
     "run-series": "~1.1.9",
     "run-waterfall": "~1.1.7",
     "sha": "~3.0.0",
