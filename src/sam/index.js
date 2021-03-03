@@ -9,6 +9,7 @@ let handlerCheck = require('../utils/handler-check')
 let getBucket = require('./bucket')
 let compat = require('./compat')
 let macros = require('./macros')
+let plugins = require('./plugins')
 let sizeReport = require('../utils/size-report')
 let before = require('./00-before')
 let deploy = require('./01-deploy')
@@ -195,6 +196,23 @@ module.exports = function samDeploy (params, callback) {
      */
     function runMacros (callback) {
       macros(
+        inventory,
+        cloudformation,
+        stage,
+        function done (err, _sam) {
+          if (err) callback(err)
+          else {
+            sam = _sam
+            callback()
+          }
+        })
+    },
+
+    /**
+     * Userland Plugins
+     */
+    function runPlugins (callback) {
+      plugins(
         inventory,
         cloudformation,
         stage,
