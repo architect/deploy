@@ -33,6 +33,7 @@ module.exports = function deploySAM (params, callback) {
       let lambdae = {
         events: 'Event',
         http: 'HTTP',
+        plugins: 'Plugin',
         queues: 'Queue',
         scheduled: 'Scheduled',
         streams: 'Stream',

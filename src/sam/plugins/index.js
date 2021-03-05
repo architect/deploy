@@ -40,37 +40,11 @@ module.exports = function plugins (inventory, cloudformation, stage, callback) {
  */
 async function exec (inventory, cloudformation, stage) {
   let arc = inventory.inv._project.arc
-  let transforms = arc.plugins || []
-  return await transforms.map(path)
-    .reduce(async function reducer (current, plugin) {
-      // eslint-disable-next-line
-      let run = require(plugin).package
-      let cloudformation = await current
-      if (run) return await run(arc, cloudformation, stage, inventory)
-      else return Promise.resolve(cloudformation)
-    }, Promise.resolve(cloudformation))
-}
-
-/**
- * @plugins live in these userland places:
- *
- * - src/plugins/filename.js
- * - src/plugins/modulename
- * - node_modules/my-plugin-name
- *
- * @param {String} name - the plugin name
- * @returns {String} path - the path to the plugin
- */
-function path (name) {
-  let internal = join(__dirname, `_${name}`, 'index.js')
-  let localPath = join(process.cwd(), 'src', 'plugins', `${name}.js`)
-  let localPath1 = join(process.cwd(), 'src', 'plugins', name)
-  let modulePath = join(process.cwd(), 'node_modules', name)
-  let modulePath1 = join(process.cwd(), 'node_modules', `@${name}`)
-  if (existsSync(internal)) return internal
-  if (existsSync(localPath)) return localPath
-  if (existsSync(localPath1)) return localPath1
-  if (existsSync(modulePath)) return modulePath
-  if (existsSync(modulePath1)) return modulePath1
-  throw ReferenceError(name + ' macro defined in project manifest not found')
+  let plugins = inventory.inv._project.plugins || []
+  return await plugins.reduce(async function reducer (current, plugin) {
+    let run = plugin.package
+    let cloudformation = await current
+    if (run) return await run({ arc, cloudformation, stage, inventory })
+    else return Promise.resolve(cloudformation)
+  }, Promise.resolve(cloudformation))
 }
