@@ -38,7 +38,7 @@ module.exports = function plugins (inventory, cloudformation, stage, callback) {
  */
 async function exec (inventory, cloudformation, stage) {
   let arc = inventory.inv._project.arc
-  let plugins = inventory.inv._project.plugins || []
+  let plugins = inventory.inv._project.plugins ? Object.values(inventory.inv._project.plugins) : []
   return await plugins.reduce(async function reducer (current, plugin) {
     let run = plugin.package
     let cloudformation = await current
