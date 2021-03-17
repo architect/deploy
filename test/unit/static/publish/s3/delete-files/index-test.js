@@ -34,11 +34,7 @@ function reset () {
   listObjCalls = []
   delObjCalls = []
   filesOnS3 = { Contents: [] }
-}
-
-test('Set up env', t => {
-  t.plan(1)
-  t.ok(sut, 'S3 file delete module is present')
+  awsMock.restore()
   awsMock.mock('S3', 'listObjectsV2', (params, callback) => {
     listObjCalls.push(params)
     callback(null, filesOnS3)
@@ -47,6 +43,12 @@ test('Set up env', t => {
     delObjCalls.push(params)
     callback(null, { Deleted: params.Delete.Objects })
   })
+}
+
+test('Set up env', t => {
+  t.plan(1)
+  t.ok(sut, 'S3 file delete module is present')
+  reset()
 })
 
 test('Do not prune if there is nothing to prune', t => {
@@ -73,6 +75,31 @@ test('Prune if there is something to prune', t => {
     t.equal(listObjCalls.length, 1, 'S3.listObjectsV2 called once')
     t.equal(delObjCalls.length, 1, 'S3.deleteObjects called once')
     t.equal(delObjCalls[0].Delete.Objects[0].Key, files[files.length - 1], `Pruned correct file: ${files[files.length - 1]}`)
+    reset()
+  })
+})
+
+test('Prune handles more than 1k prunes', t => {
+  t.plan(2)
+
+  let params = defaultParams()
+  let soManyFiles = []
+  for (let i = 0; i < 3000; i++) {
+    soManyFiles.push('' + i + '.log')
+  }
+  awsMock.restore('S3', 'listObjectsV2')
+  awsMock.mock('S3', 'listObjectsV2', (params, callback) => {
+    listObjCalls.push(params)
+    callback(null, {
+      Contents: soManyFiles.splice(0, 1000).map(Key => ({ Key })),
+      IsTruncated: soManyFiles.length > 0,
+      NextContinuationToken: soManyFiles.length > 0 ? 'moarplz' : null
+    })
+  })
+  sut(params, err => {
+    if (err) t.fail(err)
+    t.equal(listObjCalls.length, 3, 'S3.listObjectsV2 called thrice')
+    t.equal(delObjCalls.length, 3, 'S3.deleteObjects called thrice')
     reset()
   })
 })

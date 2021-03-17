@@ -2,6 +2,14 @@
 
 ---
 
+## [2.4.1] 2021-02-27
+
+### Fixed
+
+- Support for pruning bucket contents with over 1,000 objects
+
+---
+
 ## [2.4.0] 2021-01-26
 
 ### Added
