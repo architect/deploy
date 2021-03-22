@@ -2,6 +2,14 @@
 
 ---
 
+## [2.5.0] 2021-03-22
+
+### Added
+
+- Added beta support for `@plugins`
+
+---
+
 ## [2.4.0] 2021-01-26
 
 ### Added
