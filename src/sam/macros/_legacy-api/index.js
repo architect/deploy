@@ -7,16 +7,32 @@ let forceStatic = require('./add-static-proxy')
 
 // eslint-disable-next-line
 module.exports = async function legacyAPI (arc, cloudformation, stage, inventory) {
-  let { apiType } = inventory.inv._deploy
+  let { inv } = inventory
+  let { apiType } = inv._deploy
   if (apiType === 'rest' && arc.http.length) {
     // Copy arc.http to avoid get index mutation
     let http = JSON.parse(JSON.stringify(arc.http))
 
-    // Force add GetIndex if not defined
-    let findGetIndex = tuple => tuple[0].toLowerCase() === 'get' && tuple[1] === '/'
-    let hasGetIndex = http.some(findGetIndex) // we reuse this below for default proxy code
-    if (!hasGetIndex) {
+    // Bail early if verbose syntax is found
+    http.forEach(route => {
+      if (!Array.isArray(route)) {
+        throw ReferenceError(`Verbose route syntax not supported by Architect in legacy REST APIs`)
+      }
+    })
+
+    // Create GetIndex and remap ASAP (get /*) to it if Inventory has root handler in ASAP mode
+    let hasASAP = inv._project.rootHandler === 'arcStaticAssetProxy'
+    if (hasASAP) {
       http.push([ 'get', '/' ])
+      // New school resource naming, which will be remapped to the legacy format below
+      let asapName = 'GetCatchallHTTPLambda'
+      let mappedName = 'GetIndexHTTPLambda'
+      cloudformation.Resources[mappedName] = cloudformation.Resources[asapName]
+      delete cloudformation.Resources[asapName]
+      try {
+        delete cloudformation.Resources[mappedName].Properties.Events['GetCatchallHTTPEvent']
+      }
+      catch (e) { /* Swallow */ }
     }
 
     // Base props

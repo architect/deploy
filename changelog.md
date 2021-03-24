@@ -2,6 +2,15 @@
 
 ---
 
+## [2.5.1] 2021-03-24
+
+### Fixed
+
+- Fixed deployments for legacy REST APIs that do not have a root handler defined; fixes #1089
+- Error gracefully when new verbose route format is used with legacy REST APIs
+
+---
+
 ## [2.5.0] 2021-03-22
 
 ### Added
