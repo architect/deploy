@@ -12,4 +12,3 @@ module.exports = function unexpressRoute (completeRoute) {
   })
   return `${better.join('/')}`
 }
-
