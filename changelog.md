@@ -2,6 +2,14 @@
 
 ---
 
+## [2.5.2] 2021-03-31
+
+### Fixed
+
+- Fixed issue where changing `@static fingerprint` setting may not update cache-control headers in static assets; fixes #1108, thanks @ryanflorence!
+
+---
+
 ## [2.5.1] 2021-03-24
 
 ### Fixed
