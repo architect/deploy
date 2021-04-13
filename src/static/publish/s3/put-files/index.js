@@ -52,14 +52,18 @@ module.exports = function putFiles (params, callback) {
         else {
           let url = `https://${Bucket}.s3.${region}.amazonaws.com/${Key}`
 
-          // Only upload if the file was modified since last upload
+          // Get the params for the file to be (maybe) uploaded
+          let params = putParams({ Bucket, Key, Body, file, fingerprint })
+
+          // Upload if the file was modified since last upload
           let etag = headData && headData.ETag && headData.ETag.replace(/['"]/g, '')
-          let isDifferent = hash !== etag
-          if (!headData || isDifferent) {
+          let fileDiff = hash !== etag
 
-            // Get the params for the file to be uploaded
-            let params = putParams({ Bucket, Key, Body, file, fingerprint })
+          // Or upload if the cache-control headers do not match since last upload
+          let cacheHeader = headData && headData.CacheControl
+          let headerDiff = cacheHeader !== params.CacheControl
 
+          if (!headData || fileDiff || headerDiff) {
             s3.putObject(params, function _putObj (err) {
               if (err && err.code === 'AccessDenied') {
                 callback(Error('access_denied'))
