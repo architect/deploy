@@ -1,3 +1,5 @@
+let { toLogicalID } = require('@architect/utils')
+
 /**
  * Architect Plugins
  * ---
@@ -58,8 +60,8 @@ async function exec (inventory, cloudformation, stage) {
       if (keys && keys.length) {
         for (let k of keys) {
           let Value = vars[k]
-          cloudformation.Resources[`${pluginName}${k}Param`] = {
-            Type: 'AWS::SSM:Parameter',
+          cloudformation.Resources[toLogicalID(`${pluginName}${k}Param`)] = {
+            Type: 'AWS::SSM::Parameter',
             Properties: {
               Type: 'String',
               Name: { 'Fn::Sub': [
