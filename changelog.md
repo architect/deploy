@@ -26,6 +26,14 @@
 
 ---
 
+## [2.6.0] 2021-04-16
+
+### Added
+
+- `@plugins` support now includes generation of SSM Parameters based on the output of a plugin's `variables` method. See the [`@plugins` docs](https://arc.codes/docs/en/guides/extend/plugins) for more information.
+
+---
+
 ## [2.5.1] 2021-03-24
 
 ### Fixed
