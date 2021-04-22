@@ -2,11 +2,19 @@
 
 ---
 
+## [2.5.2] 2021-04-22
+
+### Fixed
+
+- Fixed bug where macros that were returning copies of CloudFormation JSON would lose CloudFormation state; fixes [#1127](https://github.com/architect/architect/issues/1127)
+
+---
+
 ## [2.5.1] 2021-03-24
 
 ### Fixed
 
-- Fixed deployments for legacy REST APIs that do not have a root handler defined; fixes #1089
+- Fixed deployments for legacy REST APIs that do not have a root handler defined; fixes [#1089](https://github.com/architect/architect/issues/1089)
 - Error gracefully when new verbose route format is used with legacy REST APIs
 
 ---

@@ -3,3 +3,4 @@ coverage/
 node_modules/
 package-lock.json
 scratch/
+test/mocks/app-with-extensions/sam.json

@@ -12,5 +12,7 @@ module.exports = function pkg (params, callback) {
   series([
     writeSAM.bind({}, { sam, update }),
     writeCFN.bind({}, { sam, bucket, pretty, update, isDryRun })
-  ], callback)
+  ], (err) => {
+    callback(err)
+  })
 }
