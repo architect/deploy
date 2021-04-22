@@ -2,7 +2,7 @@ let pkg = require('@architect/package')
 let { toLogicalID, updater, fingerprint } = require('@architect/utils')
 let create = require('@architect/create')
 let hydrate = require('@architect/hydrate')
-let series = require('run-series')
+let waterfall = require('run-waterfall')
 
 let print = require('./utils/print')
 let handlerCheck = require('../utils/handler-check')
@@ -52,10 +52,6 @@ module.exports = function samDeploy (params, callback) {
     stackname += toLogicalID(name)
   }
 
-  // Assigned below
-  let cloudformation
-  let sam
-
   if (isDryRun) {
     update = updater('Deploy [dry-run]')
     update.status('Starting dry run!')
@@ -64,7 +60,7 @@ module.exports = function samDeploy (params, callback) {
   // API switching
   let arcApiType = inv.aws.apigateway
 
-  series([
+  waterfall([
     /**
      * Maybe auto-init resources
      */
@@ -142,14 +138,6 @@ module.exports = function samDeploy (params, callback) {
     },
 
     /**
-     * Generate cfn, which must be completed only after fingerprinting or files may not be present
-     */
-    function generateCloudFormation (callback) {
-      cloudformation = pkg(inventory)
-      callback()
-    },
-
-    /**
      * Check to see if we're working with a legacy (REST) API (and any other backwards compat checks)
      */
     function legacyCompat (callback) {
@@ -192,37 +180,33 @@ module.exports = function samDeploy (params, callback) {
     },
 
     /**
+     * Generate cfn, which must be completed only after fingerprinting or files may not be present
+     */
+    function generateCloudFormation (callback) {
+      callback(null, pkg(inventory))
+    },
+
+    /**
      * Macros (both built-in + user)
      */
-    function runMacros (callback) {
-      macros(
-        inventory,
-        cloudformation,
-        stage,
-        function done (err, _sam) {
-          if (err) callback(err)
-          else {
-            sam = _sam
-            callback()
-          }
-        })
+    function runMacros (cloudformation, callback) {
+      macros(inventory, cloudformation, stage, callback)
     },
 
     /**
      * Userland Plugins
      */
-    function runPlugins (callback) {
-      plugins(
-        inventory,
-        cloudformation,
-        stage,
-        function done (err, _sam) {
-          if (err) callback(err)
-          else {
-            sam = _sam
-            callback()
-          }
-        })
+    function runPlugins (macroModifiedCfn, callback) {
+      plugins(inventory, macroModifiedCfn, stage, callback)
+    },
+
+    /**
+     * Pre-deploy ops
+     */
+    function beforeDeploy (finalCfn, callback) {
+      let params = { sam: finalCfn, bucket, pretty, update, isDryRun }
+      // this will write sam.json/yaml files out
+      before(params, callback)
     },
 
     /**
@@ -230,14 +214,6 @@ module.exports = function samDeploy (params, callback) {
      */
     function chonkyBois (callback) {
       sizeReport({ inventory, update }, callback)
-    },
-
-    /**
-     * Pre-deploy ops
-     */
-    function beforeDeploy (callback) {
-      let params = { sam, bucket, pretty, update, isDryRun }
-      before(params, callback)
     },
 
     /**
@@ -249,6 +225,7 @@ module.exports = function samDeploy (params, callback) {
         callback()
       }
       else {
+        // leverages the previously-written-out sam.json/yaml files
         deploy({
           appname,
           stackname,
