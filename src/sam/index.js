@@ -214,7 +214,7 @@ module.exports = function samDeploy (params, callback) {
     function runPlugins (callback) {
       plugins(
         inventory,
-        cloudformation,
+        sam,
         stage,
         function done (err, _sam) {
           if (err) callback(err)
