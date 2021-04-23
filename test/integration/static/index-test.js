@@ -1,9 +1,9 @@
 let test = require('tape')
 let { join } = require('path')
+let mockFs = require('mock-fs')
 let proxyquire = require('proxyquire')
 let inventory = require('@architect/inventory')
 let { updater } = require('@architect/utils')
-let mockFs = require('mock-fs')
 
 // Necessary to run test solo
 let aws = require('aws-sdk')
@@ -51,7 +51,7 @@ function staticDeploy (t, callback) {
     else {
       params.inventory = result
       staticDeployMod(params, err => {
-        reset() // Must be reset before any tape tests are resolved because mock-fs#201
+        reset()
         callback(err)
       })
     }
@@ -63,7 +63,6 @@ function staticDeploy (t, callback) {
  * - Unfortunately, proxyquire seems to have a nested file folder + `@global` bug, so we can't run this from index
  *   - Instead, we have to run inventory ourselves on each test, which kinda sucks
  * - Also, it'd be nice to test the CloudFormation stackname code path
- *   - However, mock-fs doesn't play nicely with aws-sdk(-mock)
  */
 
 test('Set up env', t => {
