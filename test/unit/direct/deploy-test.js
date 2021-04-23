@@ -37,7 +37,7 @@ function directDeploy (t, rawArc, lambdas, callback) {
       params.inventory = result
       params.specificLambdasToDeploy = lambdas
       directDeployMod(params, err => {
-        reset() // Must be reset before any tape tests are resolved because mock-fs#201
+        reset()
         callback(err)
       })
     }
