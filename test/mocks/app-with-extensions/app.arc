@@ -5,6 +5,9 @@ app-with-extensions
 apigateway http
 region us-west-2
 
+@static
+fingerprint true
+
 @http
 get /
 

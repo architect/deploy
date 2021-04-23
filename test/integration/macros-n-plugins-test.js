@@ -29,6 +29,19 @@ test('multiple macro and plugin cfn additions honoured', t => {
   })
 })
 
+test('(hydrate=true) multiple macro and plugin cfn additions honoured', t => {
+  t.plan(5)
+  sam({ isDryRun: true, shouldHydrate: true, region: 'us-west-2', inventory: inv, verbose: true }, (err) => {
+    t.notOk(err, 'no error from sam method')
+    // eslint-disable-next-line global-require
+    let json = require(join(process.cwd(), 'sam.json'))
+    t.ok(json.macroOne, 'first macro cfn addition present')
+    t.ok(json.macroTwo, 'second macro cfn addition present')
+    t.ok(json.pluginOne, 'first plugin cfn addition present')
+    t.ok(json.pluginTwo, 'second plugin cfn addition present')
+  })
+})
+
 test('end-to-end sam teardown', t => {
   t.plan(1)
   process.chdir(origDir)

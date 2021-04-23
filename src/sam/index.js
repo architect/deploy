@@ -126,14 +126,18 @@ module.exports = function samDeploy (params, callback) {
       if (verbose) update.done(`Static asset fingerpringing ${get.static('fingerprint') ? 'enabled' : 'disabled'}`)
       // Always run full fingerprinting op to ensure remnant static.json files are deleted
       // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
-      fingerprint({ inventory }, callback)
+      fingerprint({ inventory }, (err) => {
+        callback(err)
+      })
     },
 
     /**
      * Hydrate dependencies
      */
     function hydrateTheThings (callback) {
-      if (shouldHydrate) hydrate.install({ autoinstall: true }, callback)
+      if (shouldHydrate) hydrate.install({ autoinstall: true }, (err /* , result */) => {
+        callback(err)
+      })
       else callback()
     },
 

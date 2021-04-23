@@ -4,3 +4,4 @@ node_modules/
 package-lock.json
 scratch/
 test/mocks/app-with-extensions/sam.json
+test/mocks/app-with-extensions/public/static.json
