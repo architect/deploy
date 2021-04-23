@@ -2,6 +2,14 @@
 
 ---
 
+## [2.5.3] 2021-04-23
+
+### Fixed
+
+- Fixed bug introduced in 2.5.2 with switch to async task processing in deploy; fixes [#421](https://github.com/architect/functions/issues/1127)
+
+---
+
 ## [2.5.2] 2021-04-22
 
 ### Fixed
