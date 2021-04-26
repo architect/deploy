@@ -44,7 +44,9 @@ function resetCfnAndGenerateInventory (cfn, inv) {
   // reset the var that captures the final compiled cfn right before writing it out
   finalCfn = undefined
   // return a compiled inventory if provided
-  return Object.assign({}, invGetter, { inv: inv ? inv : baseInv })
+  let result = Object.assign({}, invGetter)
+  result.inv = inv ? inv : baseInv
+  return result
 }
 
 test('sam smoketest', t => {
@@ -78,5 +80,46 @@ test('sam internal arc-env macro mutations should be honoured', t => {
   sam({ inventory, shouldHydrate: false }, (err) => {
     t.notOk(err, 'no error')
     t.equals(finalCfn.Resources.SomeLambda.Properties.Environment.Variables.myEnvVar, 'sprettydope', 'env var from inventory set on lambda')
+  })
+})
+
+test('plugin lambdas should have production env vars set when production is specified', t => {
+  t.plan(3)
+  let inv = JSON.parse(JSON.stringify(baseInv))
+  inv._project.env = {
+    production: {
+      NODE_ENV: 'production'
+    },
+    staging: {
+      NODE_ENV: 'staging'
+    }
+  }
+  inv._project.plugins = {
+    myPlugin: {
+      package: function ({ cloudformation }) {
+        cloudformation.Resources['MyPluginLambda'] = {
+          Type: 'AWS::Serverless::Function',
+          Properties: { Environment: { Variables: {} } }
+        }
+        return cloudformation
+      }
+    }
+  }
+  let inventory = resetCfnAndGenerateInventory({
+    Resources: {
+      'SomeHTTPLambda': {
+        Type: 'AWS::Serverless::Function',
+        Properties: {
+          Environment: {
+            Variables: {}
+          }
+        }
+      }
+    }
+  }, inv)
+  sam({ inventory, shouldHydrate: false, production: true }, (err) => {
+    t.notOk(err, 'no error')
+    t.ok(finalCfn.Resources.MyPluginLambda, 'plugin-generated lambda exists on cfn')
+    t.equals(finalCfn.Resources.MyPluginLambda.Properties.Environment.Variables.NODE_ENV, 'production', 'production env var set on plugin-generated lambda')
   })
 })

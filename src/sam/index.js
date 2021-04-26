@@ -191,17 +191,20 @@ module.exports = function samDeploy (params, callback) {
     },
 
     /**
+     * Userland Plugins
+     * WARNING: order matters here. Plugins must run before macros because
+     * built-in macros also run things that may impact userland resources (i.e.
+     * environment variables set on plugin or macro-generated Lambdas)
+     */
+    function runPlugins (macroModifiedCfn, callback) {
+      plugins(inventory, macroModifiedCfn, stage, callback)
+    },
+
+    /**
      * Macros (both built-in + user)
      */
     function runMacros (cloudformation, callback) {
       macros(inventory, cloudformation, stage, callback)
-    },
-
-    /**
-     * Userland Plugins
-     */
-    function runPlugins (macroModifiedCfn, callback) {
-      plugins(inventory, macroModifiedCfn, stage, callback)
     },
 
     /**
