@@ -2,6 +2,14 @@
 
 ---
 
+## [2.5.4] 2021-04-26
+
+### Fixed
+
+- Fixed bug where plugin-generated Lambdas would not have proper built-in production environment variables assigned when running a production deploy; fixes [#1134](https://github.com/architect/architect/issues/1134)
+
+---
+
 ## [2.5.3] 2021-04-23
 
 ### Fixed
