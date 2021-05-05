@@ -51,7 +51,7 @@ module.exports = function macros (inventory, cloudformation, stage, callback) {
  */
 async function exec (inventory, cloudformation, stage) {
   let arc = inventory.inv._project.arc
-  let transforms = arc.macros || []
+  let transforms = arc.macros ? arc.macros.slice() : []
   // WARNING! Order matters below. the `arc-env` internal macro MUST run AFTER any userland macros and plugins
   // Always run the following internal macros:
   transforms.push(
