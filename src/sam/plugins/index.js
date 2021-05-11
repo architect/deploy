@@ -1,4 +1,5 @@
 let { toLogicalID } = require('@architect/utils')
+let { createFunction } = require('@architect/package')
 
 /**
  * Architect Plugins
@@ -46,7 +47,7 @@ async function exec (inventory, cloudformation, stage) {
   let cfn = await plugins.reduce(async function reducer (current, plugin) {
     let run = plugin.package
     let cloudformation = await current
-    if (run) return await run({ arc, cloudformation, stage, inventory })
+    if (run) return await run({ arc, cloudformation, stage, inventory, createFunction })
     else return Promise.resolve(cloudformation)
   }, Promise.resolve(cloudformation))
   // now grab any variable exports from plugins and inject as SSM parameters
