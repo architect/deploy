@@ -196,15 +196,15 @@ module.exports = function samDeploy (params, callback) {
      * built-in macros also run things that may impact userland resources (i.e.
      * environment variables set on plugin or macro-generated Lambdas)
      */
-    function runPlugins (macroModifiedCfn, callback) {
-      plugins(inventory, macroModifiedCfn, stage, callback)
+    function runPlugins (cloudformation, callback) {
+      plugins(inventory, cloudformation, stage, callback)
     },
 
     /**
      * Macros (both built-in + user)
      */
-    function runMacros (cloudformation, callback) {
-      macros(inventory, cloudformation, stage, callback)
+    function runMacros (pluginModifiedCloudformation, callback) {
+      macros(inventory, pluginModifiedCloudformation, stage, callback)
     },
 
     /**
