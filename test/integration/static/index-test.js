@@ -15,7 +15,7 @@ function publish (params, callback) {
   callback(null, params)
 }
 
-let node_modules = { '@architect': { asap: { dist: { 'index.js': 'hi' } } } }
+let node_modules = mockFs.load('node_modules', { recursive: true })
 let staticDeployPath = join(process.cwd(), 'src', 'static', 'index.js')
 let staticDeployMod = proxyquire(staticDeployPath, {
   './publish': publish
@@ -99,7 +99,8 @@ test(`Publish static deploy if @static is defined`, t => {
   let arc = '@app\n an-app\n @static'
   mockFs({
     'app.arc': arc,
-    'public': {}
+    'public': {},
+    node_modules
   })
   staticDeploy(t, err => {
     if (err) t.fail(err)
@@ -133,7 +134,8 @@ test(`Respect prune param`, t => {
   let arc = '@app\n an-app\n @static'
   mockFs({
     'app.arc': arc,
-    'public': {}
+    'public': {},
+    node_modules
   })
   params.prune = true
   staticDeploy(t, err => {
@@ -148,7 +150,8 @@ test(`Respect prune setting in project manifest`, t => {
   let arc = '@app\n an-app\n @static\n prune true'
   mockFs({
     'app.arc': arc,
-    'public': {}
+    'public': {},
+    node_modules
   })
   staticDeploy(t, err => {
     if (err) t.fail(err)
@@ -162,7 +165,8 @@ test(`Respect folder setting in project manifest`, t => {
   let arc = '@app\n an-app\n @static\n folder some-folder'
   mockFs({
     'app.arc': arc,
-    'some-folder': {}
+    'some-folder': {},
+    node_modules
   })
   staticDeploy(t, err => {
     if (err) t.fail(err)
@@ -176,7 +180,8 @@ test(`Respect prefix param`, t => {
   let arc = '@app\n an-app\n @static'
   mockFs({
     'app.arc': arc,
-    'public': {}
+    'public': {},
+    node_modules
   })
   params.prefix = 'some-prefix'
   staticDeploy(t, err => {
@@ -191,7 +196,8 @@ test(`Respect prefix setting in project manifest`, t => {
   let arc = '@app\n an-app\n @static\n prefix some-prefix'
   mockFs({
     'app.arc': arc,
-    'public': {}
+    'public': {},
+    node_modules
   })
   staticDeploy(t, err => {
     if (err) t.fail(err)
