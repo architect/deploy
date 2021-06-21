@@ -52,11 +52,11 @@
     "zipit": "~2.0.0"
   },
   "peerDependencies": {
-    "aws-sdk": "2.712.0"
+    "aws-sdk": "2.880.0"
   },
   "devDependencies": {
     "@architect/eslint-config": "1.0.0",
-    "aws-sdk-mock": "^5.2.0",
+    "aws-sdk-mock": "~5.1.0",
     "codecov": "^3.8.2",
     "cross-env": "~7.0.3",
     "eslint": "~7.29.0",
