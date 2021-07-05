@@ -1,0 +1,14 @@
+version: 2
+updates:
+- package-ecosystem: npm
+  directory: "/"
+  schedule:
+    interval: daily
+  open-pull-requests-limit: 99
+  ignore:
+  - dependency-name: mock-fs
+    versions:
+    - 4.14.0
+  - dependency-name: get-folder-size
+    versions:
+    - 3.0.0
