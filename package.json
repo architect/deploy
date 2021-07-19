@@ -59,7 +59,7 @@
     "aws-sdk-mock": "~5.2.1",
     "codecov": "^3.8.2",
     "cross-env": "~7.0.3",
-    "eslint": "~7.30.0",
+    "eslint": "~7.31.0",
     "mock-fs": "~4.14.0",
     "nyc": "^15.1.0",
     "proxyquire": "^2.1.3",
