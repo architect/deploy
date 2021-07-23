@@ -35,7 +35,7 @@
     "@architect/create": "~2.0.0",
     "@architect/hydrate": "~1.10.2",
     "@architect/inventory": "~1.4.3",
-    "@architect/package": "~6.2.2",
+    "@architect/package": "~7.0.0",
     "@architect/utils": "~3.0.1",
     "chalk": "~4.1.1",
     "get-folder-size": "~2.0.1",
