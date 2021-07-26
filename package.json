@@ -34,7 +34,7 @@
   "dependencies": {
     "@architect/create": "~2.0.0",
     "@architect/hydrate": "~2.0.0",
-    "@architect/inventory": "~1.4.3",
+    "@architect/inventory": "~2.0.2",
     "@architect/package": "~7.0.0",
     "@architect/utils": "~3.0.1",
     "chalk": "~4.1.1",
