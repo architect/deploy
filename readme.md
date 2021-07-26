@@ -42,3 +42,12 @@ By default will only publish to the staging environment unless `production` is t
 
 [static-guide]: https://arc.codes/reference/static
 [sam-cli]: https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/serverless-sam-cli-install.html
+
+
+### `aws-sdk` caveat
+
+Deploy requires `aws-sdk`; earlier versions included `aws-sdk` in `peerDependencies`, which prior to npm 7 would not automatically install `aws-sdk`. This is because Architect assumes you already have `aws-sdk` installed via Architect, or that it's available at runtime if you're using Deploy in a Lambda.
+
+However, npm 7 (once again) changed the behavior of `peerDependencies`, now automatically installing all `peerDependencies` (instead of merely printing a reminder). This means any Lambdas that use Deploy would get a >50MB dependency payload if deployed on a machine with npm 7.
+
+As such, please ensure `aws-sdk` is installed to your project or globally to your machine. We are sorry to make this a userland issue, but we feel this is preferable to unnecessarily and invisibly causing `aws-sdk` to be double-installed in Lambdas, negatively impacting coldstart times and adding to bug vectors.

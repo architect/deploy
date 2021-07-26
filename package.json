@@ -34,11 +34,11 @@
   "dependencies": {
     "@architect/create": "~2.0.0",
     "@architect/hydrate": "~2.0.0",
-    "@architect/inventory": "~1.4.3",
+    "@architect/inventory": "~2.0.3",
     "@architect/package": "~7.0.0",
     "@architect/utils": "~3.0.1",
     "chalk": "~4.1.1",
-    "get-folder-size": "~2.0.1",
+    "get-folder-size": "2.0.1",
     "glob": "~7.1.7",
     "mime-types": "~2.1.31",
     "ospath": "~1.2.2",
@@ -50,9 +50,6 @@
     "sha": "~3.0.0",
     "zip-dir": "~2.0.0",
     "zipit": "~2.0.0"
-  },
-  "peerDependencies": {
-    "aws-sdk": "2.880.0"
   },
   "devDependencies": {
     "@architect/eslint-config": "~1.0.0",
