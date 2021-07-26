@@ -7,6 +7,7 @@
 ### Changed
 
 - Breaking change: removed support for Node.js 10.x (now EOL, and no longer available to created in AWS Lambda)
+- Removed `aws-sdk` from `peerDependencies`; see `aws-sdk` caveat in `readme.md`
 - Updated dependencies
 
 ---
