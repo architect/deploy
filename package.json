@@ -53,7 +53,7 @@
   },
   "devDependencies": {
     "@architect/eslint-config": "~1.0.0",
-    "aws-sdk-mock": "5.1.0",
+    "aws-sdk-mock": "5.2.1",
     "cross-env": "~7.0.3",
     "eslint": "~7.31.0",
     "mock-fs": "~5.0.0",
