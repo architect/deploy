@@ -39,7 +39,7 @@
     "@architect/utils": "~3.0.2",
     "chalk": "~4.1.1",
     "fs-extra": "~10.0.0",
-    "get-folder-size": "~2.0.1",
+    "get-folder-size": "~3.1.0",
     "glob": "~7.1.7",
     "mime-types": "~2.1.32",
     "ospath": "~1.2.2",
