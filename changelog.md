@@ -2,13 +2,18 @@
 
 ---
 
-## [3.0.0] 2021-07-26
+## [3.0.0 - 3.0.1] 2021-07-26
 
 ### Changed
 
 - Breaking change: removed support for Node.js 10.x (now EOL, and no longer available to created in AWS Lambda)
 - Removed `aws-sdk` from `peerDependencies`; see `aws-sdk` caveat in `readme.md`
 - Updated dependencies
+
+
+### Fixed
+
+- Fixed issue where `REST` APIs relying on ASAP would fail during deploy
 
 ---
 
