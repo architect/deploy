@@ -2,6 +2,15 @@
 
 ---
 
+## [3.0.3] 2021-09-05
+
+### Changed
+
+- Updated dependencies
+- Internal: removed some unnecessary `await`s
+
+---
+
 ## [3.0.0 - 3.0.2] 2021-07-26
 
 ### Changed

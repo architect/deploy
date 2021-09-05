@@ -64,12 +64,13 @@ async function exec (inventory, cloudformation, stage) {
     'proxy',      // Update @proxy stage URLs
     'asap',       // Handle fingerprinting + ASAP
   )
-  return await transforms.map(path)
+  return transforms.map(path)
     .reduce(async function reducer (current, macro) {
       // eslint-disable-next-line
       let run = require(macro)
       let cloudformation = await current
-      return await run(arc, cloudformation, stage, inventory)
+      let result = await run(arc, cloudformation, stage, inventory)
+      return result
     }, Promise.resolve(cloudformation))
 }
 
