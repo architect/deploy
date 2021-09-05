@@ -47,11 +47,15 @@ async function exec (inventory, cloudformation, stage) {
   let cfn = await plugins.reduce(async function reducer (current, plugin) {
     let run = plugin.package
     let cloudformation = await current
-    if (run) return await run({ arc, cloudformation, stage, inventory, createFunction })
-    else return Promise.resolve(cloudformation)
+    if (run) {
+      return run({ arc, cloudformation, stage, inventory, createFunction })
+    }
+    else {
+      return Promise.resolve(cloudformation)
+    }
   }, Promise.resolve(cloudformation))
   // now grab any variable exports from plugins and inject as SSM parameters
-  return await pluginNames.reduce(async function reducer (current, pluginName) {
+  return pluginNames.reduce(async function reducer (current, pluginName) {
     let plugin = inventory.inv._project.plugins[pluginName]
     let varExports = plugin.variables
     let cloudformation = await current
