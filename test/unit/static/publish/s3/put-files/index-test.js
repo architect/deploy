@@ -1,10 +1,10 @@
 let test = require('tape')
+let mockFs = require('mock-fs')
 let proxyquire = require('proxyquire')
 let { join } = require('path')
 let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
 let crypto = require('crypto')
-let mockFs
 
 let headObjCalls = []
 let putObjCalls = []
@@ -67,10 +67,6 @@ test('Set up env', t => {
     callback()
   })
   params.s3 = new aws.S3()
-
-  // Set up mock-fs here outside global scope or it may blow up aws-sdk
-  // eslint-disable-next-line
-  mockFs = require('mock-fs')
 })
 
 test('Basic publish test', t => {
@@ -88,6 +84,7 @@ test('Basic publish test', t => {
     t.ok(putCallsAreGood, 'S3.putObject called once for each file')
     t.equal(notModified, 0, 'Returned correct quantity of skipped files')
     t.equal(putObjCalls.length, uploaded, 'Returned correct quantity of published files')
+    reset()
   })
 })
 
@@ -104,6 +101,7 @@ test('Skip publishing files that have not been updated', t => {
     t.equal(putObjCalls.length, 0, 'S3.putObject not called on updated files')
     t.equal(headObjCalls.length, notModified, 'Returned correct quantity of skipped files')
     t.equal(putObjCalls.length, uploaded, 'Returned correct quantity of published files')
+    reset()
   })
 })
 

@@ -2,7 +2,7 @@ let pkg = require('@architect/package')
 let { toLogicalID, updater, fingerprint } = require('@architect/utils')
 let create = require('@architect/create')
 let hydrate = require('@architect/hydrate')
-let series = require('run-series')
+let waterfall = require('run-waterfall')
 
 let print = require('./utils/print')
 let handlerCheck = require('../utils/handler-check')
@@ -52,10 +52,6 @@ module.exports = function samDeploy (params, callback) {
     stackname += toLogicalID(name)
   }
 
-  // Assigned below
-  let cloudformation
-  let sam
-
   if (isDryRun) {
     update = updater('Deploy [dry-run]')
     update.status('Starting dry run!')
@@ -64,7 +60,7 @@ module.exports = function samDeploy (params, callback) {
   // API switching
   let arcApiType = inv.aws.apigateway
 
-  series([
+  waterfall([
     /**
      * Maybe auto-init resources
      */
@@ -130,23 +126,19 @@ module.exports = function samDeploy (params, callback) {
       if (verbose) update.done(`Static asset fingerpringing ${get.static('fingerprint') ? 'enabled' : 'disabled'}`)
       // Always run full fingerprinting op to ensure remnant static.json files are deleted
       // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
-      fingerprint({ inventory }, callback)
+      fingerprint({ inventory }, (err) => {
+        callback(err)
+      })
     },
 
     /**
      * Hydrate dependencies
      */
     function hydrateTheThings (callback) {
-      if (shouldHydrate) hydrate.install({ autoinstall: true }, callback)
+      if (shouldHydrate) hydrate.install({ autoinstall: true }, (err /* , result */) => {
+        callback(err)
+      })
       else callback()
-    },
-
-    /**
-     * Generate cfn, which must be completed only after fingerprinting or files may not be present
-     */
-    function generateCloudFormation (callback) {
-      cloudformation = pkg(inventory)
-      callback()
     },
 
     /**
@@ -192,37 +184,36 @@ module.exports = function samDeploy (params, callback) {
     },
 
     /**
-     * Macros (both built-in + user)
+     * Generate cfn, which must be completed only after fingerprinting or files may not be present
      */
-    function runMacros (callback) {
-      macros(
-        inventory,
-        cloudformation,
-        stage,
-        function done (err, _sam) {
-          if (err) callback(err)
-          else {
-            sam = _sam
-            callback()
-          }
-        })
+    function generateCloudFormation (callback) {
+      callback(null, pkg(inventory))
     },
 
     /**
      * Userland Plugins
+     * WARNING: order matters here. Plugins must run before macros because
+     * built-in macros also run things that may impact userland resources (i.e.
+     * environment variables set on plugin or macro-generated Lambdas)
      */
-    function runPlugins (callback) {
-      plugins(
-        inventory,
-        cloudformation,
-        stage,
-        function done (err, _sam) {
-          if (err) callback(err)
-          else {
-            sam = _sam
-            callback()
-          }
-        })
+    function runPlugins (cloudformation, callback) {
+      plugins(inventory, cloudformation, stage, callback)
+    },
+
+    /**
+     * Macros (both built-in + user)
+     */
+    function runMacros (pluginModifiedCloudformation, callback) {
+      macros(inventory, pluginModifiedCloudformation, stage, callback)
+    },
+
+    /**
+     * Pre-deploy ops
+     */
+    function beforeDeploy (finalCfn, callback) {
+      let params = { sam: finalCfn, bucket, pretty, update, isDryRun }
+      // this will write sam.json/yaml files out
+      before(params, callback)
     },
 
     /**
@@ -230,14 +221,6 @@ module.exports = function samDeploy (params, callback) {
      */
     function chonkyBois (callback) {
       sizeReport({ inventory, update }, callback)
-    },
-
-    /**
-     * Pre-deploy ops
-     */
-    function beforeDeploy (callback) {
-      let params = { sam, bucket, pretty, update, isDryRun }
-      before(params, callback)
     },
 
     /**
@@ -249,6 +232,7 @@ module.exports = function samDeploy (params, callback) {
         callback()
       }
       else {
+        // leverages the previously-written-out sam.json/yaml files
         deploy({
           appname,
           stackname,

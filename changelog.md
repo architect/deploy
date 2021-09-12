@@ -2,7 +2,13 @@
 
 ---
 
-## [2.5.2] 2021-03-31
+## [3.0.3] 2021-09-05
+
+### Changed
+
+- Updated dependencies
+- Internal: removed some unnecessary `await`s
+
 
 ### Fixed
 
@@ -10,11 +16,66 @@
 
 ---
 
+## [3.0.0 - 3.0.2] 2021-07-26
+
+### Changed
+
+- Breaking change: removed support for Node.js 10.x (now EOL, and no longer available to created in AWS Lambda) and Node.js 12.x
+- Removed `aws-sdk` from `peerDependencies`; see `aws-sdk` caveat in `readme.md`
+- Updated dependencies
+
+
+### Fixed
+
+- Fixed issue where `REST` APIs relying on ASAP would fail during deploy
+
+---
+
+## [2.6.1 - 2.6.2] 2021-06-21
+
+### Changed
+
+- Update dependencies
+
+---
+
+## [2.6.0] 2021-05-24
+
+### Added
+
+- `@plugins` support now includes generation of SSM Parameters based on the output of a plugin's `variables` method. See the [`@plugins` docs](https://arc.codes/docs/en/guides/extend/plugins) for more information.
+
+---
+
+## [2.5.4] 2021-04-26
+
+### Fixed
+
+- Fixed bug where plugin-generated Lambdas would not have proper built-in production environment variables assigned when running a production deploy; fixes [#1134](https://github.com/architect/architect/issues/1134)
+
+---
+
+## [2.5.3] 2021-04-23
+
+### Fixed
+
+- Fixed bug introduced in 2.5.2 with switch to async task processing in deploy; fixes [#421](https://github.com/architect/functions/issues/1127)
+
+---
+
+## [2.5.2] 2021-04-22
+
+### Fixed
+
+- Fixed bug where macros that were returning copies of CloudFormation JSON would lose CloudFormation state; fixes [#1127](https://github.com/architect/architect/issues/1127)
+
+---
+
 ## [2.5.1] 2021-03-24
 
 ### Fixed
 
-- Fixed deployments for legacy REST APIs that do not have a root handler defined; fixes #1089
+- Fixed deployments for legacy REST APIs that do not have a root handler defined; fixes [#1089](https://github.com/architect/architect/issues/1089)
 - Error gracefully when new verbose route format is used with legacy REST APIs
 
 ---

@@ -1,11 +1,11 @@
 let test = require('tape')
 let { join } = require('path')
-let _inventory = require('@architect/inventory')
-let { updater } = require('@architect/utils')
-let proxyquire = require('proxyquire')
 let mockFs = require('mock-fs')
+let proxyquire = require('proxyquire')
 let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
+let _inventory = require('@architect/inventory')
+let { updater } = require('@architect/utils')
 
 let inventory
 let params
@@ -88,7 +88,6 @@ test('Static asset publishing', t => {
   t.plan(7)
   setup()
   sut(params, err => {
-    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.equal(putted.files.length, 3, 'Passed files to be published')
     t.equal(putted.fingerprint, null, 'Passed fingerprint unmutated')
@@ -97,6 +96,7 @@ test('Static asset publishing', t => {
     t.equal(putted.region, params.region, 'Passed region unmutated')
     t.deepEqual(putted.staticManifest, {}, 'Passed empty staticManifest by default')
     t.notOk(deleted, 'No files pruned')
+    reset()
   })
 })
 
@@ -106,7 +106,6 @@ test('Static asset deletion', t => {
   let params = defaultParams()
   params.prune = true
   sut(params, err => {
-    reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     t.equal(deleted.Bucket, params.Bucket, 'Passed bucket unmutated')
     t.equal(deleted.files.length, 3, 'Passed files to be published')
@@ -115,6 +114,7 @@ test('Static asset deletion', t => {
     t.equal(deleted.prefix, undefined, 'Passed prefix unmutated')
     t.equal(deleted.region, params.region, 'Passed region setting unmutated')
     t.deepEqual(deleted.staticManifest, {}, 'Passed empty staticManifest by default')
+    reset()
   })
 })
 

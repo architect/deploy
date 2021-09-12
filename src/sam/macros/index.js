@@ -51,7 +51,8 @@ module.exports = function macros (inventory, cloudformation, stage, callback) {
  */
 async function exec (inventory, cloudformation, stage) {
   let arc = inventory.inv._project.arc
-  let transforms = arc.macros || []
+  let transforms = arc.macros ? arc.macros.slice() : []
+  // WARNING! Order matters below. the `arc-env` internal macro MUST run AFTER any userland macros and plugins
   // Always run the following internal macros:
   transforms.push(
     'legacy-api', // Use legacy REST APIs instead of HTTP APIs for @http; must run before other macros
@@ -63,12 +64,13 @@ async function exec (inventory, cloudformation, stage) {
     'proxy',      // Update @proxy stage URLs
     'asap',       // Handle fingerprinting + ASAP
   )
-  return await transforms.map(path)
+  return transforms.map(path)
     .reduce(async function reducer (current, macro) {
       // eslint-disable-next-line
       let run = require(macro)
       let cloudformation = await current
-      return await run(arc, cloudformation, stage, inventory)
+      let result = await run(arc, cloudformation, stage, inventory)
+      return result
     }, Promise.resolve(cloudformation))
 }
 

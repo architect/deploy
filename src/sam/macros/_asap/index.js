@@ -1,5 +1,6 @@
 let { join } = require('path')
 let { mkdirSync, readFileSync, writeFileSync } = require('fs')
+let { copySync } = require('fs-extra')
 
 // If we're using ASAP + fingerprinting, inject it with static.json
 module.exports = function asapFingerprint (arc, cloudformation, stage, inventory) {
@@ -8,7 +9,7 @@ module.exports = function asapFingerprint (arc, cloudformation, stage, inventory
   let cfn = cloudformation
 
   if (inv._project.rootHandler === 'arcStaticAssetProxy' && fingerprint) {
-    let { handlerFile } = get.http('get /*')
+    let { src } = get.http('get /*')
 
     // Arc's tmp dir be destroyed up by the post-deploy cleaner
     let tmp = join(process.cwd(), '__ARC_TMP__')
@@ -16,8 +17,7 @@ module.exports = function asapFingerprint (arc, cloudformation, stage, inventory
     mkdirSync(shared, { recursive: true })
 
     // Handle ASAP
-    let asap = readFileSync(handlerFile)
-    writeFileSync(join(tmp, 'index.js'), asap)
+    copySync(src, tmp)
 
     // Handle static.json
     let staticFolder = inv.static.folder
@@ -26,7 +26,13 @@ module.exports = function asapFingerprint (arc, cloudformation, stage, inventory
     writeFileSync(join(shared, 'static.json'), staticManifest)
 
     // Ok we done
-    cfn.Resources.GetCatchallHTTPLambda.Properties.CodeUri = tmp
+    let isHTTP = cfn.Resources.GetCatchallHTTPLambda
+    if (isHTTP) {
+      cfn.Resources.GetCatchallHTTPLambda.Properties.CodeUri = tmp
+    }
+    else {
+      cfn.Resources.GetIndex.Properties.CodeUri = tmp
+    }
   }
   return cfn
 }
