@@ -9,6 +9,11 @@
 - Updated dependencies
 - Internal: removed some unnecessary `await`s
 
+
+### Fixed
+
+- Fixed issue where changing `@static fingerprint` setting may not update cache-control headers in static assets; fixes #1108, thanks @ryanflorence!
+
 ---
 
 ## [3.0.0 - 3.0.2] 2021-07-26
