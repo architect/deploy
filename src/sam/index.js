@@ -68,7 +68,7 @@ module.exports = function samDeploy (params, callback) {
       let autocreateEnabled = prefs && prefs.create && prefs.create.autocreate
       if (autocreateEnabled) {
         // create any missing local infra
-        create({}, callback)
+        create({ inventory }, callback)
       }
       else callback()
     },
