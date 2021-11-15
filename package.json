@@ -34,8 +34,8 @@
   "dependencies": {
     "@architect/create": "~3.0.0",
     "@architect/hydrate": "~2.0.4",
-    "@architect/inventory": "~2.1.1",
-    "@architect/package": "~7.1.1",
+    "@architect/inventory": "~2.2.0-RC.0",
+    "@architect/package": "~7.2.0-RC.0",
     "@architect/utils": "~3.0.4",
     "chalk": "~4.1.2",
     "fs-extra": "~10.0.0",
