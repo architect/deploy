@@ -2,6 +2,18 @@
 
 ---
 
+## [3.1.0] 2021-11-15
+
+### Added
+
+- Added support for `@tables-streams`, the fully customizable successor to `@tables` with `stream true`
+  - Includes support for specifying multiple streams attached to a single table, as well as specifying custom source paths
+  - For more see: https://arc.codes/tables-streams
+- Added support for `@tables-indexes` (which will eventually supersede `@indexes`)
+  - For more see: https://arc.codes/tables-indexes
+
+---
+
 ## [3.0.6] 2021-10-20
 
 ### Changed
