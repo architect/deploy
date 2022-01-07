@@ -1,6 +1,13 @@
 # Architect Deploy changelog
 
 ---
+## [3.1.1] 2022-01-07
+
+### Changed
+
+- Updated dependencies
+
+---
 
 ## [3.1.0] 2021-11-16
 
