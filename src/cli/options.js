@@ -14,6 +14,8 @@ let apiType =   arg => arg.startsWith('--apigateway')
 let name =      arg => arg === '--name' || arg === '-n' || arg === 'name' || arg.startsWith('--name=')
 
 module.exports = function options (opts) {
+  opts = opts || process.argv || []
+
   return {
     prune: opts.some(isPrune),
     verbose: opts.some(isVerbose),
