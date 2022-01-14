@@ -24,9 +24,9 @@ let update = updater('Deploy')
  * --dry-run .................... assemble CloudFormation sam.json but do not deploy remotely (useful for testing macros)
  */
 async function cmd () {
-  let inventory = await _inventory({ env: true })
-
-  let opts = process.argv || []
+  let opts = _options()
+  let deployStage = opts.production ? 'production' : 'staging'
+  let inventory = await _inventory({ deployStage, env: true })
 
   // Validate for expected env and args and check for potential creds issues
   validate()
@@ -36,7 +36,7 @@ async function cmd () {
     inventory,
     update,
     region: inventory.inv.aws.region,
-    ..._options(opts)
+    ...opts,
   }
 
   // Pause the Sandbox watcher

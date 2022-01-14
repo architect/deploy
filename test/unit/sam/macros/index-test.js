@@ -3,7 +3,7 @@ let proxyquire = require('proxyquire').noCallThru()
 let { join } = require('path')
 
 function internalMacroPath (macro) {
-  return join(__dirname, '..', '..', '..', '..', 'src', 'sam', 'macros', `_${macro}`, 'index.js')
+  return join(__dirname, '..', '..', '..', '..', 'src', 'sam', 'update-cfn', `_${macro}`, 'index.js')
 }
 
 let customMacroArgs = []
@@ -28,7 +28,7 @@ function reset () {
 }
 
 let macroPath = join(process.cwd(), 'src', 'macros', 'myFakeMacro.js')
-let macros = proxyquire('../../../../src/sam/macros', {
+let macros = proxyquire('../../../../src/sam/update-cfn', {
   'fs': { existsSync: (path) => {
     if ((path.includes('_') && !path.includes('myFakeMacro')) || path.includes('myFakeMacro.js')) return true // macro existence check fakeout
     return false

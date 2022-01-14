@@ -8,7 +8,7 @@ let print = require('./utils/print')
 let handlerCheck = require('../utils/handler-check')
 let getBucket = require('./bucket')
 let compat = require('./compat')
-let macros = require('./macros')
+let updateCfn = require('./update-cfn')
 let plugins = require('./plugins')
 let sizeReport = require('../utils/size-report')
 let before = require('./00-before')
@@ -191,6 +191,13 @@ module.exports = function samDeploy (params, callback) {
     },
 
     /**
+     * Update CloudFormation with project-specific mutations
+     */
+    function updateCloudFormation (cloudformation, callback) {
+      updateCfn(inventory, cloudformation, stage, callback)
+    },
+
+    /**
      * Userland Plugins
      * WARNING: order matters here. Plugins must run before macros because
      * built-in macros also run things that may impact userland resources (i.e.
@@ -198,13 +205,6 @@ module.exports = function samDeploy (params, callback) {
      */
     function runPlugins (cloudformation, callback) {
       plugins(inventory, cloudformation, stage, callback)
-    },
-
-    /**
-     * Macros (both built-in + user)
-     */
-    function runMacros (pluginModifiedCloudformation, callback) {
-      macros(inventory, pluginModifiedCloudformation, stage, callback)
     },
 
     /**
