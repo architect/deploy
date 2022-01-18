@@ -3,10 +3,10 @@ let { mkdirSync, readFileSync, writeFileSync } = require('fs')
 let { copySync } = require('fs-extra')
 
 // If we're using ASAP + fingerprinting, inject it with static.json
-module.exports = function asapFingerprint (arc, cloudformation, stage, inventory) {
+module.exports = function asapFingerprint (params) {
+  let { cloudformation: cfn, inventory } = params
   let { inv, get } = inventory
   let fingerprint = get.static('fingerprint') === true
-  let cfn = cloudformation
 
   if (inv._project.rootHandler === 'arcStaticAssetProxy' && fingerprint) {
     let { src } = get.http('get /*')

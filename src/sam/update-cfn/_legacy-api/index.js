@@ -5,11 +5,12 @@ let unexpress = require('./un-express-route')
 
 let forceStatic = require('./add-static-proxy')
 
-// eslint-disable-next-line
-module.exports = async function legacyAPI (arc, cloudformation, stage, inventory) {
+module.exports = function legacyAPI (params) {
+  let { cloudformation, inventory, stage } = params
   let { inv } = inventory
-  let { apiType } = inv._deploy
-  if (apiType === 'rest' && arc.http.length) {
+  let { arc } = inv._project
+
+  if (inv.aws.apigateway === 'rest' && inv.http.length) {
     // Copy arc.http to avoid get index mutation
     let http = JSON.parse(JSON.stringify(arc.http))
 

@@ -7,7 +7,9 @@ module.exports = function createCloudFrontDistribution (params, callback) {
 }
 
 function createConfig (params) {
-  let { domain: DomainName, insecure, legacyAPI, stage } = params
+  let { domain: DomainName, insecure, inventory, stage } = params
+  let legacyAPI = inventory.inv.aws.apigateway === 'rest'
+
   let CallerReference = `edge-${Date.now()}`
 
   let origin = {
@@ -23,7 +25,7 @@ function createConfig (params) {
         Items: [ 'TLSv1', 'TLSv1.1', 'TLSv1.2' ],
       },
       OriginReadTimeout: 30,
-      OriginKeepaliveTimeout: 5, // NOTE FOR RYAN: up this for API edge config
+      OriginKeepaliveTimeout: 5,
     }
   }
 
@@ -85,7 +87,7 @@ function createConfig (params) {
 
       ViewerCertificate: {
         CloudFrontDefaultCertificate: true,
-        MinimumProtocolVersion: 'TLSv1.1_2016', // AWS recommended setting ¯\_(ツ)_/¯
+        MinimumProtocolVersion: 'TLSv1.2_2021', // AWS recommended setting ¯\_(ツ)_/¯
       },
 
       Restrictions: {

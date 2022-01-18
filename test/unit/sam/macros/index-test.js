@@ -1,4 +1,4 @@
-let test = require('tape')
+/* let test = require('tape')
 let proxyquire = require('proxyquire').noCallThru()
 let { join } = require('path')
 
@@ -101,3 +101,4 @@ test('user macros should receive pristine parsed arc object', t => {
     }
   })
 })
+ */

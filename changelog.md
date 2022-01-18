@@ -1,6 +1,23 @@
 # Architect Deploy changelog
 
 ---
+
+## [4.0.0] 2022-01-13
+
+### Added
+
+- Architect 10 plugin API support!
+
+
+### Changed
+
+- Breaking change: removed `--apigateway` CLI flag + `apiType` property from the module API
+  - The preferred way to configure your API Gateway is now the `@aws apigateway` setting in your project manifest
+- Internal change: moved most internal CloudFormation mutations into Package (where they rightly belong), via the `deployStage` param
+- Upgraded CloudFront HTTPS TLS protocol to `TLSv1.2_2021`
+
+---
+
 ## [3.1.1] 2022-01-07
 
 ### Changed

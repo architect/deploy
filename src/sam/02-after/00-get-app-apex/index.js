@@ -5,7 +5,7 @@ let enable = require('./cloudfront-enable')
 let destroy = require('./cloudfront-destroy')
 
 module.exports = function getAppApex (params, callback) {
-  let { inventory, legacyAPI, pretty, region, stackname, stage, ts, update } = params
+  let { inventory, pretty, region, stackname, stage, ts, update } = params
   let { inv } = inventory
   let arc = inv._project.arc // TODO cut this code path over to Inventory
   reads({
@@ -61,7 +61,8 @@ module.exports = function getAppApex (params, callback) {
                 domain: bucketDomain,
                 // When S3 buckets are configured as static sites, they are http/80
                 // TODO To fix this, we may want conditional static site configuration when S3 isn't the only thing being shipped
-                insecure: true
+                insecure: true,
+                inventory,
               }, callback)
             }
             else {
@@ -80,8 +81,8 @@ module.exports = function getAppApex (params, callback) {
             if (creatingApiGateway) {
               create({
                 domain: apiDomain,
+                inventory,
                 stage,
-                legacyAPI
               }, callback)
             }
             else {
