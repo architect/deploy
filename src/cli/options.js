@@ -10,7 +10,6 @@ let isVerbose = opt => opt === 'verbose' || opt === '--verbose' || opt === '-v'
 let isNoHydrate = opt => opt === '--no-hydrate'
 
 let tags =      arg => arg === '--tags' || arg === '-t' || arg === 'tags'
-let apiType =   arg => arg.startsWith('--apigateway')
 let name =      arg => arg === '--name' || arg === '-n' || arg === 'name' || arg.startsWith('--name=')
 
 module.exports = function options (opts) {
@@ -21,7 +20,6 @@ module.exports = function options (opts) {
     verbose: opts.some(isVerbose),
     production: opts.some(isProd),
     tags: getTags(opts),
-    apiType: getValue(opts, apiType),
     name: getValue(opts, name),
     srcDirs: getSrcDirs(opts),
     isDirect: opts.some(isDirect),

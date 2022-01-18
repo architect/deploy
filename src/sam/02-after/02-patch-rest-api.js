@@ -2,7 +2,8 @@ let aws = require('aws-sdk')
 let waterfall = require('run-waterfall')
 
 module.exports = function patchApiGateway (params, callback) {
-  let { legacyAPI, region, stackname, stage } = params
+  let { inventory, region, stackname, stage } = params
+  let legacyAPI = inventory.inv.aws.apigateway === 'rest'
   if (legacyAPI) {
     waterfall([
       function (callback) {

@@ -33,11 +33,6 @@ test('should return shouldHydrate option', t => {
   t.ok(options([ 'arc', 'deploy' ]).shouldHydrate, 'lack of "--no-hydrate" param sets shouldHydrate to true')
 })
 
-test('should return apiType', t => {
-  t.plan(1)
-  t.equal(options([ 'arc', 'deploy', '--apigateway', 'http' ]).apiType, 'http', '"--apigatewa" param sets isStatic')
-})
-
 test('should return tags', t => {
   t.plan(6)
   let tag = 'foo=bar'

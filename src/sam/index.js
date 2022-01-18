@@ -24,7 +24,6 @@ let after = require('./02-after')
  */
 module.exports = function samDeploy (params, callback) {
   let {
-    apiType,
     inventory,
     isDryRun = false,
     shouldHydrate = true,
@@ -47,6 +46,7 @@ module.exports = function samDeploy (params, callback) {
   let bucket = inv.aws.bucket
   let prefs = inv._project.preferences
   let stackname = `${toLogicalID(appname)}${production ? 'Production' : 'Staging'}`
+  let legacyCompat
 
   if (name) {
     stackname += toLogicalID(name)
@@ -56,9 +56,6 @@ module.exports = function samDeploy (params, callback) {
     update = updater('Deploy [dry-run]')
     update.status('Starting dry run!')
   }
-
-  // API switching
-  let arcApiType = inv.aws.apigateway
 
   waterfall([
     /**
@@ -144,43 +141,22 @@ module.exports = function samDeploy (params, callback) {
     /**
      * Check to see if we're working with a legacy (REST) API (and any other backwards compat checks)
      */
-    function legacyCompat (callback) {
+    function legacyCompatCheck (callback) {
       compat({
         inv,
         stackname
       }, function done (err, result) {
         if (err) callback(err)
         else {
-          // Special workflow-specific case where we'll additively mutate the inventory object
-          inv._deploy = result
+          legacyCompat = result
+
+          // Priority: user specified API type > existing legacy API type > default API type
+          if (!inv.aws.apigateway && legacyCompat.foundLegacyApi) {
+            inv.aws.apigateway = 'rest'
+          }
           callback()
         }
       })
-    },
-
-    /**
-     * Determine final API types
-     */
-    function setApiType (callback) {
-      // Priority: user specified API type > existing legacy API type > default API type
-      let specified = apiType || arcApiType // CLI wins over @aws
-      if (specified) {
-        apiType = specified
-      }
-      else if (inv._deploy.foundLegacyApi) {
-        apiType = 'rest'
-      }
-      else {
-        apiType = 'http'
-      }
-      // Validate API type in case it was passed via CLI
-      if (apiType) {
-        let valid = [ 'http', 'httpv1', 'httpv2', 'rest' ]
-        if (!valid.includes(apiType)) throw ReferenceError(`API type must be 'http[v1|v2]', or 'rest'`)
-      }
-      // Add the API type for macros (API payload version, legacy API transform, etc.)
-      inv._deploy.apiType = apiType
-      callback()
     },
 
     /**
@@ -194,17 +170,14 @@ module.exports = function samDeploy (params, callback) {
      * Update CloudFormation with project-specific mutations
      */
     function updateCloudFormation (cloudformation, callback) {
-      updateCfn(inventory, cloudformation, stage, callback)
+      updateCfn({ cloudformation, inventory, legacyCompat, stage }, callback)
     },
 
     /**
-     * Userland Plugins
-     * WARNING: order matters here. Plugins must run before macros because
-     * built-in macros also run things that may impact userland resources (i.e.
-     * environment variables set on plugin or macro-generated Lambdas)
+     * deploy.start plugins
      */
-    function runPlugins (cloudformation, callback) {
-      plugins(inventory, cloudformation, stage, callback)
+    function runStartPlugins (cloudformation, callback) {
+      plugins({ cloudformation, inventory, stage }, callback)
     },
 
     /**
@@ -255,10 +228,8 @@ module.exports = function samDeploy (params, callback) {
         callback()
       }
       else {
-        let legacyAPI = apiType === 'rest'
         let params = {
           inventory,
-          legacyAPI,
           pretty,
           production,
           prune,
