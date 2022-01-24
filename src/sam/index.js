@@ -163,7 +163,8 @@ module.exports = function samDeploy (params, callback) {
      * Generate cfn, which must be completed only after fingerprinting or files may not be present
      */
     function generateCloudFormation (callback) {
-      callback(null, pkg(inventory))
+      let cloudformation = pkg(inventory)
+      callback(null, cloudformation)
     },
 
     /**
@@ -177,7 +178,14 @@ module.exports = function samDeploy (params, callback) {
      * deploy.start plugins
      */
     function runStartPlugins (cloudformation, callback) {
-      plugins({ cloudformation, inventory, stage }, callback)
+      plugins.start({ cloudformation, inventory, stage }, callback)
+    },
+
+    /**
+     * deploy.services plugins
+     */
+    function runServicesPlugins (cloudformation, callback) {
+      plugins.services({ cloudformation, inventory, stage }, callback)
     },
 
     /**

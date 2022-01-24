@@ -32,10 +32,10 @@ let fakeCfn = {
   Resources: []
 }
 
-test('plugins should be able to modify CloudFormation via their package methods', t => {
+test('deploy.start should be able to modify CloudFormation', t => {
   t.plan(2)
   let cloudformation = JSON.parse(JSON.stringify(fakeCfn))
-  plugins({ inventory, cloudformation, stage: 'staging' }, (err, result) => {
+  plugins.start({ inventory, cloudformation, stage: 'staging' }, (err, result) => {
     if (err) {
       console.error(err)
       t.fail(err)
