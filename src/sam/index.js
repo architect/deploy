@@ -53,7 +53,11 @@ module.exports = function samDeploy (params, callback) {
     stackname += toLogicalID(name)
   }
 
-  if (isDryRun) {
+  if (eject) {
+    update = updater('Deploy [eject]')
+    update.status('Preparing to eject Architect app')
+  }
+  else if (isDryRun) {
     update = updater('Deploy [dry-run]')
     update.status('Starting dry run!')
   }
