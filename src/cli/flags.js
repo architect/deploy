@@ -14,7 +14,7 @@ module.exports = function getFlags () {
     debug:      [ 'd' ],
     verbose:    [ 'v' ],
   }
-  let boolean = [ 'direct', 'debug', 'dry-run', 'no-hydrate', 'production', 'static', 'verbose' ]
+  let boolean = [ 'direct', 'debug', 'dry-run', 'eject', 'no-hydrate', 'production', 'static', 'verbose' ]
   let def = { hydrate: true }
   let args = minimist(process.argv.slice(2), { alias, boolean, default: def })
   if (args._[0] === 'deploy') args._.splice(0, 1)
@@ -34,7 +34,7 @@ module.exports = function getFlags () {
     name:           args.name,
     srcDirs:        args.direct && getSrcDirs(args._),
     isDirect:       args.direct,
-    isDryRun:       args['dry-run'],
+    isDryRun:       args['dry-run'] || args.eject,
     isStatic:       args.static,
     isFullDeploy:   args.static ? false : true,
     shouldHydrate:  args.hydrate,

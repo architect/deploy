@@ -42,10 +42,13 @@ test('Direct deploy source dirs', t => {
   t.deepEqual(flags().srcDirs, [ dirA, dirB ], 'Specifying real dirs with --direct flag returns multiple srcDirs')
 })
 
-test('Dry-run option', t => {
-  t.plan(1)
+test('Dry-run / eject option', t => {
+  t.plan(2)
 
   args('--dry-run')
+  t.ok(flags().isDryRun, '"--dry-run" flag sets isDryRun')
+
+  args('--eject')
   t.ok(flags().isDryRun, '"--dry-run" flag sets isDryRun')
 })
 
