@@ -21,7 +21,7 @@ let update = updater('Deploy')
  * -t|--tags|tags ............... add tags
  * -n|--name|name ............... customize stack name
  * --prune ...................... remove files that exist in static s3 bucket but do not exist in local /public folder
- * --dry-run .................... assemble CloudFormation sam.json but do not deploy remotely (useful for testing macros)
+ * --dry-run .................... assemble CloudFormation sam.json but do not deploy remotely (useful for testing)
  */
 async function cmd () {
   let opts = flags()
