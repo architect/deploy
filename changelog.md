@@ -9,6 +9,7 @@
 - Architect 10 plugin API support!
   - Added `deploy.start` methods for CloudFormation mutation and other arbitrary pre-deploy operations
   - Added `deploy.services` methods for adding Architect services registration and custom Lambda config data
+- Added `--eject` option (functionally the same as `--dry-run`)
 
 
 ### Changed
