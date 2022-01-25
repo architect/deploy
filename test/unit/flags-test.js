@@ -43,13 +43,14 @@ test('Direct deploy source dirs', t => {
 })
 
 test('Dry-run / eject option', t => {
-  t.plan(2)
+  t.plan(3)
 
   args('--dry-run')
   t.ok(flags().isDryRun, '"--dry-run" flag sets isDryRun')
 
   args('--eject')
-  t.ok(flags().isDryRun, '"--dry-run" flag sets isDryRun')
+  t.ok(flags().isDryRun, '"eject" flag sets isDryRun')
+  t.ok(flags().eject, '"eject" flag sets eject')
 })
 
 test('Production deploys', t => {
@@ -96,8 +97,11 @@ test('Hydration enabled / disabled', t => {
 })
 
 test('Tags', t => {
-  t.plan(6)
+  t.plan(7)
   let tagA = 'foo', tagB = 'bar'
+
+  args(``)
+  t.deepEqual(flags().tags, [], 'Lack of "--tag" flag returns an empty array')
 
   args(`--tag ${tagA}`)
   t.deepEqual(flags().tags, [ tagA ], '"--tag" flag returns a tag')

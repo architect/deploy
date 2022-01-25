@@ -25,6 +25,7 @@ let after = require('./02-after')
 module.exports = function samDeploy (params, callback) {
   let {
     inventory,
+    eject,
     isDryRun = false,
     shouldHydrate = true,
     name,
@@ -81,7 +82,7 @@ module.exports = function samDeploy (params, callback) {
      * Maybe create a new deployment bucket
      */
     function bucketSetup (callback) {
-      if (isDryRun) {
+      if (isDryRun && !eject) {
         bucket = 'N/A (dry-run)'
         callback()
       }
@@ -208,7 +209,13 @@ module.exports = function samDeploy (params, callback) {
      * Deployment
      */
     function theDeploy (callback) {
-      if (isDryRun) {
+      if (eject) {
+        let cmd = `aws cloudformation deploy --template-file sam.json --stack-name ${stackname} --s3-bucket ${bucket} --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --region ${region}`
+        if (tags.length) cmd += ` --tags ${tags.join(' ')}`
+        update.status(`Successfully generated sam.json. Deploy it to AWS by running:`, cmd)
+        callback()
+      }
+      else if (isDryRun) {
         update.status('Skipping deployment to AWS')
         callback()
       }
@@ -230,7 +237,10 @@ module.exports = function samDeploy (params, callback) {
       * Post-deploy ops
       */
     function afterDeploy (callback) {
-      if (isDryRun) {
+      if (eject) {
+        callback()
+      }
+      else if (isDryRun) {
         update.status('Skipping post-deployment operations & cleanup')
         update.done('Dry run complete!')
         callback()
