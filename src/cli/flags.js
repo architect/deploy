@@ -1,60 +1,43 @@
 let { statSync } = require('fs')
+let minimist = require('minimist')
 
-let isDirect =  opt => opt === 'direct' || opt === '--direct' ||
-                       opt === 'dirty' || opt === '--dirty' || opt === '-d'
-let isDryRun =  opt => opt === '--dry-run'
-let isProd =    opt => opt === 'production' || opt === '--production' || opt === '-p'
-let isPrune =   opt => opt === 'prune' || opt === '--prune'
-let isStatic =  opt => opt === 'static' || opt === '--static' || opt === '-s'
-let isVerbose = opt => opt === 'verbose' || opt === '--verbose' || opt === '-v'
-let isNoHydrate = opt => opt === '--no-hydrate'
+/**
+ * Read CLI flags and populate userland options
+ */
+module.exports = function getFlags () {
+  let alias = {
+    direct:     [ 'dirty' ],
+    name:       [ 'n' ],
+    production: [ 'p' ],
+    static:     [ 's' ],
+    tag:        [ 'tags', 't' ],
+    debug:      [ 'd' ],
+    verbose:    [ 'v' ],
+  }
+  let boolean = [ 'direct', 'debug', 'dry-run', 'no-hydrate', 'production', 'static', 'verbose' ]
+  let def = { hydrate: true }
+  let args = minimist(process.argv.slice(2), { alias, boolean, default: def })
+  if (args._[0] === 'deploy') args._.splice(0, 1)
 
-let tags =      arg => arg === '--tags' || arg === '-t' || arg === 'tags'
-let name =      arg => arg === '--name' || arg === '-n' || arg === 'name' || arg.startsWith('--name=')
+  // Log levels
+  let logLevel = 'normal'
+  if (args.verbose) logLevel = 'verbose'
+  if (args.debug) logLevel = 'debug'
 
-module.exports = function options (opts) {
-  opts = opts || process.argv || []
-
+  // TODO tidy up these properties
   return {
-    prune: opts.some(isPrune),
-    verbose: opts.some(isVerbose),
-    production: opts.some(isProd),
-    tags: getTags(opts),
-    name: getValue(opts, name),
-    srcDirs: getSrcDirs(opts),
-    isDirect: opts.some(isDirect),
-    isDryRun: opts.some(isDryRun),
-    isStatic: opts.some(isStatic),
-    isFullDeploy: opts.some(isStatic) ? false : true,
-    shouldHydrate: opts.some(isNoHydrate) ? false : true
-  }
-}
-
-function getTags (list) {
-  let hasTags = list.some(tags)
-  if (!hasTags)
-    return []
-  let len = list.length
-  let index = list.findIndex(tags) + 1
-  let left = list.slice(index, len)
-  return left.filter(arg => /^[a-zA-Z0-9]+=[a-zA-Z0-9]+/.test(arg))
-}
-
-function getValue (list, predicate) {
-  let hasValue = list.some(predicate)
-  if (!hasValue)
-    return false
-
-  let len = list.length
-  let index = list.findIndex(predicate)
-  let left = list.slice(index, len)
-  let operator = left.shift()
-
-  if (operator.indexOf('=') === -1) {
-    return left.shift()
-  }
-  else {
-    return operator.split('=')[1]
+    prune:          args.prune,
+    verbose:        logLevel === 'verbose',
+    production:     args.production,
+    deployStage:    args.production ? 'production' : 'staging',
+    tags:           Array.isArray(args.tag) ? args.tag : [ args.tag ],
+    name:           args.name,
+    srcDirs:        args.direct && getSrcDirs(args._),
+    isDirect:       args.direct,
+    isDryRun:       args['dry-run'],
+    isStatic:       args.static,
+    isFullDeploy:   args.static ? false : true,
+    shouldHydrate:  args.hydrate,
   }
 }
 
