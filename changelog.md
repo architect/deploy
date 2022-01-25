@@ -15,6 +15,12 @@
 
 - Breaking change: removed `--apigateway` CLI flag + `apiType` property from the module API
   - The preferred way to configure your API Gateway is now the `@aws apigateway` setting in your project manifest
+- Breaking change: bare CLI arguments (e.g. `deploy production`) as aliases to flags are now discarded, please use CLI flags (e.g. `deploy --production` or `deploy -p`)
+- Breaking change: you must now use an individual CLI flag (or let your shell auto expand) for each of multiple tags or direct deploy Lambdas; examples of adding the tags `foo` + `bar`:
+  - Multiple flags: `deploy --tag foo --tag bar`
+  - Short flags: `deploy --t foo --t bar`
+  - Shell-expanding: `deploy --tag={foo,bar}`
+- Breaking change: `-d` CLI flag will now be used for debugging, not direct deployments
 - Internal change: moved most internal CloudFormation mutations into Package (where they rightly belong), via the `deployStage` param
 - Upgraded CloudFront HTTPS TLS protocol to `TLSv1.2_2021`
 - Stop publishing to the GitHub Package registry

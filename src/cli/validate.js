@@ -15,7 +15,6 @@ module.exports = function validate () {
     if (process.env.ARC_AWS_CREDS === 'missing') {
       throw Error('missing_creds')
     }
-
     if (!binExists('aws')) {
       throw ReferenceError('missing_aws_cli')
     }
@@ -29,8 +28,8 @@ module.exports = function validate () {
 
 function binExists (bin) {
   function getPaths (bin) {
-    var envPath = (process.env.PATH || '')
-    var envExt = (process.env.PATHEXT || '')
+    let envPath = (process.env.PATH || '')
+    let envExt = (process.env.PATHEXT || '')
     return envPath.replace(/["]+/g, '').split(delimiter).map(function (chunk) {
       return envExt.split(delimiter).map(function (ext) {
         return join(chunk, bin + ext)

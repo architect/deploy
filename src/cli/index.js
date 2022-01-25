@@ -3,7 +3,7 @@ let deploy = require('../../')
 let _inventory = require('@architect/inventory')
 let { banner, updater } = require('@architect/utils')
 let validate = require('./validate')
-let _options = require('./options')
+let flags = require('./flags')
 let { version } = require('../../package.json')
 let pauser = require('../utils/pause-sandbox')
 let update = updater('Deploy')
@@ -24,8 +24,8 @@ let update = updater('Deploy')
  * --dry-run .................... assemble CloudFormation sam.json but do not deploy remotely (useful for testing macros)
  */
 async function cmd () {
-  let opts = _options()
-  let deployStage = opts.production ? 'production' : 'staging'
+  let opts = flags()
+  let { deployStage } = opts
   let inventory = await _inventory({ deployStage, env: true })
 
   // Validate for expected env and args and check for potential creds issues
