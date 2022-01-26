@@ -3,7 +3,7 @@ let deploy = require('../../')
 let _inventory = require('@architect/inventory')
 let { banner, updater } = require('@architect/utils')
 let validate = require('./validate')
-let flags = require('./flags')
+let _flags = require('./flags')
 let { version } = require('../../package.json')
 let pauser = require('../utils/pause-sandbox')
 let update = updater('Deploy')
@@ -23,10 +23,11 @@ let update = updater('Deploy')
  * --prune ...................... remove files that exist in static s3 bucket but do not exist in local /public folder
  * --dry-run .................... assemble CloudFormation sam.json but do not deploy remotely (useful for testing)
  */
-async function cmd () {
-  let opts = flags()
-  let { deployStage } = opts
-  let inventory = await _inventory({ deployStage, env: true })
+async function main (opts = {}) {
+  let { inventory } = opts
+  let flags = _flags()
+  let { deployStage } = flags
+  if (!inventory) inventory = await _inventory({ deployStage, env: true })
 
   // Validate for expected env and args and check for potential creds issues
   validate()
@@ -36,7 +37,7 @@ async function cmd () {
     inventory,
     update,
     region: inventory.inv.aws.region,
-    ...opts,
+    ...flags,
   }
 
   // Pause the Sandbox watcher
@@ -60,7 +61,7 @@ async function cmd () {
   return result
 }
 
-module.exports = cmd
+module.exports = main
 
 // Allow direct invoke
 if (require.main === module) {
@@ -68,7 +69,7 @@ if (require.main === module) {
     try {
       let inventory = await _inventory({})
       banner({ inventory, version: `Deploy ${version}` })
-      await cmd()
+      await main({ inventory })
     }
     catch (err) {
       // Unpause the Sandbox watcher
