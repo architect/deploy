@@ -48,7 +48,7 @@ module.exports = function deploySAM (params, callback) {
       })
 
       let stage = production ? 'production' : 'staging'
-      let env = inv._project.env && inv._project.env[stage]
+      let env = inv._project.env.aws?.[stage]
 
       parallel(deploying.map(lambda => {
         return function one (callback) {
