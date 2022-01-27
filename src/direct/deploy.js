@@ -33,11 +33,11 @@ module.exports = function deploySAM (params, callback) {
       let lambdae = {
         events: 'Event',
         http: 'HTTP',
-        plugins: 'Plugin',
         queues: 'Queue',
         scheduled: 'Scheduled',
         streams: 'Stream',
         ws: 'WS',
+        customLambdas: 'Custom Lambdas',
       }
       Object.entries(lambdae).forEach(([ pragma, type ]) => {
         if (inv[pragma]) inv[pragma].filter(lambda => {
@@ -76,6 +76,7 @@ module.exports = function deploySAM (params, callback) {
               lambda,
               region,
               src,
+              update,
             }, callback)
           }
           else {

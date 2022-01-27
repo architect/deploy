@@ -23,11 +23,11 @@ let update = updater('Deploy')
  * --prune ...................... remove files that exist in static s3 bucket but do not exist in local /public folder
  * --dry-run .................... assemble CloudFormation sam.json but do not deploy remotely (useful for testing)
  */
-async function main (opts = {}) {
-  let { inventory } = opts
+async function main (/* opts = {} */) {
   let flags = _flags()
   let { deployStage } = flags
-  if (!inventory) inventory = await _inventory({ deployStage, env: true })
+  // Ignore Inventory if passed, and re-Inventory with deployStage set
+  let inventory = await _inventory({ deployStage, env: true })
 
   // Validate for expected env and args and check for potential creds issues
   validate()
