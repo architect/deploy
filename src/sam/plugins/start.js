@@ -2,7 +2,7 @@
  * deploy.start plugins
  */
 module.exports = function plugins (params, callback) {
-  let { cloudformation, inventory, stage } = params
+  let { cloudformation, dryRun, inventory, stage } = params
   let deployStartPlugins = inventory.inv.plugins?._methods?.deploy?.start
   if (deployStartPlugins) {
     let { arc } = inventory.inv._project
@@ -13,7 +13,7 @@ module.exports = function plugins (params, callback) {
         let result
         // Plugins accept an option object
         if (type === 'plugin') {
-          result = await plugin({ arc, cloudformation, inventory, stage })
+          result = await plugin({ arc, cloudformation, dryRun, inventory, stage })
         }
         // Legacy macros use ordered args
         if (type === 'macro') {
