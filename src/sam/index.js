@@ -183,7 +183,8 @@ module.exports = function samDeploy (params, callback) {
      * deploy.start plugins
      */
     function runStartPlugins (cloudformation, callback) {
-      plugins.start({ cloudformation, inventory, stage }, callback)
+      let dryRun = isDryRun || eject || false
+      plugins.start({ cloudformation, dryRun, inventory, stage }, callback)
     },
 
     /**
