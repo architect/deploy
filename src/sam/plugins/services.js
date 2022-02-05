@@ -7,7 +7,6 @@ module.exports = function plugins (params, callback) {
   let serviceDiscoveryPlugins = inventory.inv.plugins?._methods?.deploy?.services
   if (serviceDiscoveryPlugins) {
     let { arc } = inventory.inv._project
-    let cfn = cloudformation
     async function runPlugins () {
       for (let plugin of serviceDiscoveryPlugins) {
         let pluginName = getLambdaName(plugin.name)
@@ -15,7 +14,7 @@ module.exports = function plugins (params, callback) {
         if (result && Object.keys(result).length) {
           Object.entries(result).forEach(([ key, Value ]) => {
             let ServiceParam = `${toLogicalID(pluginName)}${toLogicalID(key)}Param`
-            cfn.Resources[ServiceParam] = {
+            cloudformation.Resources[ServiceParam] = {
               Type: 'AWS::SSM::Parameter',
               Properties: {
                 Type: 'String',
@@ -31,7 +30,7 @@ module.exports = function plugins (params, callback) {
       }
     }
     runPlugins()
-      .then(() => callback(null, cfn))
+      .then(() => callback(null, cloudformation))
       .catch(callback)
   }
   else callback(null, cloudformation)
