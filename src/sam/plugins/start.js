@@ -1,10 +1,13 @@
+let { deepFrozenCopy } = require('@architect/utils')
+
 /**
  * deploy.start plugins
  */
-module.exports = function plugins (params, callback) {
-  let { cloudformation, dryRun, inventory, stage } = params
-  let deployStartPlugins = inventory.inv.plugins?._methods?.deploy?.start
+module.exports = function startPlugins (params, callback) {
+  let { cloudformation, dryRun, stage } = params
+  let deployStartPlugins = params.inventory.inv.plugins?._methods?.deploy?.start
   if (deployStartPlugins) {
+    let inventory = deepFrozenCopy(params.inventory)
     let { arc } = inventory.inv._project
     async function runPlugins () {
       for (let plugin of deployStartPlugins) {

@@ -47,7 +47,8 @@ module.exports = function samDeploy (params, callback) {
   let bucket = inv.aws.bucket
   let prefs = inv._project.preferences
   let stackname = `${toLogicalID(appname)}${production ? 'Production' : 'Staging'}`
-  let legacyCompat
+  let dryRun = isDryRun || eject || false // General dry run flag for plugins
+  let legacyCompat, finalCloudFormation
 
   if (name) {
     stackname += toLogicalID(name)
@@ -137,9 +138,7 @@ module.exports = function samDeploy (params, callback) {
      * Hydrate dependencies
      */
     function hydrateTheThings (callback) {
-      if (shouldHydrate) hydrate.install({ autoinstall: true }, (err /* , result */) => {
-        callback(err)
-      })
+      if (shouldHydrate) hydrate.install({ autoinstall: true }, err => callback(err))
       else callback()
     },
 
@@ -183,7 +182,6 @@ module.exports = function samDeploy (params, callback) {
      * deploy.start plugins
      */
     function runStartPlugins (cloudformation, callback) {
-      let dryRun = isDryRun || eject || false
       plugins.start({ cloudformation, dryRun, inventory, stage }, callback)
     },
 
@@ -191,14 +189,15 @@ module.exports = function samDeploy (params, callback) {
      * deploy.services plugins
      */
     function runServicesPlugins (cloudformation, callback) {
-      plugins.services({ cloudformation, inventory, stage }, callback)
+      plugins.services({ cloudformation, dryRun, inventory, stage }, callback)
     },
 
     /**
      * Pre-deploy ops
      */
-    function beforeDeploy (finalCfn, callback) {
-      let params = { sam: finalCfn, bucket, pretty, update, isDryRun }
+    function beforeDeploy (cloudformation, callback) {
+      finalCloudFormation = cloudformation
+      let params = { sam: finalCloudFormation, bucket, pretty, update, isDryRun }
       // this will write sam.json/yaml files out
       before(params, callback)
     },
@@ -224,6 +223,11 @@ module.exports = function samDeploy (params, callback) {
         update.status('Skipping deployment to AWS')
         callback()
       }
+      else if (inventory.inv.plugins?._methods?.deploy?.target) {
+        let plural = inventory.inv.plugins?._methods?.deploy?.target.length > 1 ? 's' : ''
+        update.status(`Deploying to plugin target${plural}`)
+        callback()
+      }
       else {
         // leverages the previously-written-out sam.json/yaml files
         deploy({
@@ -236,6 +240,22 @@ module.exports = function samDeploy (params, callback) {
           tags,
         }, callback)
       }
+    },
+
+    /**
+     * deploy.target plugins
+     */
+    function runTargetPlugins (callback) {
+      let cloudformation = finalCloudFormation
+      plugins.target({ cloudformation, dryRun, inventory, stage }, callback)
+    },
+
+    /**
+     * deploy.end plugins
+     */
+    function runEndPlugins (callback) {
+      let cloudformation = finalCloudFormation
+      plugins.end({ cloudformation, dryRun, inventory, stage }, callback)
     },
 
     /**
