@@ -9,6 +9,8 @@
 - Architect 10 plugin API support!
   - Added `deploy.start` methods for CloudFormation mutation and other arbitrary pre-deploy operations
   - Added `deploy.services` methods for adding Architect services registration and custom Lambda config data
+  - Added `deploy.target` methods for deploying Architect projects to other targets
+  - Added `deploy.end` methods for running arbitrary post-deploy operations
 - Added `--eject` option (functionally the same as `--dry-run`)
 
 
@@ -22,6 +24,7 @@
   - Short flags: `deploy --t foo --t bar`
   - Shell-expanding: `deploy --tag={foo,bar}`
 - Breaking change: `-d` CLI flag will now be used for debugging, not direct deployments
+- Breaking change: the `deploy.dirty` API method is now fully deprecated, please use `deploy.direct` instead
 - Internal change: moved most internal CloudFormation mutations into Package (where they rightly belong), via the `deployStage` param
 - Upgraded CloudFront HTTPS TLS protocol to `TLSv1.2_2021`
 - Stop publishing to the GitHub Package registry
