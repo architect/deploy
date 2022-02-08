@@ -9,6 +9,7 @@ let warnings = require('./05-warnings')
 module.exports = function after (params, callback) {
   let {
     inventory,
+    legacyCompat,
     pretty,
     production,
     prune,
@@ -25,7 +26,7 @@ module.exports = function after (params, callback) {
     staticDeploy.bind({}, { inventory, isFullDeploy: true, production, prune, region, stackname, verbose, update }),
     patchRestAPI.bind({}, { inventory, region, stackname, stage }),
     maybeInvalidate.bind({}, { inventory, region, stackname, stage }),
-    deployWS.bind({}, { inventory, region, stackname, stage }),
+    deployWS.bind({}, { inventory, legacyCompat, region, stackname, stage }),
     warnings.bind({}, { inventory, update })
   ], callback)
 }
