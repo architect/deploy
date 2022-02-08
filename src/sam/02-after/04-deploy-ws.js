@@ -7,10 +7,10 @@ let aws = require('aws-sdk')
  * Hopefully we can yank this process out when they one day fix this
  */
 module.exports = function deployOldWebSocketAPI (params, callback) {
-  let { inventory, region, stackname, stage: StageName } = params
+  let { inventory, legacyCompat, region, stackname, stage: StageName } = params
   let { inv } = inventory
 
-  if (inv.ws && inv._deploy.foundEarlierWS) {
+  if (inv.ws && legacyCompat.foundEarlierWS) {
     let cloudformation = new aws.CloudFormation({ region })
     let apig = new aws.ApiGatewayV2({ region })
     let ApiId

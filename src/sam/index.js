@@ -273,6 +273,7 @@ module.exports = function samDeploy (params, callback) {
       else {
         let params = {
           inventory,
+          legacyCompat,
           pretty,
           production,
           prune,
