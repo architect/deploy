@@ -146,18 +146,10 @@ module.exports = function samDeploy (params, callback) {
      * Check to see if we're working with a legacy (REST) API (and any other backwards compat checks)
      */
     function legacyCompatCheck (callback) {
-      compat({
-        inv,
-        stackname
-      }, function done (err, result) {
+      compat({ inv, stackname }, function done (err, result) {
         if (err) callback(err)
         else {
           legacyCompat = result
-
-          // Priority: user specified API type > existing legacy API type > default API type
-          if (!inv.aws.apigateway && legacyCompat.foundLegacyApi) {
-            inv.aws.apigateway = 'rest'
-          }
           callback()
         }
       })

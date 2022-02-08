@@ -11,13 +11,19 @@ module.exports = function compat (params, callback) {
 
   series([
     function getApiType (callback) {
-      if (inv.http && !inv.aws.apigateway) {
+      if (inv.http && (!inv.aws.apigateway || inv.aws.apigateway === 'rest')) {
+        let deployPlugins = inv.plugins?._methods?.deploy?.start
+        let hasRestPlugin = deployPlugins?.find(({ plugin }) => plugin === 'architect/plugin-rest-api')
+
         // Look for a legacy REST API in the stack; HTTP API resource IDs are simply 'HTTP'
         let resource = toLogicalID(inv.app)
         getResources(resource, stackname, callback, resources => {
           let api = resources[0] && resources[0].ResourceType
-          result.foundLegacyApi = api === 'AWS::ApiGateway::RestApi' ? true : false
-          callback()
+          if (api === 'AWS::ApiGateway::RestApi' && !hasRestPlugin) {
+            let msg = 'Architect REST APIs are now supported via `@architect/plugin-rest-api`; please install that plugin and add `apigateway rest` to your @aws pragma'
+            callback(Error(msg))
+          }
+          else callback()
         })
       }
       else callback()
