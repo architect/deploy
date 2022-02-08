@@ -16,6 +16,10 @@
 
 ### Changed
 
+- Breaking change: moved legacy API Gateway REST API provisioning to `@architect/plugin-rest-api` plugin; to continue deploying REST APIs with Architect:
+  - Install `@architect/plugin-rest-api` to your project's dependencies
+  - Add `@plugins architect/plugin-rest-api` and `@aws apigateway rest` to your project manifest
+  - Fixes #1297
 - Breaking change: removed `--apigateway` CLI flag + `apiType` property from the module API
   - The preferred way to configure your API Gateway is now the `@aws apigateway` setting in your project manifest
 - Breaking change: bare CLI arguments (e.g. `deploy production`) as aliases to flags are now discarded, please use CLI flags (e.g. `deploy --production` or `deploy -p`)
