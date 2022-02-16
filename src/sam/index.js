@@ -8,7 +8,7 @@ let print = require('./utils/print')
 let handlerCheck = require('../utils/handler-check')
 let getBucket = require('./bucket')
 let compat = require('./compat')
-let macros = require('./macros')
+let updateCfn = require('./update-cfn')
 let plugins = require('./plugins')
 let sizeReport = require('../utils/size-report')
 let before = require('./00-before')
@@ -24,8 +24,8 @@ let after = require('./02-after')
  */
 module.exports = function samDeploy (params, callback) {
   let {
-    apiType,
     inventory,
+    eject,
     isDryRun = false,
     shouldHydrate = true,
     name,
@@ -47,18 +47,21 @@ module.exports = function samDeploy (params, callback) {
   let bucket = inv.aws.bucket
   let prefs = inv._project.preferences
   let stackname = `${toLogicalID(appname)}${production ? 'Production' : 'Staging'}`
+  let dryRun = isDryRun || eject || false // General dry run flag for plugins
+  let legacyCompat, finalCloudFormation
 
   if (name) {
     stackname += toLogicalID(name)
   }
 
-  if (isDryRun) {
+  if (eject) {
+    update = updater('Deploy [eject]')
+    update.status('Preparing to eject Architect app')
+  }
+  else if (isDryRun) {
     update = updater('Deploy [dry-run]')
     update.status('Starting dry run!')
   }
-
-  // API switching
-  let arcApiType = inv.aws.apigateway
 
   waterfall([
     /**
@@ -84,7 +87,7 @@ module.exports = function samDeploy (params, callback) {
      * Maybe create a new deployment bucket
      */
     function bucketSetup (callback) {
-      if (isDryRun) {
+      if (isDryRun && !eject) {
         bucket = 'N/A (dry-run)'
         callback()
       }
@@ -135,83 +138,58 @@ module.exports = function samDeploy (params, callback) {
      * Hydrate dependencies
      */
     function hydrateTheThings (callback) {
-      if (shouldHydrate) hydrate.install({ autoinstall: true }, (err /* , result */) => {
-        callback(err)
-      })
+      if (shouldHydrate) hydrate.install({ autoinstall: true }, err => callback(err))
       else callback()
     },
 
     /**
      * Check to see if we're working with a legacy (REST) API (and any other backwards compat checks)
      */
-    function legacyCompat (callback) {
-      compat({
-        inv,
-        stackname
-      }, function done (err, result) {
+    function legacyCompatCheck (callback) {
+      compat({ inv, stackname }, function done (err, result) {
         if (err) callback(err)
         else {
-          // Special workflow-specific case where we'll additively mutate the inventory object
-          inv._deploy = result
+          legacyCompat = result
           callback()
         }
       })
     },
 
     /**
-     * Determine final API types
-     */
-    function setApiType (callback) {
-      // Priority: user specified API type > existing legacy API type > default API type
-      let specified = apiType || arcApiType // CLI wins over @aws
-      if (specified) {
-        apiType = specified
-      }
-      else if (inv._deploy.foundLegacyApi) {
-        apiType = 'rest'
-      }
-      else {
-        apiType = 'http'
-      }
-      // Validate API type in case it was passed via CLI
-      if (apiType) {
-        let valid = [ 'http', 'httpv1', 'httpv2', 'rest' ]
-        if (!valid.includes(apiType)) throw ReferenceError(`API type must be 'http[v1|v2]', or 'rest'`)
-      }
-      // Add the API type for macros (API payload version, legacy API transform, etc.)
-      inv._deploy.apiType = apiType
-      callback()
-    },
-
-    /**
      * Generate cfn, which must be completed only after fingerprinting or files may not be present
      */
     function generateCloudFormation (callback) {
-      callback(null, pkg(inventory))
+      let cloudformation = pkg(inventory)
+      callback(null, cloudformation)
     },
 
     /**
-     * Userland Plugins
-     * WARNING: order matters here. Plugins must run before macros because
-     * built-in macros also run things that may impact userland resources (i.e.
-     * environment variables set on plugin or macro-generated Lambdas)
+     * Update CloudFormation with project-specific mutations
      */
-    function runPlugins (cloudformation, callback) {
-      plugins(inventory, cloudformation, stage, callback)
+    function updateCloudFormation (cloudformation, callback) {
+      updateCfn({ cloudformation, inventory, legacyCompat, stage }, callback)
     },
 
     /**
-     * Macros (both built-in + user)
+     * deploy.start plugins
      */
-    function runMacros (pluginModifiedCloudformation, callback) {
-      macros(inventory, pluginModifiedCloudformation, stage, callback)
+    function runStartPlugins (cloudformation, callback) {
+      plugins.start({ cloudformation, dryRun, inventory, stage }, callback)
+    },
+
+    /**
+     * deploy.services plugins
+     */
+    function runServicesPlugins (cloudformation, callback) {
+      plugins.services({ cloudformation, dryRun, inventory, stage }, callback)
     },
 
     /**
      * Pre-deploy ops
      */
-    function beforeDeploy (finalCfn, callback) {
-      let params = { sam: finalCfn, bucket, pretty, update, isDryRun }
+    function beforeDeploy (cloudformation, callback) {
+      finalCloudFormation = cloudformation
+      let params = { sam: finalCloudFormation, bucket, pretty, update, isDryRun }
       // this will write sam.json/yaml files out
       before(params, callback)
     },
@@ -227,8 +205,19 @@ module.exports = function samDeploy (params, callback) {
      * Deployment
      */
     function theDeploy (callback) {
-      if (isDryRun) {
+      if (eject) {
+        let cmd = `aws cloudformation deploy --template-file sam.json --stack-name ${stackname} --s3-bucket ${bucket} --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --region ${region}`
+        if (tags.length) cmd += ` --tags ${tags.join(' ')}`
+        update.status(`Successfully generated sam.json. Deploy it to AWS by running:`, cmd)
+        callback()
+      }
+      else if (isDryRun) {
         update.status('Skipping deployment to AWS')
+        callback()
+      }
+      else if (inventory.inv.plugins?._methods?.deploy?.target) {
+        let plural = inventory.inv.plugins?._methods?.deploy?.target.length > 1 ? 's' : ''
+        update.status(`Deploying to plugin target${plural}`)
         callback()
       }
       else {
@@ -246,19 +235,37 @@ module.exports = function samDeploy (params, callback) {
     },
 
     /**
+     * deploy.target plugins
+     */
+    function runTargetPlugins (callback) {
+      let cloudformation = finalCloudFormation
+      plugins.target({ cloudformation, dryRun, inventory, stage }, callback)
+    },
+
+    /**
+     * deploy.end plugins
+     */
+    function runEndPlugins (callback) {
+      let cloudformation = finalCloudFormation
+      plugins.end({ cloudformation, dryRun, inventory, stage }, callback)
+    },
+
+    /**
       * Post-deploy ops
       */
     function afterDeploy (callback) {
-      if (isDryRun) {
+      if (eject) {
+        callback()
+      }
+      else if (isDryRun) {
         update.status('Skipping post-deployment operations & cleanup')
         update.done('Dry run complete!')
         callback()
       }
       else {
-        let legacyAPI = apiType === 'rest'
         let params = {
           inventory,
-          legacyAPI,
+          legacyCompat,
           pretty,
           production,
           prune,

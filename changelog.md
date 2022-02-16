@@ -1,15 +1,42 @@
 # Architect Deploy changelog
 
 ---
-## [4.0.0] unreleased
+
+## [4.0.0] 2022-01-13
+
+### Added
+
+- Architect 10 plugin API support!
+  - Added `deploy.start` methods for CloudFormation mutation and other arbitrary pre-deploy operations
+  - Added `deploy.services` methods for adding Architect services registration and custom Lambda config data
+  - Added `deploy.target` methods for deploying Architect projects to other targets
+  - Added `deploy.end` methods for running arbitrary post-deploy operations
+- Added `--eject` option (functionally the same as `--dry-run`)
+
 
 ### Changed
 
-- Migrate static bucket permissions from per-object ACLs to a bucket policy so
-  that users can customize the static bucket permissions using macros.
+- Breaking change: moved legacy API Gateway REST API provisioning to `@architect/plugin-rest-api` plugin; to continue deploying REST APIs with Architect:
+  - Install `@architect/plugin-rest-api` to your project's dependencies
+  - Add `@plugins architect/plugin-rest-api` and `@aws apigateway rest` to your project manifest
+  - Fixes #1297
+- Breaking change: removed `--apigateway` CLI flag + `apiType` property from the module API
+  - The preferred way to configure your API Gateway is now the `@aws apigateway` setting in your project manifest
+- Breaking change: bare CLI arguments (e.g. `deploy production`) as aliases to flags are now discarded, please use CLI flags (e.g. `deploy --production` or `deploy -p`)
+- Breaking change: you must now use an individual CLI flag (or let your shell auto expand) for each of multiple tags or direct deploy Lambdas; examples of adding the tags `foo` + `bar`:
+  - Multiple flags: `deploy --tag foo --tag bar`
+  - Short flags: `deploy --t foo --t bar`
+  - Shell-expanding: `deploy --tag={foo,bar}`
+- Breaking change: `-d` CLI flag will now be used for debugging, not direct deployments
+- Breaking change: the `deploy.dirty` API method is now fully deprecated, please use `deploy.direct` instead
+- Internal change: moved most internal CloudFormation mutations into Package (where they rightly belong), via the `deployStage` param
+- Upgraded CloudFront HTTPS TLS protocol to `TLSv1.2_2021`
+- Migrate static bucket permissions from per-object ACLs to a bucket policy so users can customize the static bucket permissions using macros
   - See: https://github.com/architect/package/pull/148, https://github.com/architect/deploy/pull/350
+- Stop publishing to the GitHub Package registry
 
 ---
+
 ## [3.1.1] 2022-01-07
 
 ### Changed

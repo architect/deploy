@@ -1,11 +1,15 @@
 let { join } = require('path')
-let { sync: rm } = require('rimraf')
+let { rmSync } = require('fs')
 
 // Best effort local artifact cleanup
 module.exports = function cleanup () {
   try {
     // Clean up temp dir from root proxy + fingerprint
-    rm(join(process.cwd(), '__ARC_TMP__'))
+    let tmp = join(process.cwd(), '__ARC_TMP__')
+    rmSync(tmp, { recursive: true, force: true })
   }
-  catch (err) { null } // Swallow errors, we may have to bubble something else
+  catch (err) {
+    // Don't blow up on errors, we may have to bubble something else
+    console.error(`Failed to clean up deployment temp directory: ${process.cwd(), '__ARC_TMP__'}`)
+  }
 }

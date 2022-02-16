@@ -1,7 +1,7 @@
 let { existsSync, unlinkSync, writeFileSync } = require('fs')
 let { join } = require('path')
-let osPath = require('ospath')
-let pauseFile = join(osPath.tmp(), '_pause-architect-sandbox-watcher')
+let { tmpdir } = require('os')
+let pauseFile = join(tmpdir(), '_pause-architect-sandbox-watcher')
 
 module.exports = {
   pause: () => {
