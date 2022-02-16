@@ -31,6 +31,8 @@
 - Breaking change: the `deploy.dirty` API method is now fully deprecated, please use `deploy.direct` instead
 - Internal change: moved most internal CloudFormation mutations into Package (where they rightly belong), via the `deployStage` param
 - Upgraded CloudFront HTTPS TLS protocol to `TLSv1.2_2021`
+- Migrate static bucket permissions from per-object ACLs to a bucket policy so users can customize the static bucket permissions using macros
+  - See: https://github.com/architect/package/pull/148, https://github.com/architect/deploy/pull/350
 - Stop publishing to the GitHub Package registry
 
 ---

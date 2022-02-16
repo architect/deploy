@@ -6,7 +6,6 @@ let getContentType = require('./get-content-type')
 module.exports = function putParams (params) {
   let { Bucket, Key, Body, file, fingerprint } = params
   let s3Params = {
-    ACL: 'public-read',
     Bucket,
     Key,
     Body,

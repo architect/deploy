@@ -10,7 +10,7 @@ test('Module is present', t => {
 })
 
 test('S3 put params', t => {
-  t.plan(9)
+  t.plan(8)
 
   let html = 'public/index.html'
   let json = 'public/something.json'
@@ -27,7 +27,6 @@ test('S3 put params', t => {
 
   // Basic params
   let result = sut(params)
-  t.equal(result.ACL, 'public-read', 'File is set to public-read ACL')
   t.equal(result.Bucket, Bucket, 'Bucket is unchanged')
   t.equal(result.Key, 'index.html', 'Key is unchanged')
   t.equal(result.ContentType, 'text/html', 'Content type properly set')
