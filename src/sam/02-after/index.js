@@ -26,5 +26,8 @@ module.exports = function after (params, callback) {
     maybeInvalidate.bind({}, { inventory, region, stackname, stage }),
     deployWS.bind({}, { inventory, legacyCompat, region, stackname, stage }),
     warnings.bind({}, { inventory, update })
-  ], callback)
+  ], err => {
+    if (err) callback(err)
+    else callback()
+  })
 }
