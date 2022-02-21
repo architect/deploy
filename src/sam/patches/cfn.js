@@ -4,14 +4,14 @@
  * - Various services' CFN impls had issues, so this corrects them for existing apps
  */
 // eslint-disable-next-line
-module.exports = async function oldResources (params) {
-  let { cloudformation: cfn, inventory, legacyCompat } = params
+module.exports = async function oldResources (params, callback) {
+  let { cloudformation: cfn, inventory, compat } = params
   let { inv } = inventory
 
   // API Gateway + CloudFormation bug
   // - Existing WS routes later renamed in cfn templates result in the following error:
   // - `Route with key {whatever} already exists for this API (Service: AmazonApiGatewayV2;  Status Code: 409; Error Code: ConflictException`
-  if (inv.ws && legacyCompat.foundEarlierWS) {
+  if (inv.ws && compat.foundEarlierWS) {
     cfn.Resources.WebsocketDeployment.DependsOn = [
       'WebsocketConnectRoute',
       'WebsocketDefaultRoute',
@@ -29,7 +29,7 @@ module.exports = async function oldResources (params) {
 
   // Apparently SSM params cannot be reassigned to different resource names
   // Only @events param namespace changed in 8.3
-  if (inv.events && legacyCompat.foundEarlierEvents) {
+  if (inv.events && compat.foundEarlierEvents) {
     Object.entries(cfn.Resources).forEach(([ resource, value ]) => {
       if (resource.endsWith('EventTopicParam') && value.Type === 'AWS::SSM::Parameter') {
         let oldSchool = `${resource.replace(/EventTopicParam$/, 'TopicParam')}`
@@ -39,5 +39,5 @@ module.exports = async function oldResources (params) {
     })
   }
 
-  return cfn
+  callback(null, cfn)
 }

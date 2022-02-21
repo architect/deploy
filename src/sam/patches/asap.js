@@ -3,16 +3,17 @@ let { mkdirSync, readFileSync, writeFileSync } = require('fs')
 let { copySync } = require('fs-extra')
 
 // If we're using ASAP + fingerprinting, inject it with static.json
-module.exports = function asapFingerprint (params) {
+module.exports = function asapFingerprint (params, callback) {
   let { cloudformation: cfn, inventory } = params
   let { inv, get } = inventory
+  let { cwd } = inv._project
   let fingerprint = get.static('fingerprint') === true
 
   if (inv._project.rootHandler === 'arcStaticAssetProxy' && fingerprint) {
     let { src } = get.http('get /*')
 
     // Arc's tmp dir be destroyed up by the post-deploy cleaner
-    let tmp = join(process.cwd(), '__ARC_TMP__')
+    let tmp = join(cwd, '__ARC_TMP__')
     let shared = join(tmp, 'node_modules', '@architect', 'shared')
     mkdirSync(shared, { recursive: true })
 
@@ -21,7 +22,7 @@ module.exports = function asapFingerprint (params) {
 
     // Handle static.json
     let staticFolder = inv.static.folder
-    staticFolder = join(process.cwd(), staticFolder)
+    staticFolder = join(cwd, staticFolder)
     let staticManifest = readFileSync(join(staticFolder, 'static.json'))
     writeFileSync(join(shared, 'static.json'), staticManifest)
 
@@ -34,5 +35,5 @@ module.exports = function asapFingerprint (params) {
       cfn.Resources.GetIndex.Properties.CodeUri = tmp
     }
   }
-  return cfn
+  callback(null, cfn)
 }

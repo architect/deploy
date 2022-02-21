@@ -1,4 +1,4 @@
-let samPkg = require('./package')
+let spawn = require('../utils/spawn')
 
 module.exports = function writeCFN (params, callback) {
   let { bucket, pretty, update, isDryRun } = params
@@ -8,10 +8,11 @@ module.exports = function writeCFN (params, callback) {
   }
   else {
     update.start('Generating CloudFormation deployment...')
-    samPkg({
-      filename: `sam.json`,
-      bucket,
-      pretty,
-    }, callback)
+    let filename = 'sam.json'
+    spawn('aws', [ 'cloudformation', 'package',
+      '--template-file', filename,
+      '--output-template-file', filename.replace('json', 'yaml'),
+      '--s3-bucket', bucket
+    ], pretty, callback)
   }
 }

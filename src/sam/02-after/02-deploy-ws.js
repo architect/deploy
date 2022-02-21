@@ -3,14 +3,14 @@ let aws = require('aws-sdk')
 
 /**
  * API Gateway / CFN bug!
- * If @ws was created pre-Arc 8.3, APIGV2 will fail to deploy itself after cfn resource names changed
+ * If @ws was created pre-Arc 8.3, API Gateway v2 will fail to deploy itself after cfn resource names changed
  * Hopefully we can yank this process out when they one day fix this
  */
 module.exports = function deployOldWebSocketAPI (params, callback) {
-  let { inventory, legacyCompat, region, stackname, stage: StageName } = params
+  let { inventory, compat, region, stackname, stage: StageName } = params
   let { inv } = inventory
 
-  if (inv.ws && legacyCompat.foundEarlierWS) {
+  if (inv.ws && compat.foundEarlierWS) {
     let cloudformation = new aws.CloudFormation({ region })
     let apig = new aws.ApiGatewayV2({ region })
     let ApiId

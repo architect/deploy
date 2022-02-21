@@ -3,16 +3,16 @@ let writeSAM = require('./write-sam')
 let writeCFN = require('./write-cfn')
 
 /**
- * package compiles an arc file into a single stack with the following files:
+ * Compile the project into into a single stack with the following files:
  * - AWS::Serverless sam.json
- * - AWS::Cloudformation out.yaml
+ * - AWS::Cloudformation sam.yaml
  */
-module.exports = function pkg (params, callback) {
-  let { sam, bucket, pretty, update, isDryRun } = params
+module.exports = function beforeDeploy (params, callback) {
   series([
-    writeSAM.bind({}, { sam, update }),
-    writeCFN.bind({}, { sam, bucket, pretty, update, isDryRun })
-  ], (err) => {
-    callback(err)
+    writeSAM.bind({}, params),
+    writeCFN.bind({}, params),
+  ], err => {
+    if (err) callback(err)
+    else callback()
   })
 }

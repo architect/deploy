@@ -17,6 +17,7 @@ module.exports = function deployStatic (params, callback) {
   let {
     bucket: Bucket,
     credentials,
+    eject,
     inventory,
     isDryRun = false,
     isFullDeploy = true, // Prevents duplicate static manifest operations that could impact state
@@ -34,9 +35,8 @@ module.exports = function deployStatic (params, callback) {
   let { inv } = inventory
 
   if (!inv.static) callback()
-  else if (isDryRun) {
-    // TODO implement static deploy dry run?
-    update.status('Static dry run not yet available, skipping static deploy...')
+  else if (eject || isDryRun) {
+    update.status('Skipping static deploy')
     callback()
   }
   else {
