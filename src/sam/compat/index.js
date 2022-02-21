@@ -3,7 +3,7 @@ let { toLogicalID } = require('@architect/utils')
 let series = require('run-series')
 
 /**
- * Check current infra for backwards compat purposes
+ * Check current infra for compatibility
  */
 module.exports = function compat (params, callback) {
   let { inv, stackname } = params
@@ -52,7 +52,19 @@ module.exports = function compat (params, callback) {
         })
       }
       else callback()
-    }
+    },
+
+    function getBucket (callback) {
+      if (inv.static) {
+        let resource = 'StaticBucket'
+        getResources(resource, stackname, callback, resources => {
+          result.hasStaticBucket = resources.length ? true : false
+          callback()
+        })
+      }
+      else callback()
+    },
+
   ], function done (err) {
     if (err) callback(err)
     else callback(null, result)

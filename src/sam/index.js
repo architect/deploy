@@ -7,10 +7,12 @@ let waterfall = require('run-waterfall')
 let print = require('./utils/print')
 let handlerCheck = require('../utils/handler-check')
 let getBucket = require('./bucket')
-let compat = require('./compat')
-let updateCfn = require('./update-cfn')
+let _compat = require('./compat')
+let patchCfn = require('./patches/cfn')
+let patchAsap = require('./patches/asap')
 let plugins = require('./plugins')
 let sizeReport = require('../utils/size-report')
+let staticDeploy = require('./static')
 let before = require('./00-before')
 let deploy = require('./01-deploy')
 let after = require('./02-after')
@@ -50,7 +52,7 @@ module.exports = function samDeploy (params, callback) {
   let dryRun = isDryRun || eject || false // General dry run flag for plugins
   let deployTargetPlugins = inventory.inv.plugins?._methods?.deploy?.target
   let plural = deployTargetPlugins?.length > 1 ? 's' : ''
-  let legacyCompat, finalCloudFormation
+  let compat, finalCloudFormation
 
   if (name) {
     stackname += toLogicalID(name)
@@ -66,9 +68,7 @@ module.exports = function samDeploy (params, callback) {
   }
 
   waterfall([
-    /**
-     * Maybe auto-init resources
-     */
+    // Maybe auto-init resources
     function createFiles (callback) {
       let autocreateEnabled = prefs && prefs.create && prefs.create.autocreate
       if (autocreateEnabled) {
@@ -78,91 +78,74 @@ module.exports = function samDeploy (params, callback) {
       else callback()
     },
 
-    /**
-     * Check to see if we're working with a legacy (REST) API (and any other backwards compat checks)
-     */
-    function legacyCompatCheck (callback) {
-      compat({ inv, stackname }, function done (err, result) {
+    // Check to see if we're working with a legacy API (and any other compatibility checks)
+    function compatCheck (callback) {
+      _compat({ inv, stackname }, (err, result) => {
         if (err) callback(err)
         else {
-          legacyCompat = result
+          compat = result
           callback()
         }
       })
     },
 
-    /**
-     * Generate cfn, which must be completed only after fingerprinting or files may not be present
-     */
+    // Generate cfn, which must be completed only after fingerprinting or files may not be present
     function generateCloudFormation (callback) {
       let cloudformation = pkg(inventory)
       callback(null, cloudformation)
     },
 
-    /**
-     * Update CloudFormation with project-specific mutations
-     */
-    function updateCloudFormation (cloudformation, callback) {
-      updateCfn({ cloudformation, inventory, legacyCompat, stage }, callback)
+    // Patch CloudFormation with project-specific mutations
+    function patchCloudFormation (cloudformation, callback) {
+      patchCfn({ cloudformation, inventory, compat }, callback)
     },
 
-    /**
-     * deploy.start plugins
-     */
+    // deploy.start plugins
     function runStartPlugins (cloudformation, callback) {
       plugins.start({ cloudformation, dryRun, inventory, stage }, callback)
     },
 
-    /**
-     * deploy.services plugins
-     */
+    // deploy.services plugins
     function runServicesPlugins (cloudformation, callback) {
-      plugins.services({ cloudformation, dryRun, inventory, stage }, (err, cfn) => {
+      plugins.services({ cloudformation, dryRun, inventory, stage }, callback)
+    },
+
+    // Fingerprint static assets + ensure ASAP has static.json
+    function fingerprintAndUpdateAsap (cloudformation, callback) {
+      if (verbose) update.done(`Static asset fingerpringing ${get.static('fingerprint') ? 'enabled' : 'disabled'}`)
+      // Always run full fingerprinting op to ensure remnant static.json files are deleted
+      // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
+      fingerprint({ inventory }, err => {
         if (err) callback(err)
         else {
-          finalCloudFormation = cfn
-          callback()
+          patchAsap({ cloudformation, inventory }, (err, cfn) => {
+            if (err) callback(err)
+            else {
+              finalCloudFormation = cfn
+              callback()
+            }
+          })
         }
       })
     },
 
-    /**
-     * Check existence of handlers
-     */
+    // Check existence of handlers
     function checkHandlers (callback) {
       handlerCheck(inv.lambdaSrcDirs, update, callback)
     },
 
-    /**
-     * Maybe write static asset manifest prior to cfn or hydration
-     */
-    function maybeFingerprint (callback) {
-      if (verbose) update.done(`Static asset fingerpringing ${get.static('fingerprint') ? 'enabled' : 'disabled'}`)
-      // Always run full fingerprinting op to ensure remnant static.json files are deleted
-      // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
-      fingerprint({ inventory }, (err) => {
-        callback(err)
-      })
-    },
-
-    /**
-     * Hydrate dependencies
-     */
+    // Hydrate dependencies
     function hydrateTheThings (callback) {
       if (shouldHydrate) hydrate.install({ autoinstall: true }, err => callback(err))
       else callback()
     },
 
-    /**
-     * Print a size report
-     */
+    // Print a size report
     function chonkyBois (callback) {
       sizeReport({ inventory, update }, callback)
     },
 
-    /**
-     * Maybe create a new deployment bucket
-     */
+    // Maybe create a new deployment bucket
     function bucketSetup (callback) {
       if (isDryRun && !eject) {
         bucket = 'N/A (dry-run)'
@@ -175,12 +158,7 @@ module.exports = function samDeploy (params, callback) {
       else {
         if (bucket) callback()
         else {
-          getBucket({
-            appname,
-            region,
-            update
-          },
-          function next (err, result) {
+          getBucket({ appname, region, update }, (err, result) => {
             if (err) callback(err)
             else {
               bucket = result
@@ -191,9 +169,7 @@ module.exports = function samDeploy (params, callback) {
       }
     },
 
-    /**
-     * Initialize operations
-     */
+    // Initialize operations
     function init (callback) {
       update.status(
         'Initializing deployment',
@@ -203,18 +179,20 @@ module.exports = function samDeploy (params, callback) {
       callback()
     },
 
-    /**
-     * Pre-deploy ops
-     */
+    // Pre-deploy ops
     function beforeDeploy (callback) {
       let params = { sam: finalCloudFormation, bucket, pretty, update, isDryRun }
       // this will write sam.json/yaml files out
       before(params, callback)
     },
 
-    /**
-     * Deployment
-     */
+    // Maybe pre-deploy static assets
+    function preDeployStatic (callback){
+      let params = { compat, eject, inventory, isDryRun, production, prune, region, stackname, verbose, update }
+      staticDeploy(params, true, callback)
+    },
+
+    // Deployment
     function theDeploy (callback) {
       if (eject) {
         let cmd = `aws cloudformation deploy --template-file sam.json --stack-name ${stackname} --s3-bucket ${bucket} --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --region ${region}`
@@ -244,17 +222,19 @@ module.exports = function samDeploy (params, callback) {
       }
     },
 
-    /**
-     * deploy.target plugins
-     */
+    // deploy.target plugins
     function runTargetPlugins (callback) {
       let cloudformation = finalCloudFormation
       plugins.target({ cloudformation, dryRun, inventory, stage }, callback)
     },
 
-    /**
-      * Post-deploy ops
-      */
+    // Post-deploy static assets
+    function postDeployStatic (callback){
+      let params = { compat, eject, inventory, isDryRun, production, prune, region, stackname, verbose, update }
+      staticDeploy(params, false, callback)
+    },
+
+    // Post-deploy ops
     function afterDeploy (callback) {
       if (eject || deployTargetPlugins) {
         callback()
@@ -267,7 +247,7 @@ module.exports = function samDeploy (params, callback) {
       else {
         let params = {
           inventory,
-          legacyCompat,
+          compat,
           pretty,
           production,
           prune,
@@ -282,9 +262,7 @@ module.exports = function samDeploy (params, callback) {
       }
     },
 
-    /**
-     * deploy.end plugins
-     */
+    // deploy.end plugins
     function runEndPlugins (callback) {
       let cloudformation = finalCloudFormation
       plugins.end({ cloudformation, dryRun, inventory, stage }, callback)

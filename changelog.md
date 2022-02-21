@@ -2,6 +2,14 @@
 
 ---
 
+## [4.0.3] 2022-02-21
+
+### Added
+
+- Add ability to automatically publish static assets to S3 if `fingerprint` is set to `true` or `external`, `prune` is disabled (which it is by default), and the app has a bucket; fixes #1312, thanks @gopeter!
+
+---
+
 ## [4.0.0 - 4.0.2] 2022-01-13
 
 ### Added
