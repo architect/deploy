@@ -21,6 +21,16 @@ module.exports = function filterFiles (params, callback) {
   // Sort for user readability
   filtered = sort(filtered)
 
+  // Sort again to ensure index.html files publish last
+  let index = /(index\.html?)$/
+  filtered = filtered.sort((fileA, fileB) => {
+    if (fileA.match(index) &&
+        fileB.match(index)) return fileB.length - fileA.length
+    if (fileB.match(index)) return -1
+    if (fileA.match(index)) return 1
+    return 0
+  })
+
   if (!filtered.length) {
     callback(Error('no_files_to_publish'))
   }
