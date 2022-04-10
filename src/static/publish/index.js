@@ -92,6 +92,7 @@ module.exports = function publishStaticAssets (params, callback) {
         Bucket,
         files,
         fingerprint,
+        inventory,
         publicDir,
         prefix,
         region,

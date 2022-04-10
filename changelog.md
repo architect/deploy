@@ -2,6 +2,14 @@
 
 ---
 
+## [4.1.0] 2022-04-09
+
+### Added
+
+- Added brotli compression for static asset publishing
+
+---
+
 ## [4.0.7] 2022-04-07
 
 ### Fixed

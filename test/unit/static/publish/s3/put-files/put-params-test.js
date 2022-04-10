@@ -1,5 +1,6 @@
 let test = require('tape')
 let { join } = require('path')
+let { brotliDecompressSync } = require('zlib')
 
 let filePath = join(process.cwd(), 'src', 'static', 'publish', 's3', 'put-files', 'put-params.js')
 let sut = require(filePath)
@@ -10,7 +11,7 @@ test('Module is present', t => {
 })
 
 test('S3 put params', t => {
-  t.plan(8)
+  t.plan(9)
 
   let html = 'public/index.html'
   let json = 'public/something.json'
@@ -22,7 +23,8 @@ test('S3 put params', t => {
     Bucket,
     Key: 'index.html',
     Body,
-    file: html
+    file: html,
+    inventory: { inv: { aws: { apigateway: 'http' } } },
   }
 
   // Basic params
@@ -30,7 +32,8 @@ test('S3 put params', t => {
   t.equal(result.Bucket, Bucket, 'Bucket is unchanged')
   t.equal(result.Key, 'index.html', 'Key is unchanged')
   t.equal(result.ContentType, 'text/html', 'Content type properly set')
-  t.equal(result.Body.toString(), Body.toString(), 'File body is present')
+  t.equal(result.ContentEncoding, 'br', 'Content encoding')
+  t.equal(brotliDecompressSync(result.Body).toString(), Body.toString(), 'File body is present (and brotli compressed)')
 
   // Ensure anti-caching of HTML + JSON
   let antiCache = 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0'

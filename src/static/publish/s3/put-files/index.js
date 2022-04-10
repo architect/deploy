@@ -10,6 +10,7 @@ module.exports = function putFiles (params, callback) {
     Bucket,
     files,
     fingerprint,
+    inventory,
     publicDir,
     prefix,
     region,
@@ -53,7 +54,7 @@ module.exports = function putFiles (params, callback) {
           let url = `https://${Bucket}.s3.${region}.amazonaws.com/${Key}`
 
           // Get the params for the file to be (maybe) uploaded
-          let params = putParams({ Bucket, Key, Body, file, fingerprint })
+          let params = putParams({ Bucket, Key, Body, file, fingerprint, inventory })
 
           // Upload if the file was modified since last upload
           let etag = headData && headData.ETag && headData.ETag.replace(/['"]/g, '')
