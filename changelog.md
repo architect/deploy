@@ -2,6 +2,14 @@
 
 ---
 
+## [4.1.3] 2022-05-10
+
+### Changed
+
+- Updated dependencies; sub-dep `lambda-runtimes` adds `nodejs16.x`.
+
+---
+
 ## [4.1.2] 2022-04-29
 
 ### Changed
