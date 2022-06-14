@@ -9,17 +9,25 @@ let hydrate = require('@architect/hydrate')
  *
  * ...as quickly as possible
  *
- * @param {Object} params
+ * @param {Object} params - updateLambda parameters
  * @param {Object} params.env - environment variables
  * @param {String} params.FunctionName - a valid lambda function name or arn
  * @param {Object} params.lambda - Inventory Lambda object
  * @param {String} params.region - AWS region
  * @param {Boolean} params.shouldHydrate - whether to hydrate the function
  * @param {String} params.src - source code path
- * @param {Object} params.update - update object
+ * @param {Object} params.update - architect/utils updater
+ * @param {Function} callback
  */
 module.exports = function updateLambda (params, callback) {
-  let { env, FunctionName, region, shouldHydrate, src, update } = params
+  let {
+    env,
+    FunctionName,
+    region,
+    shouldHydrate,
+    src,
+    update,
+  } = params
   let lambda = new aws.Lambda({ region })
 
   // Check the Lambda lifecycle state after each mutation to prevent async update issues

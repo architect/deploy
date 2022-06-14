@@ -11,7 +11,15 @@ let pretty = require('./pretty')
  * @returns {Promise} if no callback is supplied
  */
 module.exports = function directDeploy (options, callback) {
-  let { inventory, isDryRun = false, production, region, srcDirs = [], update } = options
+  let {
+    inventory,
+    isDryRun = false,
+    production,
+    region,
+    shouldHydrate = true,
+    srcDirs = [],
+    update,
+  } = options
   if (!update) update = updater('Deploy')
   let { inv } = inventory
 
@@ -62,6 +70,7 @@ module.exports = function directDeploy (options, callback) {
       inventory,
       production,
       region,
+      shouldHydrate,
       specificLambdasToDeploy,
       stackname,
       ts,

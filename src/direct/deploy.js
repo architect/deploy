@@ -8,7 +8,16 @@ let pretty = require('./pretty')
 let getResources = require('../utils/get-cfn-resources')
 
 module.exports = function deploySAM (params, callback) {
-  let { inventory, production, region, stackname, specificLambdasToDeploy, ts, update } = params
+  let {
+    inventory,
+    production,
+    region,
+    shouldHydrate,
+    specificLambdasToDeploy,
+    stackname,
+    ts,
+    update,
+  } = params
   let { inv } = inventory
 
   waterfall([
@@ -75,6 +84,7 @@ module.exports = function deploySAM (params, callback) {
               env,
               lambda,
               region,
+              shouldHydrate,
               src,
               update,
             }, callback)
