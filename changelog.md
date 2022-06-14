@@ -2,6 +2,14 @@
 
 ---
 
+## [Unreleased]
+
+### Fixed
+
+- Deploy respects `--no-hydration` with `--direct`.
+
+---
+
 ## [4.1.3] 2022-05-10
 
 ### Changed
