@@ -9,7 +9,7 @@ module.exports = function asapFingerprint (params, callback) {
   let { cwd } = inv._project
   let fingerprint = get.static('fingerprint') === true
 
-  if (inv._project.rootHandler === 'arcStaticAssetProxy' && fingerprint) {
+  if (inv.http && inv._project.rootHandler === 'arcStaticAssetProxy' && fingerprint) {
     let { src } = get.http('get /*')
 
     // Arc's tmp dir be destroyed up by the post-deploy cleaner
