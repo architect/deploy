@@ -4,6 +4,11 @@
 
 ## [4.1.4] 2022-07-22
 
+### Changed
+
+- Updated dependencies
+
+
 ### Fixed
 
 - Fixed issue where Deploy may wrongfully infer `@http` from the `@static` pragma; fixes #1359
