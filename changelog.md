@@ -2,6 +2,12 @@
 
 ---
 
+## [4.1.5]
+
+### Fixed
+
+- Fixed issue where Deploy create CloudFormation template bucket on each deploy; fixes #357
+
 ## [4.1.4] 2022-07-22
 
 ### Changed
