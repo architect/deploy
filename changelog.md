@@ -2,7 +2,12 @@
 
 ---
 
-## [4.1.5] 2022-07-26
+## [4.2.0] 2022-07-26
+
+### Added
+
+- Added support for `@static` `compression` setting for configuring `br` and `gzip` static asset compression
+
 
 ### Changed
 
