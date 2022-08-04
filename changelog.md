@@ -13,6 +13,11 @@
 
 - Updated dependencies
 
+
+### Fixed
+
+- Fixed issue where additional S3 deploy buckets may be created if app name contains an underscore; fixes #1363, thanks @DocLM!
+
 ---
 
 ## [4.1.4] 2022-07-22
