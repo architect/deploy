@@ -11,14 +11,14 @@ module.exports = function startPlugins (params, callback) {
     let { arc } = inventory.inv._project
     async function runPlugins () {
       for (let plugin of deployStartPlugins) {
-        let { type } = plugin
+        let { _type } = plugin
         let result
         // Plugins accept an option object
-        if (type === 'plugin') {
+        if (_type === 'plugin') {
           result = await plugin({ arc, cloudformation, dryRun, inventory, stage })
         }
         // Legacy macros use ordered args
-        if (type === 'macro') {
+        if (_type === 'macro') {
           result = await plugin(arc, cloudformation, stage, inventory)
         }
         // Returning Cloudformation is optional
