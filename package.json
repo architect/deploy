@@ -33,8 +33,8 @@
   "homepage": "https://github.com/architect/deploy#readme",
   "dependencies": {
     "@architect/create": "~4.0.5",
-    "@architect/hydrate": "~3.0.4",
-    "@architect/inventory": "~3.2.0",
+    "@architect/hydrate": "~3.1.0",
+    "@architect/inventory": "~3.2.2",
     "@architect/package": "~8.1.4",
     "@architect/utils": "~3.1.2",
     "chalk": "4.1.2",
@@ -54,12 +54,12 @@
     "@architect/eslint-config": "~2.0.1",
     "aws-sdk-mock": "5.1.0",
     "cross-env": "~7.0.3",
-    "eslint": "~8.21.0",
+    "eslint": "~8.23.0",
     "mock-fs": "~5.1.4",
     "nyc": "~15.1.0",
     "proxyquire": "~2.1.3",
     "tap-spec": "~5.0.0",
-    "tape": "~5.5.3"
+    "tape": "~5.6.0"
   },
   "eslintConfig": {
     "extends": "@architect/eslint-config"
