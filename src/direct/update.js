@@ -49,8 +49,10 @@ module.exports = function updateLambda (params, callback) {
   series([
     // Hydrate the Lambda
     function (callback) {
-      if (shouldHydrate)
+      if (shouldHydrate) {
         hydrate.install({ autoinstall: true, basepath: src }, callback)
+      }
+      else callback()
     },
 
     // Zip its contents
