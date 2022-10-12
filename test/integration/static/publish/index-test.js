@@ -121,5 +121,6 @@ test('Static asset deletion', t => {
 test('Teardown', t => {
   t.plan(1)
   awsMock.restore()
+  reset()
   t.pass('Done')
 })

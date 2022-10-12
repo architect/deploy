@@ -208,5 +208,6 @@ test(`Respect prefix setting in project manifest`, t => {
 test('Teardown', t => {
   t.plan(1)
   awsMock.restore()
+  reset()
   t.pass('Done')
 })

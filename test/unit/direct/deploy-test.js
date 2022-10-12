@@ -18,9 +18,10 @@ function fakeGetResources (params, callback) {
 let didHydrate
 function fakeUpdateLambda (params, callback) {
   didHydrate = params.shouldHydrate
-  callback(null)
+  callback()
 }
-let directDeployMod = proxyquire(join(process.cwd(), 'src', 'direct', 'deploy.js'), {
+let filePath = join(process.cwd(), 'src', 'direct', 'deploy')
+let directDeployMod = proxyquire(filePath, {
   '../utils/get-cfn-resources': fakeGetResources,
   './update': fakeUpdateLambda,
 })
@@ -79,26 +80,28 @@ test('Should be able to deploy an HTTP function directly when @static present', 
   })
 })
 
-
-test('Should hydrate by default', t => {
-  t.plan(1)
-  let rawArc = '@app\n an-app\n@http\npost /accounts\nget /\n@static'
-  params.shouldHydrate = true
-  directDeploy(t, rawArc, [ 'src/http/post-accounts' ], () => {
-    t.ok(didHydrate, 'Did hydrate')
-    reset()
+// For some reason I cannot explain, Windows won't use the `./upload` fake, and instead insists on hitting the actual module, even with @global: true. So whatever. If this functionality doesn't work in Windows and you need it to, please feel free to submit a PR.
+if (!process.platform.startsWith('win')) {
+  test('Should hydrate by default', t => {
+    t.plan(1)
+    let rawArc = '@app\n an-app\n@http\npost /accounts\nget /\n@static'
+    params.shouldHydrate = true
+    directDeploy(t, rawArc, [ 'src/http/post-accounts' ], () => {
+      t.ok(didHydrate, 'Did hydrate')
+      reset()
+    })
   })
-})
 
-test('Can be called with shouldHydrate: false', t => {
-  t.plan(1)
-  let rawArc = '@app\n an-app\n@http\npost /accounts\nget /\n@static'
-  params.shouldHydrate = false
-  directDeploy(t, rawArc, [ 'src/http/post-accounts' ], () => {
-    t.notOk(didHydrate, 'Did not hydrate')
-    reset()
+  test('Can be called with shouldHydrate: false', t => {
+    t.plan(1)
+    let rawArc = '@app\n an-app\n@http\npost /accounts\nget /\n@static'
+    params.shouldHydrate = false
+    directDeploy(t, rawArc, [ 'src/http/post-accounts' ], () => {
+      t.notOk(didHydrate, 'Did not hydrate')
+      reset()
+    })
   })
-})
+}
 
 test('Teardown', t => {
   t.plan(1)
