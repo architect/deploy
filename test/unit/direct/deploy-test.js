@@ -44,8 +44,8 @@ function directDeploy (t, rawArc, lambdas, callback) {
       params.inventory = result
       params.specificLambdasToDeploy = lambdas
       directDeployMod(params, err => {
-        callback(err)
-        reset()
+        if (err) t.fail(err)
+        else callback()
       })
     }
   })
@@ -66,6 +66,7 @@ test('Should be able to deploy an HTTP POST function directly when a root handle
   let rawArc = '@app\n an-app\n@http\npost /accounts\nget /'
   directDeploy(t, rawArc, [ 'src/http/post-accounts' ], err => {
     t.notOk(err, 'No direct deploy error')
+    reset()
   })
 })
 
@@ -74,26 +75,28 @@ test('Should be able to deploy an HTTP function directly when @static present', 
   let rawArc = '@app\n an-app\n@http\npost /accounts\n@static'
   directDeploy(t, rawArc, [ 'src/http/post-accounts' ], err => {
     t.notOk(err, 'No direct deploy error')
+    reset()
   })
 })
 
-test('Function "hydration" is optional', t => {
+
+test('Should hydrate by default', t => {
+  t.plan(1)
   let rawArc = '@app\n an-app\n@http\npost /accounts\nget /\n@static'
-
-  t.test('Should hydrate by default', st => {
-    st.plan(1)
-    params.shouldHydrate = true
-    directDeploy(t, rawArc, [ 'src/http/post-accounts' ], () => {
-      st.ok(didHydrate, 'Did hydrate')
-    })
+  params.shouldHydrate = true
+  directDeploy(t, rawArc, [ 'src/http/post-accounts' ], () => {
+    t.ok(didHydrate, 'Did hydrate')
+    reset()
   })
+})
 
-  t.test('Can be called with shouldHydrate: false', st => {
-    st.plan(1)
-    params.shouldHydrate = false
-    directDeploy(t, rawArc, [ 'src/http/post-accounts' ], () => {
-      st.notOk(didHydrate, 'Did not hydrate')
-    })
+test('Can be called with shouldHydrate: false', t => {
+  t.plan(1)
+  let rawArc = '@app\n an-app\n@http\npost /accounts\nget /\n@static'
+  params.shouldHydrate = false
+  directDeploy(t, rawArc, [ 'src/http/post-accounts' ], () => {
+    t.notOk(didHydrate, 'Did not hydrate')
+    reset()
   })
 })
 
