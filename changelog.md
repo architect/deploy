@@ -2,11 +2,11 @@
 
 ---
 
-## [Unreleased]
+## [4.2.5]
 
 ### Fixed
 
-- Deploy respects `--no-hydration` with `--direct`.
+- Deploy respects `--no-hydration` with `--direct`; fixes #1348, thanks @tbeseda, @ThatOneBro!
 
 ---
 
