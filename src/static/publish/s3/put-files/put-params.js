@@ -1,5 +1,5 @@
 let getContentType = require('./get-content-type')
-let { brotliCompressSync: compress } = require('zlib')
+let { brotliCompressSync, gzipSync } = require('zlib')
 
 /**
  * Get proper parameters for a given file upload
@@ -9,14 +9,19 @@ module.exports = function putParams (params) {
   let s3Params = { Bucket, Key }
 
   let legacyAPI = inventory.inv.aws.apigateway === 'rest'
-  if (legacyAPI) {
-    // Legacy REST APIs compress responses, so don't double-compress here
+  let compression = inventory.inv.static?.compression
+  // Legacy REST APIs compress responses, so don't double-compress here
+  if (legacyAPI || !compression) {
     s3Params.Body = Body
   }
-  else {
-    // Compress the asset
-    s3Params.Body = compress(Body)
+  // Compress the asset
+  else if (compression === true || compression === 'br') {
+    s3Params.Body = brotliCompressSync(Body)
     s3Params.ContentEncoding = 'br'
+  }
+  else if (compression === 'gzip') {
+    s3Params.Body = gzipSync(Body)
+    s3Params.ContentEncoding = 'gzip'
   }
 
   // S3 requires content-type

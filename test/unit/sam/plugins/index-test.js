@@ -15,7 +15,7 @@ function two (params) {
   }
   return cloudformation
 }
-one.type = two.type = 'plugin'
+one._type = two._type = 'plugin'
 
 let inventory = {
   inv: {

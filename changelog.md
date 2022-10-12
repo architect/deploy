@@ -10,6 +10,69 @@
 
 ---
 
+## [4.2.4] 2022-10-04
+
+### Changed
+
+- Updated dependencies
+
+---
+
+## [4.2.3] 2022-09-07
+
+### Changed
+
+- Updated dependencies
+
+---
+
+## [4.2.2] 2022-08-29
+
+### Changed
+
+- Updated dependencies
+
+---
+
+## [4.2.1] 2022-08-05
+
+### Fixed
+
+- Fixed not firing deploy.start plugins / macros; fixes #1364, thanks @mawdesley!
+
+---
+
+## [4.2.0] 2022-07-26
+
+### Added
+
+- Added support for `@static` `compression` setting for configuring `br` and `gzip` static asset compression
+
+
+### Changed
+
+- Updated dependencies
+
+
+### Fixed
+
+- Fixed issue where additional S3 deploy buckets may be created if app name contains an underscore; fixes #1363, thanks @DocLM!
+
+---
+
+## [4.1.4] 2022-07-22
+
+### Changed
+
+- Updated dependencies
+
+
+### Fixed
+
+- Fixed issue where Deploy may wrongfully infer `@http` from the `@static` pragma; fixes #1359
+
+---
+
 ## [4.1.3] 2022-05-10
 
 ### Changed
