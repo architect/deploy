@@ -48,6 +48,12 @@ module.exports = function deployStatic (params, callback) {
       if (name) stackname += toLogicalID(name)
     }
 
+    // Use a manually defined bucket
+    let stage = production ? 'production' : 'staging'
+    if (inv.static?.[stage]) {
+      Bucket = inv.static?.[stage]
+    }
+
     let folder
     series([
       // Parse settings

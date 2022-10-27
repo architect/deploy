@@ -2,6 +2,14 @@
 
 ---
 
+## [4.2.6] 2022-10-27
+
+### Fixed
+
+- Fix missing support for legacy `@static staging|production` setting
+
+---
+
 ## [4.2.5]
 
 ### Fixed
