@@ -11,7 +11,8 @@ module.exports = function deleteFiles (params, callback) {
     prefix,
     region,
     s3,
-    staticManifest
+    staticManifest,
+    update,
   } = params
 
   // If prefix is enabled, we must ignore everything else in the bucket (or risk pruning all contents)
@@ -20,7 +21,8 @@ module.exports = function deleteFiles (params, callback) {
 
   s3.listObjectsV2(listParams, function _listObjects (err, filesOnS3) {
     if (err) {
-      console.error('Listing objects for deletion in S3 failed', err)
+      update.error('Listing objects for deletion in S3 failed')
+      update.error(err)
       callback()
     }
     else {
@@ -55,12 +57,13 @@ module.exports = function deleteFiles (params, callback) {
         // TODO chunk requests to 1k
         s3.deleteObjects(deleteParams, function (err, data) {
           if (err) {
-            console.error('Deleting objects on S3 failed', err)
+            update.error('Deleting objects on S3 failed')
+            update.error(err)
           }
           else {
             data.Deleted.forEach(function (deletedFile) {
               let last = `https://${Bucket}.s3.${region}.amazonaws.com/${deletedFile.Key}`
-              console.log(`${chalk.red('[ ✗ Deleted  ]')} ${chalk.cyan(last)}`)
+              update.raw(`${chalk.red('[ ✗ Deleted  ]')} ${chalk.cyan(last)}`)
             })
           }
           callback()
