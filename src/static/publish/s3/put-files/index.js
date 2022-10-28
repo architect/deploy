@@ -16,7 +16,8 @@ module.exports = function putFiles (params, callback) {
     region,
     s3,
     staticManifest,
-    verbose
+    update,
+    verbose,
   } = params
 
   let uploaded = 0
@@ -27,13 +28,12 @@ module.exports = function putFiles (params, callback) {
 
       // Get file hash
       let Body = readFileSync(file)
-      let hash = crypto.createHash('md5').update(Body).digest('hex')
 
       // Post-run size warning
       function tooBig () {
         let size = Buffer.from(Body).toString('base64')
         if (size >= 5750000) {
-          console.log(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB (base64)`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
+          update.raw(`${chalk.yellow('[  Warning!  ]')} ${chalk.white.bold(`${Key} is > 5.75MB (base64)`)}${chalk.white(`; files over 6MB cannot be proxied by Lambda (arc.proxy)`)}`)
         }
       }
 
@@ -44,7 +44,8 @@ module.exports = function putFiles (params, callback) {
       s3.headObject({ Bucket, Key }, function _headObject (err, headData) {
         if (err && err.code !== 'NotFound') {
           // Swallow error (but warn)
-          console.error('Error on S3 metadata request:', err)
+          update.error('Error on S3 metadata request:')
+          update.error(err)
           callback()
         }
         else if (err && err.code === 'AccessDenied') {
@@ -55,6 +56,7 @@ module.exports = function putFiles (params, callback) {
 
           // Get the params for the file to be (maybe) uploaded
           let params = putParams({ Bucket, Key, Body, file, fingerprint, inventory })
+          let hash = crypto.createHash('md5').update(params.Body).digest('hex')
 
           // Upload if the file was modified since last upload
           let etag = headData && headData.ETag && headData.ETag.replace(/['"]/g, '')
@@ -71,12 +73,13 @@ module.exports = function putFiles (params, callback) {
               }
               else if (err) {
                 // Swallow error (but warn)
-                console.error('Error on S3 put:', err)
+                update.error('Error on S3 put:')
+                update.error(err)
                 callback()
               }
               else {
                 uploaded++
-                console.log(`${chalk.blue('[  Uploaded  ]')} ${chalk.underline.cyan(url)}`)
+                update.raw(`${chalk.blue('[  Uploaded  ]')} ${chalk.underline.cyan(url)}`)
                 tooBig()
                 callback()
               }
@@ -85,7 +88,7 @@ module.exports = function putFiles (params, callback) {
           else {
             notModified++
             if (verbose)
-              console.log(`${chalk.gray('[Not modified]')} ${chalk.underline.cyan(url)}`)
+              update.raw(`${chalk.gray('[Not modified]')} ${chalk.underline.cyan(url)}`)
             tooBig()
             callback()
           }

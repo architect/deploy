@@ -97,7 +97,9 @@ module.exports = function publishStaticAssets (params, callback) {
         prefix,
         region,
         s3,
-        staticManifest
+        staticManifest,
+        update,
+        verbose,
       }, callback)
     },
 
@@ -115,7 +117,8 @@ module.exports = function publishStaticAssets (params, callback) {
           prefix,
           region,
           s3,
-          staticManifest
+          staticManifest,
+          update,
         }, callback)
       }
       else callback()

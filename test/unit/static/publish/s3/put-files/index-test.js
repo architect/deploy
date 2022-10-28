@@ -21,6 +21,8 @@ function createFileData (diff) {
 // Benchmark file data to compare against in headObject calls
 let fileData = createFileData()
 let files = Object.keys(fileData)
+let update = () => {}
+update.raw = () => {}
 
 let params = {
   Bucket: 'a-bucket',
@@ -29,11 +31,12 @@ let params = {
   publicDir: 'public',
   prefix: undefined,
   region: 'us-west-1',
-  staticManifest: {}
+  staticManifest: {},
+  update,
 }
 
-let _putParams = ({ Bucket, Key }) => ({
-  Bucket, Key
+let _putParams = ({ Bucket, Key, Body }) => ({
+  Bucket, Key, Body,
 })
 
 let filePath = join(process.cwd(), 'src', 'static', 'publish', 's3', 'put-files')

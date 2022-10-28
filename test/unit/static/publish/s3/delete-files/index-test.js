@@ -23,7 +23,8 @@ let defaultParams = () => {
     prefix: undefined,
     region: 'us-west-1',
     s3,
-    staticManifest: {}
+    staticManifest: {},
+    update: { raw: () => {} },
   }
 }
 

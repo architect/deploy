@@ -4,9 +4,19 @@
 
 ## [4.2.6] 2022-10-27
 
+### Added
+
+- Added support for automatically re-publishing static assets when compression setting changes
+
+
+### Changed
+
+- Internal change: piping static asset publishing through the Arc updater
+
+
 ### Fixed
 
-- Fix missing support for legacy `@static staging|production` setting
+- Fixed missing support for legacy `@static staging|production` setting
 
 ---
 
