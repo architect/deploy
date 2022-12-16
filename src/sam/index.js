@@ -112,7 +112,7 @@ module.exports = function samDeploy (params, callback) {
 
     // Fingerprint static assets + ensure ASAP has static.json
     function fingerprintAndUpdateAsap (cloudformation, callback) {
-      if (verbose) update.done(`Static asset fingerpringing ${get.static('fingerprint') ? 'enabled' : 'disabled'}`)
+      if (verbose) update.done(`Static asset fingerprinting ${get.static('fingerprint') ? 'enabled' : 'disabled'}`)
       // Always run full fingerprinting op to ensure remnant static.json files are deleted
       // This is especially important in Arc 6+ where we no longer do .arc checks for fingerprint status
       fingerprint({ inventory }, err => {
