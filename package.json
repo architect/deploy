@@ -37,6 +37,7 @@
     "@architect/inventory": "~3.3.4",
     "@architect/package": "~8.2.2",
     "@architect/utils": "~3.1.2",
+    "aws-sdk": "2.1055.0",
     "chalk": "4.1.2",
     "fs-extra": "~11.1.0",
     "get-folder-size": "2.0.1",
