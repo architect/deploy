@@ -2,6 +2,15 @@
 
 ---
 
+## [4.2.8] 2023-01-05
+
+### Added
+
+- Deploy now respects `ignore` patterns when pruning files that may only be in S3 and not on the local filesystem
+  - Example use case: upon completion of deployment, you have a separate process for publishing an artifact to your app's static asset bucket; adding that artifact's name, folder name, etc. to `@static ignore` will now ensure it will not be destroyed with `@static prune` enabled
+
+---
+
 ## [4.2.7] 2022-11-24
 
 ### Added

@@ -20,6 +20,7 @@ let defaultParams = () => {
     files: localFiles(files),
     fingerprint: false,
     folder: 'public',
+    ignore: [],
     prefix: undefined,
     region: 'us-west-1',
     s3,
@@ -74,6 +75,21 @@ test('Prune if there is something to prune', t => {
     t.equal(listObjCalls.length, 1, 'S3.listObjectsV2 called once')
     t.equal(delObjCalls.length, 1, 'S3.deleteObjects called once')
     t.equal(delObjCalls[0].Delete.Objects[0].Key, files[files.length - 1], `Pruned correct file: ${files[files.length - 1]}`)
+    reset()
+  })
+})
+
+test('Prune respects ignore', t => {
+  t.plan(2)
+
+  let params = defaultParams()
+  params.files.pop() // Create a pruning opportunity
+  filesOnS3 = { Contents: files.map(Key => ({ Key })) }
+  params.ignore = [ 'index.js' ]
+  sut(params, err => {
+    if (err) t.fail(err)
+    t.equal(listObjCalls.length, 1, 'S3.listObjectsV2 called once')
+    t.equal(delObjCalls.length, 0, 'S3.deleteObjects not called')
     reset()
   })
 })
