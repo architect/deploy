@@ -35,7 +35,7 @@ module.exports = function publishStaticAssets (params, callback) {
 
   // Settings
   let fingerprint = get.static('fingerprint')
-  let ignore = get.static('ignore') ? [ ...get.static('ignore') ] : [] // Copy for mutation later
+  let ignore = get.static('ignore') ? [ ...get.static('ignore') ] : []
 
   waterfall([
 
@@ -70,8 +70,7 @@ module.exports = function publishStaticAssets (params, callback) {
     // Write, reuse, or possibly remove fingerprinted static asset manifest
     function _maybeWriteStaticManifest (filtered, ignored, callback) {
       files = filtered
-      ignore = ignored
-      let params = { ignore, inventory, isFullDeploy, publicDir }
+      let params = { ignore: ignored, inventory, isFullDeploy, publicDir }
       writeStaticManifest(params, callback)
     },
 
@@ -114,6 +113,7 @@ module.exports = function publishStaticAssets (params, callback) {
           files,
           fingerprint,
           folder,
+          ignore,
           prefix,
           region,
           s3,

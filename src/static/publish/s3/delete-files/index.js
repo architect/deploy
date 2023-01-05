@@ -1,6 +1,7 @@
 let { join } = require('path')
 let chalk = require('chalk')
 let unformatKey = require('./unformat-key')
+let getS3ItemKey = ({ Key }) => ({ Key })
 
 module.exports = function deleteFiles (params, callback) {
   let {
@@ -8,6 +9,7 @@ module.exports = function deleteFiles (params, callback) {
     files,
     fingerprint,
     folder,
+    ignore,
     prefix,
     region,
     s3,
@@ -26,23 +28,28 @@ module.exports = function deleteFiles (params, callback) {
       callback()
     }
     else {
+      if (!filesOnS3.Contents.length) return callback()
+
       // Diff the files on S3 and those on the local filesystem
       // TODO need to handle pagination (filesOnS3.IsTruncated) if > 1000 files
-      let leftovers = filesOnS3.Contents.filter(S3File => {
-        let { Key } = S3File
+      let leftovers = filesOnS3.Contents.filter(({ Key }) => {
         let key = unformatKey(Key, prefix)
         let localPathOfS3File = join(process.cwd(), folder, key)
         return !files.includes(localPathOfS3File)
-      }).map(S3File => ({ Key: S3File.Key }))
+      }).map(getS3ItemKey)
 
       // Only do a second pass on files that Architect fingerprinted
       if (fingerprint && (fingerprint !== 'external')) {
-        leftovers = filesOnS3.Contents.filter(S3File => {
-          let { Key } = S3File
+        leftovers = filesOnS3.Contents.filter(({ Key }) => {
           let key = unformatKey(Key, prefix)
           if (key === 'static.json') return
-          else return !Object.values(staticManifest).some(f => f === key)
-        }).map(S3File => ({ Key: S3File.Key }))
+          else return !Object.values(staticManifest).includes(key)
+        }).map(getS3ItemKey)
+      }
+
+      // Respected ignored patterns
+      if (ignore.length) {
+        leftovers = leftovers.filter(({ Key }) => !ignore.some(i => Key.includes(i)))
       }
 
       if (leftovers.length) {
