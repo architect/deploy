@@ -44,7 +44,7 @@ module.exports = function deploySAM (params, callback) {
         http: 'HTTP',
         queues: 'Queue',
         scheduled: 'Scheduled',
-        streams: 'Stream',
+        'tables-streams': 'TableStream',
         ws: 'WS',
         customLambdas: 'Custom Lambdas',
       }
