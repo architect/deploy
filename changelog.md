@@ -2,11 +2,16 @@
 
 ---
 
-## [4.2.9] 2023-01-11
+## [4.2.9 - 4.2.10] 2023-01-11
 
 ### Fixed
 
 - Fix direct deploy to `@tables-streams` Lambdae
+
+
+### Changed
+
+- Updated dependencies
 
 ---
 
