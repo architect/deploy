@@ -37,6 +37,7 @@ module.exports = function samDeploy (params, callback) {
     tags,
     update,
     verbose,
+    stackname,
   } = params
   let { inv, get } = inventory
   if (!update) update = updater('Deploy')
@@ -48,7 +49,7 @@ module.exports = function samDeploy (params, callback) {
   let appname = inv.app
   let bucket = inv.aws.bucket
   let prefs = inv._project.preferences
-  let stackname = `${toLogicalID(appname)}${production ? 'Production' : 'Staging'}`
+  stackname = stackname || `${toLogicalID(appname)}${production ? 'Production' : 'Staging'}`
   let dryRun = isDryRun || eject || false // General dry run flag for plugins
   let deployTargetPlugins = inventory.inv.plugins?._methods?.deploy?.target
   let plural = deployTargetPlugins?.length > 1 ? 's' : ''
