@@ -246,8 +246,9 @@ module.exports = function samDeploy (params, callback) {
       }
       else {
         let params = {
-          inventory,
+          bucket,
           compat,
+          inventory,
           pretty,
           production,
           prune,

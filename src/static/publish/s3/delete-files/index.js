@@ -1,6 +1,7 @@
 let { join } = require('path')
-let chalk = require('chalk')
 let unformatKey = require('./unformat-key')
+let getAllS3Files = require('../../../../utils/get-all-s3-files')
+let bulkDelete = require('../../../../utils/bulk-delete')
 let getS3ItemKey = ({ Key }) => ({ Key })
 
 module.exports = function deleteFiles (params, callback) {
@@ -18,21 +19,20 @@ module.exports = function deleteFiles (params, callback) {
   } = params
 
   // If prefix is enabled, we must ignore everything else in the bucket (or risk pruning all contents)
-  let listParams = { Bucket }
+  let listParams = { Bucket, s3 }
   if (prefix) listParams.Prefix = prefix
 
-  s3.listObjectsV2(listParams, function _listObjects (err, filesOnS3) {
+  getAllS3Files(listParams, function _listObjects (err, filesOnS3) {
     if (err) {
       update.error('Listing objects for deletion in S3 failed')
       update.error(err)
       callback()
     }
+    else if (!filesOnS3.length) callback()
     else {
-      if (!filesOnS3.Contents.length) return callback()
-
       // Diff the files on S3 and those on the local filesystem
       // TODO need to handle pagination (filesOnS3.IsTruncated) if > 1000 files
-      let leftovers = filesOnS3.Contents.filter(({ Key }) => {
+      let leftovers = filesOnS3.filter(({ Key }) => {
         let key = unformatKey(Key, prefix)
         let localPathOfS3File = join(process.cwd(), folder, key)
         return !files.includes(localPathOfS3File)
@@ -40,7 +40,7 @@ module.exports = function deleteFiles (params, callback) {
 
       // Only do a second pass on files that Architect fingerprinted
       if (fingerprint && (fingerprint !== 'external')) {
-        leftovers = filesOnS3.Contents.filter(({ Key }) => {
+        leftovers = filesOnS3.filter(({ Key }) => {
           let key = unformatKey(Key, prefix)
           if (key === 'static.json') return
           else return !Object.values(staticManifest).includes(key)
@@ -53,28 +53,14 @@ module.exports = function deleteFiles (params, callback) {
       }
 
       if (leftovers.length) {
-        let deleteParams = {
+        bulkDelete({
           Bucket,
-          Delete: {
-            Objects: leftovers,
-            Quiet: false
-          }
-        }
-
-        // TODO chunk requests to 1k
-        s3.deleteObjects(deleteParams, function (err, data) {
-          if (err) {
-            update.error('Deleting objects on S3 failed')
-            update.error(err)
-          }
-          else {
-            data.Deleted.forEach(function (deletedFile) {
-              let last = `https://${Bucket}.s3.${region}.amazonaws.com/${deletedFile.Key}`
-              update.raw(`${chalk.red('[ ✗ Deleted  ]')} ${chalk.cyan(last)}`)
-            })
-          }
-          callback()
-        })
+          items: leftovers,
+          log: true,
+          region,
+          s3,
+          update,
+        }, callback)
       }
       else {
         callback()
