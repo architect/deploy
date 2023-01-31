@@ -43,6 +43,7 @@ module.exports = function cleanUpOldDeployArtifacts (params, callback) {
           Bucket,
           items,
           log: verbose,
+          region,
           s3,
           update,
         }, callback)
