@@ -128,8 +128,8 @@ test('Stackname', t => {
   args('')
   t.notOk(flags().stackname, 'Specifying a source dir without the direct flag does nothing')
 
-  args(`--stackname MyStack`)
-  t.deepEqual(flags().stackname, 'MyStack', 'Specifying a stack name with the --stackname flag returns the stack name')
+  args(`--stack-name MyStack`)
+  t.deepEqual(flags().stackname, 'MyStack', 'Specifying a stack name with the --stack-name flag returns the stack name')
 })
 
 test('Teardown', t => {

@@ -39,7 +39,7 @@ module.exports = function getFlags () {
     isStatic:       args.static,
     isFullDeploy:   args.static ? false : true,
     shouldHydrate:  args.hydrate,
-    stackname:      args.stackname,
+    stackname:      args['stack-name'],
   }
 }
 
