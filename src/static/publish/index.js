@@ -42,7 +42,7 @@ module.exports = function publishStaticAssets (params, callback) {
     // Notices
     function _notices (callback) {
       if ((!isFullDeploy && fingerprint) || (!isFullDeploy && verbose)) {
-        update.done(`Static asset fingerpringing ${fingerprint ? 'enabled' : 'disabled'}`)
+        update.done(`Static asset fingerprinting ${fingerprint ? 'enabled' : 'disabled'}`)
       }
       if (prune || verbose) {
         update.done(`Orphaned file pruning ${prune ? 'enabled' : 'disabled'}`)
