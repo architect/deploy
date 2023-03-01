@@ -1,4 +1,4 @@
-let { deepFrozenCopy, getLambdaName, toLogicalID } = require('@architect/utils')
+let { deepFrozenCopy, toLogicalID } = require('@architect/utils')
 /**
  * deploy.services plugins
  */
@@ -10,7 +10,7 @@ module.exports = function servicesPlugins (params, callback) {
     let { arc } = inventory.inv._project
     async function runPlugins () {
       for (let plugin of serviceDiscoveryPlugins) {
-        let pluginName = getLambdaName(plugin._plugin)
+        let pluginName = plugin._plugin
         let result = await plugin({ arc, cloudformation, dryRun, inventory, stage })
         if (result && Object.keys(result).length) {
           Object.entries(result).forEach(([ key, Value ]) => {
