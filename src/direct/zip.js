@@ -1,8 +1,8 @@
 var series = require('run-waterfall')
-var { join } = require('path')
-var glob = require('glob')
+var { globSync } = require('glob')
 var zipit = require('zipit')
 var zipdir = require('zip-dir')
+let { pathToUnix } = require('@architect/utils')
 
 /**
  * @param {String} pathIn - path to zip
@@ -20,7 +20,14 @@ function winzip (pathToCode, callback) {
 function nixzip (pathToCode, callback) {
   series([
     function _read (callback) {
-      glob(join(pathToCode, '/*'), { dot: true }, callback)
+      try {
+        let path = pathToUnix(pathToCode + '/*')
+        let files = globSync(path, { dot: true })
+        callback(null, files)
+      }
+      catch (err) {
+        callback(err)
+      }
     },
     function _zip (files, callback) {
       zipit({

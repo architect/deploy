@@ -1,5 +1,5 @@
 let chalk = require('chalk')
-let glob = require('glob')
+let { globSync } = require('glob')
 let { join, sep } = require('path')
 let { pathToUnix } = require('@architect/utils')
 let waterfall = require('run-waterfall')
@@ -52,18 +52,19 @@ module.exports = function publishStaticAssets (params, callback) {
 
     // Scan for files in the public directory
     function _globFiles (callback) {
-      let dir = pathToUnix(staticAssets)
-      let opts = {
-        dot: true,
-        nodir: true,
-        follow: true
+      try {
+        let path = pathToUnix(staticAssets)
+        let files = globSync(path, { dot: true, nodir: true, follow: true })
+        callback(null, files)
       }
-      glob(dir, opts, callback)
+      catch (err) {
+        callback(err)
+      }
     },
 
     // Filter based on default and user-specified @static ignore rules
-    function _filterFiles (globbed, callback) {
-      let params = { globbed, ignore, publicDir }
+    function _filterFiles (files, callback) {
+      let params = { globbed: files, ignore, publicDir }
       filterFiles(params, callback)
     },
 
