@@ -2,6 +2,16 @@
 
 ---
 
+## [4.3.2] 2023-03-09
+
+### Changed
+
+- Update deps
+- Internal change: refactored globbing logic for Glob v9
+- Fixed typo; thanks @lpsinger!
+
+---
+
 ## [4.3.1] 2023-02-17
 
 ### Fixed
