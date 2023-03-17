@@ -24,7 +24,7 @@ module.exports = function publishStaticAssets (params, callback) {
   } = params
   let { get } = inventory
 
-  let publicDir = pathToUnix(join(process.cwd(), folder))
+  let publicDir = join(process.cwd(), folder)
   let staticAssets = join(publicDir, '/**/*')
 
   // Assigned later
@@ -64,7 +64,7 @@ module.exports = function publishStaticAssets (params, callback) {
 
     // Filter based on default and user-specified @static ignore rules
     function _filterFiles (files, callback) {
-      let params = { globbed: files, ignore, publicDir }
+      let params = { globbed: files, ignore }
       filterFiles(params, callback)
     },
 
@@ -85,7 +85,7 @@ module.exports = function publishStaticAssets (params, callback) {
       staticManifest = manifest
       // static.json is intentionally ignored during fingerprinting; ensure it's uploaded
       if (fingerprint && (fingerprint !== 'external')) {
-        files.unshift(pathToUnix(join(publicDir, 'static.json')))
+        files.unshift(join(publicDir, 'static.json'))
       }
 
       putFiles({

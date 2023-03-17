@@ -1,8 +1,11 @@
 let test = require('tape')
 let { join } = require('path')
+let inventory = require('@architect/inventory')
+let { pathToUnix } = require('@architect/utils')
+let { globSync } = require('glob')
 
-let filePath = join(process.cwd(), 'src', 'static', 'publish', 's3', 'put-files', 'format-key.js')
-let sut = require(filePath)
+let sut = join(process.cwd(), 'src', 'static', 'publish', 's3', 'put-files', 'format-key.js')
+let formatKey = require(sut)
 
 let defaultParams = () => ({
   file: 'index.html',
@@ -14,7 +17,7 @@ let defaultParams = () => ({
 
 test('Module is present', t => {
   t.plan(1)
-  t.ok(sut, 'Publish module is present')
+  t.ok(formatKey, 'Publish module is present')
 })
 
 test('Key pathing', t => {
@@ -22,13 +25,34 @@ test('Key pathing', t => {
 
   let params = defaultParams()
   params.file = 'public/index.html'
-  let Key = sut(params)
+  let Key = formatKey(params)
   t.equal(Key, 'index.html', 'Removed static folder from file path')
 
   params = defaultParams()
   params.file = '/public/index.html'
-  Key = sut(params)
+  Key = formatKey(params)
   t.equal(Key, 'index.html', 'Removed leading slash from file path')
+})
+
+test('Key pathing is correct on each platform', async t => {
+  // t.plan()
+
+  let cwd = join(process.cwd(), 'test', 'mocks', 'app-with-extensions')
+  let inv = await inventory({ cwd })
+  let publicDir = join(cwd, inv.inv.static.folder)
+
+  let path = pathToUnix(cwd) + `/${inv.inv.static.folder}/**/*`
+  let files = globSync(path, { dot: true, nodir: true, follow: true })
+  // TODO ↓ remove me! ↓
+  console.log(`files:`, files)
+
+  files.forEach(file => {
+    let key = formatKey({ file, publicDir })
+    // TODO ↓ remove me! ↓
+    console.log(`key:`, key)
+  })
+
+  t.end()
 })
 
 test('Fingerprint key', t => {
@@ -40,7 +64,7 @@ test('Fingerprint key', t => {
   params.staticManifest = {
     'index.html': 'index-a1b2c.html'
   }
-  let Key = sut(params)
+  let Key = formatKey(params)
   t.equal(Key, 'static.json', 'Did not fingerprint static.json')
 
   params = defaultParams()
@@ -48,7 +72,7 @@ test('Fingerprint key', t => {
   params.staticManifest = {
     'index.html': 'index-a1b2c.html'
   }
-  Key = sut(params)
+  Key = formatKey(params)
   t.equal(Key, 'index-a1b2c.html', 'Fingerprinted filename')
 })
 
@@ -57,7 +81,7 @@ test('Prefix key', t => {
 
   let params = defaultParams()
   params.prefix = 'some-folder'
-  let Key = sut(params)
+  let Key = formatKey(params)
   t.equal(Key, 'some-folder/index.html', 'Prepended prefix to filename')
 
   params = defaultParams()
@@ -66,6 +90,6 @@ test('Prefix key', t => {
   params.staticManifest = {
     'index.html': 'index-a1b2c.html'
   }
-  Key = sut(params)
+  Key = formatKey(params)
   t.equal(Key, 'some-folder/index-a1b2c.html', `Prepended prefix to fingerprinted filename" ${Key}`)
 })
