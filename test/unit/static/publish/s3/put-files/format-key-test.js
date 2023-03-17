@@ -41,6 +41,7 @@ test('Key pathing is correct on each platform', async t => {
 
   let path = pathToUnix(cwd) + `/${inv.inv.static.folder}/**/*`
   let files = globSync(path, { dot: true, nodir: true, follow: true })
+  console.log(`Found these assets to derive keys for:`, files)
   t.plan(files.length)
 
   files.forEach(file => {
