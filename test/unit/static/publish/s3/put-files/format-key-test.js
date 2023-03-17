@@ -35,24 +35,19 @@ test('Key pathing', t => {
 })
 
 test('Key pathing is correct on each platform', async t => {
-  // t.plan()
-
   let cwd = join(process.cwd(), 'test', 'mocks', 'app-with-extensions')
   let inv = await inventory({ cwd })
   let publicDir = join(cwd, inv.inv.static.folder)
 
   let path = pathToUnix(cwd) + `/${inv.inv.static.folder}/**/*`
   let files = globSync(path, { dot: true, nodir: true, follow: true })
-  // TODO ↓ remove me! ↓
-  console.log(`files:`, files)
+  t.plan(files.length)
 
   files.forEach(file => {
     let key = formatKey({ file, publicDir })
-    // TODO ↓ remove me! ↓
-    console.log(`key:`, key)
+    t.notOk(key.includes(publicDir), `Key pathing strips public dir`)
+    console.log(`Before: ${file}\nAfter: ${key}`)
   })
-
-  t.end()
 })
 
 test('Fingerprint key', t => {
@@ -91,5 +86,5 @@ test('Prefix key', t => {
     'index.html': 'index-a1b2c.html'
   }
   Key = formatKey(params)
-  t.equal(Key, 'some-folder/index-a1b2c.html', `Prepended prefix to fingerprinted filename" ${Key}`)
+  t.equal(Key, 'some-folder/index-a1b2c.html', `Prepended prefix to fingerprinted filename: ${Key}`)
 })

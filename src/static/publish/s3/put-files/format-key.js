@@ -1,4 +1,4 @@
-let { pathToUnix } = require('@architect/utils')
+let { sep } = require('path')
 
 /**
  * Normalize the S3 Key of the globbed file to be uploaded
@@ -6,10 +6,8 @@ let { pathToUnix } = require('@architect/utils')
 module.exports = function formatKey (params) {
   let { file, fingerprint, publicDir, prefix, staticManifest } = params
 
-  // At this point glob has passed us *nix-style paths - even on Windows
-  // Also Windows can use backslashes OR forward slashes in file reads (lol), renormalize path.sep in case glob ever changes that behavior
-  let filepath = pathToUnix(`${publicDir}/`)
-  // Remove the public dir so the S3 path (called 'Key') is always relative
+  // Remove the public dir so the S3 path (called 'Key') is always project-relative
+  let filepath = publicDir + sep
   let Key = file.replace(filepath, '')
   if (Key.startsWith('/')) Key = Key.substr(1)
 
