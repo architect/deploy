@@ -7,8 +7,8 @@ module.exports = function formatKey (params) {
   let { file, fingerprint, publicDir, prefix, staticManifest } = params
 
   // Remove the public dir so the S3 path (called 'Key') is always project-relative
-  let filepath = publicDir + sep
-  let Key = file.replace(filepath, '')
+
+  let Key = file.replace(publicDir + sep, '').replace(publicDir + '/', '')
   if (Key.startsWith('/')) Key = Key.substr(1)
 
   // If fingerprint is set to 'external', don't mutate the Key, it's assumed to be fingerprinted
