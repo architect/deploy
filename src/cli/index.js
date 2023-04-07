@@ -32,7 +32,7 @@ async function main (/* opts = {} */) {
   // Validate for expected env and args and check for potential creds issues
   validate()
 
-  // Populate options, read args into `prune`, `verbose`, `production`, `tags`, `name`, `isFullDeploy`, etc.
+  // Populate options, read args into `prune`, `verbose`, `production`, `tags`, `name`, etc.
   let options = {
     inventory,
     update,

@@ -56,6 +56,7 @@ module.exports = function deleteFiles (params, callback) {
       }
 
       if (leftovers.length) {
+        update.status(`Pruning ${leftovers.length} orphaned static assets...`)
         bulkDelete({
           Bucket,
           items: leftovers,

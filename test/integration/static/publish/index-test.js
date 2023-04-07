@@ -32,7 +32,6 @@ let defaultParams = () => ({
   Bucket: 'a-bucket',
   folder: 'public',
   inventory,
-  isFullDeploy: true,
   prune: false,
   region: 'us-west-1',
   s3,
@@ -69,18 +68,10 @@ test('Set up env', async t => {
   inventory = await _inventory({})
   t.ok(inventory, 'Got inventory obj')
 
-  awsMock.mock('S3', 'headObject', (params, callback) => {
-    callback()
-  })
-  awsMock.mock('S3', 'putObject', (params, callback) => {
-    callback()
-  })
-  awsMock.mock('S3', 'listObjectsV2', (params, callback) => {
-    callback()
-  })
-  awsMock.mock('S3', 'deleteObjects', (params, callback) => {
-    callback()
-  })
+  awsMock.mock('S3', 'headObject', (params, callback) => callback())
+  awsMock.mock('S3', 'putObject', (params, callback) => callback())
+  awsMock.mock('S3', 'listObjectsV2', (params, callback) => callback())
+  awsMock.mock('S3', 'deleteObjects', (params, callback) => callback())
   s3 = new aws.S3()
 })
 
@@ -100,11 +91,31 @@ test('Static asset publishing', t => {
   })
 })
 
-test('Static asset deletion', t => {
+test(`Static asset deletion (deployAction is 'all')`, t => {
   t.plan(7)
   setup()
   let params = defaultParams()
   params.prune = true
+  params.deployAction = 'all'
+  sut(params, err => {
+    if (err) t.fail(err)
+    t.equal(deleted.Bucket, params.Bucket, 'Passed bucket unmutated')
+    t.equal(deleted.files.length, 3, 'Passed files to be published')
+    t.equal(deleted.fingerprint, null, 'Passed fingerprint unmutated')
+    t.equal(deleted.folder, params.folder, 'Passed folder unmutated')
+    t.equal(deleted.prefix, undefined, 'Passed prefix unmutated')
+    t.equal(deleted.region, params.region, 'Passed region setting unmutated')
+    t.deepEqual(deleted.staticManifest, {}, 'Passed empty staticManifest by default')
+    reset()
+  })
+})
+
+test(`Static asset deletion (deployAction is 'delete')`, t => {
+  t.plan(7)
+  setup()
+  let params = defaultParams()
+  params.prune = true
+  params.deployAction = 'delete'
   sut(params, err => {
     if (err) t.fail(err)
     t.equal(deleted.Bucket, params.Bucket, 'Passed bucket unmutated')

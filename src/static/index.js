@@ -6,21 +6,24 @@ let { toLogicalID, updater } = require('@architect/utils')
 let publish = require('./publish')
 let getResources = require('../utils/get-cfn-resources')
 
+let deployActions = [ 'all', 'put', 'delete' ]
+
+// Allow bucket to be cached between invocations
+let Bucket
+
 /**
  * Upload files to CFN defined bucket
  *
  * @param {Object} params - parameters object
  * @param {Function} callback - a node-style errback
- * @returns {Promise} - if no callback is supplied
  */
 module.exports = function deployStatic (params, callback) {
   let {
-    bucket: Bucket,
+    bucket,
     credentials,
     eject,
     inventory,
     isDryRun = false,
-    isFullDeploy = true, // Prevents duplicate static manifest operations that could impact state
     name,
     production,
     region,
@@ -30,19 +33,41 @@ module.exports = function deployStatic (params, callback) {
     // `@static` settings
     prefix, // Enables `@static prefix` publishing prefix (not the same as `@static folder`)
     prune = false,
+    // Actions: `all`, `put`, or `delete`
+    // `all` also prevents duplicate static manifest operations that could impact state
+    deployAction = 'all',
   } = params
   if (!update) update = updater('Deploy')
   let { inv } = inventory
+  let appname = inv.app
+  let folder = inv.static?.folder
+  let staticFolder = folder && join(inv._project.cwd, folder)
+  if (bucket) Bucket = bucket
 
-  if (!inv.static) callback()
-  else if (eject || isDryRun) {
-    update.status('Skipping static deploy')
+  // Asset pruning: delete files not present in public/ folder
+  prune = prune || inv.static?.prune
+
+  // Published path prefixing
+  prefix = prefix || inv.static?.prefix
+
+  if (!deployActions.includes(deployAction)) {
+    callback(ReferenceError(`Invalid deploy action: ${deployAction}`))
+  }
+  // Bail early if this project doesn't have @static specified
+  else if (!inv.static) {
     callback()
   }
+  else if (staticFolder && !existsSync(staticFolder)) {
+    update.status(`@static folder (${folder}${sep}) not found, skipping static asset deployment`)
+    callback()
+  }
+  else if (eject || isDryRun) {
+    update.status('Skipping static asset deployment')
+    if (prune) update.status('Skipping static asset pruning')
+    callback()
+  }
+  // Ok, we're actually doing this thing
   else {
-    update.status('Deploying static assets...')
-    let appname = inv.app
-
     if (!stackname) {
       stackname = `${toLogicalID(appname)}${production ? 'Production' : 'Staging'}`
       if (name) stackname += toLogicalID(name)
@@ -54,29 +79,11 @@ module.exports = function deployStatic (params, callback) {
       Bucket = inv.static?.[stage]
     }
 
-    let folder
+    if (deployAction !== 'delete') {
+      update.status('Deploying static assets...')
+    }
+
     series([
-      // Parse settings
-      function (callback) {
-        // Bail early if this project doesn't have @static specified
-        if (!inv.static) callback(Error('cancel'))
-        else {
-          // Asset pruning: delete files not present in public/ folder
-          prune = prune || inv.static.prune
-
-          // Project folder remap
-          folder = inv.static.folder
-          if (!existsSync(join(process.cwd(), folder))) {
-            callback(Error('no_folder'))
-          }
-          else {
-            // Published path prefixing
-            prefix = prefix || inv.static.prefix
-            callback()
-          }
-        }
-      },
-
       // Get the bucket PhysicalResourceId if not supplied
       function (callback) {
         if (!Bucket) {
@@ -99,9 +106,8 @@ module.exports = function deployStatic (params, callback) {
 
         publish({
           Bucket,
-          folder,
           inventory,
-          isFullDeploy,
+          deployAction,
           prefix,
           prune,
           region,
@@ -112,15 +118,7 @@ module.exports = function deployStatic (params, callback) {
       }
     ],
     function done (err) {
-      if (err && err.message === 'no_folder') {
-        update.status(`@static folder (${folder}${sep}) not found, skipping static asset deployment`)
-        callback()
-      }
-      else if (err && err.message === 'cancel') {
-        if (!isFullDeploy) update.done('No static assets to deploy')
-        callback()
-      }
-      else if (err) callback(err)
+      if (err) callback(err)
       else callback()
     })
   }

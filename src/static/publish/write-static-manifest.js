@@ -6,11 +6,11 @@ let { fingerprint } = require('@architect/utils')
  * Write, reuse, or possibly remove fingerprinted static asset manifest
  */
 module.exports = function maybeWriteStaticManifest (params, callback) {
-  let { ignore, inventory, isFullDeploy, publicDir } = params
+  let { ignore, inventory, publishing, publicDir } = params
 
   let staticFile = join(publicDir, 'static.json')
   let staticFileExists = existsSync(staticFile)
-  let useExistingStaticManifest = isFullDeploy && fingerprint && staticFileExists
+  let useExistingStaticManifest = publishing && fingerprint && staticFileExists
 
   // Assumes static manifest was already written to disk by deploy
   if (useExistingStaticManifest) {
