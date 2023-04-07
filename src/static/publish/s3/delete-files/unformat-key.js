@@ -1,5 +1,3 @@
-let { sep } = require('path')
-
 /**
  * Denormalize the S3 Key for local filesystem lookups after accounting for prefix, Windows paths, etc.
  */
@@ -14,9 +12,6 @@ module.exports = function unformatKey (Key, prefix) {
 
   // Strip leading slash from prefix or jic
   if (key.startsWith('/')) key = key.substr(1)
-
-  // Un-Windowsify (prob not necessary, but jic)
-  key = key.replace(sep, '/')
 
   return key
 }

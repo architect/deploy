@@ -7,12 +7,13 @@ let listObjCalls = []
 let delObjCalls = []
 let filesOnS3 = { Contents: [] }
 
+let cwd = process.cwd()
 let files = [
   'index.html',
   'something.json',
   'index.js',
 ]
-let localFiles = arr => arr.map(f => join(join(process.cwd(), 'public', f)))
+let localFiles = arr => arr.map(f => join(join(cwd, 'public', f)))
 let defaultParams = () => {
   let s3 = new aws.S3()
   return {
@@ -21,6 +22,7 @@ let defaultParams = () => {
     fingerprint: false,
     folder: 'public',
     ignore: [],
+    inventory: { inv: { _project: { cwd } } },
     prefix: undefined,
     region: 'us-west-1',
     s3,
@@ -29,7 +31,7 @@ let defaultParams = () => {
   }
 }
 
-let filePath = join(process.cwd(), 'src', 'static', 'publish', 's3', 'delete-files')
+let filePath = join(cwd, 'src', 'static', 'publish', 's3', 'delete-files')
 let sut = require(filePath)
 
 function reset () {
