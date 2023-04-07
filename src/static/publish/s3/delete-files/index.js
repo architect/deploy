@@ -1,4 +1,4 @@
-let { join } = require('path')
+let { join, sep } = require('path')
 let unformatKey = require('./unformat-key')
 let getAllS3Files = require('../../../../utils/get-all-s3-files')
 let bulkDelete = require('../../../../utils/bulk-delete')
@@ -11,6 +11,7 @@ module.exports = function deleteFiles (params, callback) {
     fingerprint,
     folder,
     ignore,
+    inventory,
     prefix,
     region,
     s3,
@@ -21,6 +22,7 @@ module.exports = function deleteFiles (params, callback) {
   // If prefix is enabled, we must ignore everything else in the bucket (or risk pruning all contents)
   let listParams = { Bucket, s3 }
   if (prefix) listParams.Prefix = prefix
+  let cwd = inventory.inv._project.cwd
 
   getAllS3Files(listParams, function _listObjects (err, filesOnS3) {
     if (err) {
@@ -34,7 +36,8 @@ module.exports = function deleteFiles (params, callback) {
       // TODO need to handle pagination (filesOnS3.IsTruncated) if > 1000 files
       let leftovers = filesOnS3.filter(({ Key }) => {
         let key = unformatKey(Key, prefix)
-        let localPathOfS3File = join(process.cwd(), folder, key)
+        key = key.replace(/\//g, sep) // Denormalize to each platform
+        let localPathOfS3File = join(cwd, folder, key)
         return !files.includes(localPathOfS3File)
       }).map(getS3ItemKey)
 

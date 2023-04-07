@@ -22,10 +22,8 @@ module.exports = function publishStaticAssets (params, callback) {
     update,
     verbose,
   } = params
-  let { get } = inventory
-
-  let publicDir = join(process.cwd(), folder)
-  let staticAssets = join(publicDir, '/**/*')
+  let { inv, get } = inventory
+  let publicDir = join(inv._project.cwd, folder)
 
   // Assigned later
   let files
@@ -53,7 +51,7 @@ module.exports = function publishStaticAssets (params, callback) {
     // Scan for files in the public directory
     function _globFiles (callback) {
       try {
-        let path = pathToUnix(staticAssets)
+        let path = pathToUnix(publicDir + '/**/*')
         let files = globSync(path, { dot: true, nodir: true, follow: true })
         callback(null, files)
       }
@@ -63,16 +61,19 @@ module.exports = function publishStaticAssets (params, callback) {
     },
 
     // Filter based on default and user-specified @static ignore rules
-    function _filterFiles (files, callback) {
-      let params = { globbed: files, ignore }
-      filterFiles(params, callback)
+    function _filterFiles (globbed, callback) {
+      filterFiles({ globbed, ignore }, callback)
     },
 
     // Write, reuse, or possibly remove fingerprinted static asset manifest
     function _maybeWriteStaticManifest (filtered, ignored, callback) {
       files = filtered
-      let params = { ignore: ignored, inventory, isFullDeploy, publicDir }
-      writeStaticManifest(params, callback)
+      writeStaticManifest({
+        ignore: ignored,
+        inventory,
+        isFullDeploy,
+        publicDir
+      }, callback)
     },
 
     // Upload files to S3
@@ -115,6 +116,7 @@ module.exports = function publishStaticAssets (params, callback) {
           fingerprint,
           folder,
           ignore,
+          inventory,
           prefix,
           region,
           s3,
