@@ -37,7 +37,6 @@ module.exports = function getFlags () {
     isDirect:       args.direct,
     isDryRun:       args['dry-run'] || args.eject,
     isStatic:       args.static,
-    isFullDeploy:   args.static ? false : true,
     shouldHydrate:  args.hydrate,
   }
 }

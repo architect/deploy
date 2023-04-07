@@ -14,6 +14,7 @@ let files = [
   'index.js',
 ]
 let localFiles = arr => arr.map(f => join(join(cwd, 'public', f)))
+let noop = () => {}
 let defaultParams = () => {
   let s3 = new aws.S3()
   return {
@@ -27,7 +28,7 @@ let defaultParams = () => {
     region: 'us-west-1',
     s3,
     staticManifest: {},
-    update: { raw: () => {} },
+    update: { status: noop, raw: noop },
   }
 }
 

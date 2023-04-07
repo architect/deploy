@@ -24,7 +24,6 @@ let staticDeployMod = proxyquire(staticDeployPath, {
 let defaultParams = () => ({
   bucket: 'a-bucket',
   isDryRun: false,
-  isFullDeploy: true,
   name: 'an-app',
   production: false,
   region: 'us-west-1',
@@ -94,7 +93,7 @@ test(`Static deploy exits gracefully if @http is defined, but public/ folder is 
 })
 
 test(`Publish static deploy if @static is defined`, t => {
-  t.plan(6)
+  t.plan(5)
   setup()
   let arc = '@app\n an-app\n @static'
   mockFs({
@@ -105,7 +104,6 @@ test(`Publish static deploy if @static is defined`, t => {
   staticDeploy(t, err => {
     if (err) t.fail(err)
     t.equal(published.Bucket, params.bucket, 'Bucket is unchanged')
-    t.equal(published.folder, 'public', 'Folder set to public by default')
     t.equal(published.isFullDeploy, params.isFullDeploy, 'isFullDeploy is unchaged')
     t.equal(published.prefix, null, 'Prefix set to null by default')
     t.equal(published.prune, null, 'Prune set to null by default')
@@ -156,21 +154,6 @@ test(`Respect prune setting in project manifest`, t => {
   staticDeploy(t, err => {
     if (err) t.fail(err)
     t.ok(published.prune, 'Prune is enabled')
-  })
-})
-
-test(`Respect folder setting in project manifest`, t => {
-  t.plan(1)
-  setup()
-  let arc = '@app\n an-app\n @static\n folder some-folder'
-  mockFs({
-    'app.arc': arc,
-    'some-folder': {},
-    node_modules
-  })
-  staticDeploy(t, err => {
-    if (err) t.fail(err)
-    t.equal(published.folder, 'some-folder', 'Got correct folder setting')
   })
 })
 

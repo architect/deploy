@@ -9,12 +9,14 @@ let writeStaticManifest = require('./write-static-manifest')
 let putFiles = require('./s3/put-files')
 let deleteFiles = require('./s3/delete-files')
 
+// Allow file list to be cached between invocations
+let files, staticManifest
+
 module.exports = function publishStaticAssets (params, callback) {
   let {
     Bucket,
-    folder,
+    deployAction,
     inventory,
-    isFullDeploy,
     prefix,
     prune,
     region,
@@ -23,11 +25,13 @@ module.exports = function publishStaticAssets (params, callback) {
     verbose,
   } = params
   let { inv, get } = inventory
+  let folder = inv.static.folder
   let publicDir = join(inv._project.cwd, folder)
 
+  let publishing = [ 'all', 'put' ].includes(deployAction)
+  let deleting = [ 'all', 'delete' ].includes(deployAction) && prune
+
   // Assigned later
-  let files
-  let staticManifest
   let uploaded
   let notModified
 
@@ -35,34 +39,44 @@ module.exports = function publishStaticAssets (params, callback) {
   let fingerprint = get.static('fingerprint')
   let ignore = get.static('ignore') ? [ ...get.static('ignore') ] : []
 
+  // Second-pass, post-deploy, static asset pruning-only operation
+  if (files && prune && deployAction === 'delete') {
+    return deleteFiles({
+      Bucket,
+      files,
+      fingerprint,
+      folder,
+      ignore,
+      inventory,
+      prefix,
+      region,
+      s3,
+      staticManifest,
+      update,
+    }, done)
+  }
+
+  // Notices
+  if ((publishing && fingerprint) ||
+      (publishing && verbose)) {
+    update.done(`Static asset fingerprinting ${fingerprint ? 'enabled' : 'disabled'}`)
+  }
+  if (prune || verbose) {
+    update.done(`Orphaned file pruning ${prune ? 'enabled' : 'disabled'}`)
+  }
+
   waterfall([
-
-    // Notices
-    function _notices (callback) {
-      if ((!isFullDeploy && fingerprint) || (!isFullDeploy && verbose)) {
-        update.done(`Static asset fingerprinting ${fingerprint ? 'enabled' : 'disabled'}`)
-      }
-      if (prune || verbose) {
-        update.done(`Orphaned file pruning ${prune ? 'enabled' : 'disabled'}`)
-      }
-      callback()
-    },
-
     // Scan for files in the public directory
-    function _globFiles (callback) {
+    function _globAndFilter (callback) {
       try {
         let path = pathToUnix(publicDir + '/**/*')
-        let files = globSync(path, { dot: true, nodir: true, follow: true })
-        callback(null, files)
+        let globbed = globSync(path, { dot: true, nodir: true, follow: true })
+        // Filter based on default and user-specified @static ignore rules
+        filterFiles({ globbed, ignore }, callback)
       }
       catch (err) {
         callback(err)
       }
-    },
-
-    // Filter based on default and user-specified @static ignore rules
-    function _filterFiles (globbed, callback) {
-      filterFiles({ globbed, ignore }, callback)
     },
 
     // Write, reuse, or possibly remove fingerprinted static asset manifest
@@ -71,7 +85,7 @@ module.exports = function publishStaticAssets (params, callback) {
       writeStaticManifest({
         ignore: ignored,
         inventory,
-        isFullDeploy,
+        publishing,
         publicDir
       }, callback)
     },
@@ -109,7 +123,7 @@ module.exports = function publishStaticAssets (params, callback) {
       uploaded = uploadCount
       notModified = notModifiedCount
 
-      if (prune) {
+      if (deleting) {
         deleteFiles({
           Bucket,
           files,
@@ -126,12 +140,14 @@ module.exports = function publishStaticAssets (params, callback) {
       }
       else callback()
     }
-  ], function done (err) {
-    if (err && err.message === 'no_files_to_publish') {
+  ], done)
+
+  function done (err) {
+    if (err?.message === 'no_files_to_publish') {
       update.done('Done!', `No static assets found to deploy from ${folder}${sep}`)
       callback()
     }
-    else if (err && err.message === 'access_denied') {
+    else if (err?.message === 'access_denied') {
       update.error(`${chalk.red.bold('S3 access denied:')} could not access S3 bucket (${Bucket})`)
       update.error('Possible reason: bucket already exists & belongs to another AWS account')
       callback()
@@ -144,10 +160,10 @@ module.exports = function publishStaticAssets (params, callback) {
         update.done(`Skipped ${notModified} file${notModified > 1 ? 's' : ''} (already up to date)`)
       }
       if (uploaded) {
-        let msg = chalk.green(`Deployed static asset${uploaded > 1 ? 's' : ''} from ${folder}${sep}`)
-        update.done('Success!', msg)
+        let msg = `Deployed ${uploaded} static asset${uploaded > 1 ? 's' : ''} from ${folder}${sep}`
+        update.done(msg)
       }
       callback()
     }
-  })
+  }
 }
