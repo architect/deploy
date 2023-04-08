@@ -9,12 +9,12 @@
 - Improved deployment of static assets prior to deploying app changes
 - Updated deps
 - Internal change: refactored globbing logic for Glob v9
-- Fixed typo; thanks @lpsinger!
 
 
 ### Fixed
 
 - Fixed case where static assets would be pruned prior to deploying app changes, which could leave the app in a broken state during deployment, or if the deployment otherwise fails; fixes #1416
+- Fixed typo; thanks @lpsinger!
 
 ---
 
