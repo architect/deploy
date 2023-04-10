@@ -58,7 +58,9 @@ module.exports = function deployStatic (params, callback) {
     callback()
   }
   else if (staticFolder && !existsSync(staticFolder)) {
-    update.status(`@static folder (${folder}${sep}) not found, skipping static asset deployment`)
+    if (deployAction !== 'delete') {
+      update.status(`@static folder (${folder}${sep}) not found, skipping static asset deployment`)
+    }
     callback()
   }
   else if (eject || isDryRun) {
