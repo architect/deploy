@@ -2,6 +2,14 @@
 
 ---
 
+## [4.5.0] 2023-04-10
+
+### Added
+
+- Added support for deploying compiled runtimes
+
+---
+
 ## [4.4.0] 2023-03-09
 
 ### Changed
