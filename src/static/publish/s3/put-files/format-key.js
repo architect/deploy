@@ -6,9 +6,11 @@ let { sep } = require('path')
 module.exports = function formatKey (params) {
   let { file, fingerprint, publicDir, prefix, staticManifest } = params
 
-  // Remove the public dir so the S3 path (called 'Key') is always project-relative
-
-  let Key = file.replace(publicDir + sep, '').replace(publicDir + '/', '')
+  // Remove the public dir so the S3 path (called 'Key') is always project-relative, deal with Windows garbage
+  let Key = file
+    .replace(publicDir + sep, '')
+    .replace(publicDir + '/', '')
+    .replace(/\\/g, '/') // You know who
   if (Key.startsWith('/')) Key = Key.substr(1)
 
   // If fingerprint is set to 'external', don't mutate the Key, it's assumed to be fingerprinted

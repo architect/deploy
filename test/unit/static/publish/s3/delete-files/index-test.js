@@ -1,5 +1,5 @@
 let test = require('tape')
-let { join } = require('path')
+let { join, sep } = require('path')
 let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
 
@@ -10,10 +10,10 @@ let filesOnS3 = { Contents: [] }
 let cwd = process.cwd()
 let files = [
   'index.html',
-  'something.json',
+  'folder/something.json',
   'index.js',
 ]
-let localFiles = arr => arr.map(f => join(join(cwd, 'public', f)))
+let localFiles = arr => arr.map(f => join(cwd, 'public', f.replace('/', sep)))
 let noop = () => {}
 let defaultParams = () => {
   let s3 = new aws.S3()
@@ -137,13 +137,13 @@ test('Prune respects fingerprint setting', t => {
   params.fingerprint = true
   params.staticManifest = {
     'index.html': 'index-df330f3f12.html',
-    'something.json': 'something-df330f3f12.json'
+    'folder/something.json': 'folder/something-df330f3f12.json'
   }
   params.files.pop() // Create a pruning opportunity
   let pruneThis = 'index-df330f3f12.js'
   filesOnS3 = { Contents: [
     { Key: 'index-df330f3f12.html' },
-    { Key: 'something-df330f3f12.json' },
+    { Key: 'folder/something-df330f3f12.json' },
     { Key: pruneThis }
   ] }
   sut(params, err => {
@@ -164,13 +164,13 @@ test('Prune respects both prefix & fingerprint settings together', t => {
   params.fingerprint = true
   params.staticManifest = {
     'index.html': 'index-df330f3f12.html',
-    'something.json': 'something-df330f3f12.json'
+    'folder/something.json': 'folder/something-df330f3f12.json'
   }
   params.files.pop() // Create a pruning opportunity
   let pruneThis = `${prefix}/index-df330f3f12.js`
   filesOnS3 = { Contents: [
     { Key: `${prefix}/index-df330f3f12.html`, },
-    { Key: `${prefix}/something-df330f3f12.json` },
+    { Key: `${prefix}/folder/something-df330f3f12.json` },
     { Key: pruneThis }
   ] }
   sut(params, err => {
