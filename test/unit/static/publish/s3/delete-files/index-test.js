@@ -1,5 +1,6 @@
 let test = require('tape')
 let { join } = require('path')
+require('aws-sdk/lib/maintenance_mode_message').suppress = true
 let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
 

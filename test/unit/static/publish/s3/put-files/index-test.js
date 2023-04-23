@@ -2,6 +2,7 @@ let test = require('tape')
 let mockFs = require('mock-fs')
 let proxyquire = require('proxyquire')
 let { join } = require('path')
+require('aws-sdk/lib/maintenance_mode_message').suppress = true
 let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
 let crypto = require('crypto')

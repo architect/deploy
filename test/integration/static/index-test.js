@@ -6,6 +6,7 @@ let inventory = require('@architect/inventory')
 let { updater } = require('@architect/utils')
 
 // Necessary to run test solo
+require('aws-sdk/lib/maintenance_mode_message').suppress = true
 let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
 

@@ -2,6 +2,7 @@ let test = require('tape')
 let { join } = require('path')
 let mockFs = require('mock-fs')
 let proxyquire = require('proxyquire')
+require('aws-sdk/lib/maintenance_mode_message').suppress = true
 let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
 let _inventory = require('@architect/inventory')
