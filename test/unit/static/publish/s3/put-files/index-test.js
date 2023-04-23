@@ -1,11 +1,12 @@
 let test = require('tape')
 let mockFs = require('mock-fs')
 let proxyquire = require('proxyquire')
-let { join } = require('path')
+let { join, sep } = require('path')
 require('aws-sdk/lib/maintenance_mode_message').suppress = true
 let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
 let crypto = require('crypto')
+let { pathToUnix } = require('@architect/utils')
 
 let headObjCalls = []
 let putObjCalls = []
@@ -15,13 +16,13 @@ function createFileData (diff) {
   return {
     'index.html': Buffer.from(`this is index.html + ${diff ? 'diff' : 'no diff'}`),
     'static.json': Buffer.from(`this is static.json + ${diff ? 'diff' : 'no diff'}`),
-    'something.json': Buffer.from(`this is something.json + ${diff ? 'diff' : 'no diff'}`),
+    'folder/something.json': Buffer.from(`this is something.json + ${diff ? 'diff' : 'no diff'}`),
     'index.js': Buffer.from(`this is index.js + ${diff ? 'diff' : 'no diff'}`),
   }
 }
 // Benchmark file data to compare against in headObject calls
 let fileData = createFileData()
-let files = Object.keys(fileData)
+let files = Object.keys(fileData).map(f => f.replace('/', sep))
 let update = () => {}
 update.raw = () => {}
 
@@ -81,9 +82,9 @@ test('Basic publish test', t => {
     reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     let headCallsAreGood =  (headObjCalls.length === files.length) &&
-                            files.every(f => headObjCalls.some(h => h.Key === f))
+                            files.every(f => headObjCalls.some(h => h.Key === pathToUnix(f)))
     let putCallsAreGood =   (putObjCalls.length === files.length) &&
-                            files.every(f => putObjCalls.some(h => h.Key === f))
+                            files.every(f => putObjCalls.some(h => h.Key === pathToUnix(f)))
     t.ok(headCallsAreGood, 'S3.headObject called once for each file')
     t.ok(putCallsAreGood, 'S3.putObject called once for each file')
     t.equal(notModified, 0, 'Returned correct quantity of skipped files')
@@ -100,7 +101,7 @@ test('Skip publishing files that have not been updated', t => {
     reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     let headCallsAreGood =  (headObjCalls.length === files.length) &&
-                            files.every(f => headObjCalls.some(h => h.Key === f))
+                            files.every(f => headObjCalls.some(h => h.Key === pathToUnix(f)))
     t.ok(headCallsAreGood, 'S3.headObject called once for each file')
     t.equal(putObjCalls.length, 0, 'S3.putObject not called on updated files')
     t.equal(headObjCalls.length, notModified, 'Returned correct quantity of skipped files')
@@ -118,9 +119,9 @@ test('Re-publish files if cache-control header does not match', t => {
     reset() // Must be reset before any tape tests are resolved because mock-fs#201
     if (err) t.fail(err)
     let headCallsAreGood =  (headObjCalls.length === files.length) &&
-                            files.every(f => headObjCalls.some(h => h.Key === f))
+                            files.every(f => headObjCalls.some(h => h.Key === pathToUnix(f)))
     let putCallsAreGood =   (putObjCalls.length === files.length) &&
-                            files.every(f => putObjCalls.some(h => h.Key === f))
+                            files.every(f => putObjCalls.some(h => h.Key === pathToUnix(f)))
     t.ok(headCallsAreGood, 'S3.headObject called once for each file')
     t.ok(putCallsAreGood, 'S3.putObject called once for each file')
     t.equal(notModified, 0, 'Returned correct quantity of skipped files')

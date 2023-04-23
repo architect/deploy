@@ -42,11 +42,12 @@ test('Key pathing is correct on each platform', async t => {
   let path = pathToUnix(cwd) + `/${inv.inv.static.folder}/**/*`
   let files = globSync(path, { dot: true, nodir: true, follow: true })
   console.log(`Found these assets to derive keys for:`, files)
-  t.plan(files.length)
+  t.plan(files.length * 2)
 
   files.forEach(file => {
     let key = formatKey({ file, publicDir })
     t.notOk(key.includes(publicDir), `Key pathing strips public dir`)
+    t.equal(key, pathToUnix(key), `Key is *nix formatted`)
     console.log(`Before: ${file}\nAfter: ${key}`)
   })
 })
