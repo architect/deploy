@@ -6,7 +6,9 @@ let direct = require('./src/direct')
 let sam = require('./src/sam')
 let _static = require('./src/static')
 
-require('aws-sdk/lib/maintenance_mode_message').suppress = true
+// eslint-disable-next-line
+try { require('aws-sdk/lib/maintenance_mode_message').suppress = true }
+catch { /* Noop */ }
 
 function run (mod) {
   return function (options, callback) {
