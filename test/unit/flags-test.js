@@ -122,6 +122,36 @@ test('Tags', t => {
   t.deepEqual(flags().tags, [ tagA, tagB ], '"-t" flags returns multiple tags')
 })
 
+test('Help', t => {
+  t.plan(3)
+
+  args(`-h`)
+  t.equal(flags().help, true, '"-h" flag sets help to true')
+
+  args(`--help`)
+  t.equal(flags().help, true, '"--help" flag sets help to true')
+
+  args(``)
+  t.equal(flags().help, false, 'Lack of "-h" or "--help flag sets help to false')
+})
+
+test('Unkown flags', t => {
+  t.plan(2)
+
+  args(`-z -v --prune --foo --no-hydrate --bar`)
+  t.deepEqual(flags().unknownFlags, [ 'z', 'foo', 'bar' ], 'Unknown flags are returned in the unknownFlags array')
+
+  args(`--direct --dirty --debug -d --dry-run --eject --help -h --hydrate --no-hydrate --production -p --prune --static -s --verbose -v`)
+  t.deepEqual(flags().unknownFlags, [], 'Known flags are not returned in the unknownFlags array')
+})
+
+test('Unkown arguments', t => {
+  t.plan(1)
+
+  args(`foo bar`)
+  t.deepEqual(flags().unknownArgs, [ 'foo', 'bar' ], 'Unknown arguments are returned in the unknownArgs array')
+})
+
 test('Teardown', t => {
   t.plan(1)
   process.argv = argv
