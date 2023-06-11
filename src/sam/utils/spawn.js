@@ -15,11 +15,7 @@ module.exports = function spawn (command, args, pretty, callback) {
   })
   pkg.on('close', (code) => {
     output = output.join('')
-    let noChanges = output.includes('No changes to deploy.')
-    if (code === 255 && noChanges) {
-      callback()
-    }
-    else if (code !== 0) {
+    if (code !== 0) {
       callback(Error(output))
     }
     else callback()
