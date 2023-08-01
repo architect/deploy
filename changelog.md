@@ -2,6 +2,14 @@
 
 ---
 
+## [4.6.0] 2023-08-01
+
+### Added
+
+- Added support for Python Lambda treeshaking
+
+---
+
 ## [4.5.0 - 4.5.1] 2023-04-22
 
 ### Added

@@ -33,7 +33,7 @@
   "homepage": "https://github.com/architect/deploy#readme",
   "dependencies": {
     "@architect/create": "~4.2.0",
-    "@architect/hydrate": "~3.2.1",
+    "@architect/hydrate": "~3.3.0-RC.0",
     "@architect/inventory": "~3.5.0",
     "@architect/package": "~8.5.0",
     "@architect/utils": "~3.1.7",
