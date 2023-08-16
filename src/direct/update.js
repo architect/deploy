@@ -64,9 +64,11 @@ module.exports = function updateLambda (params, callback) {
           zip(build || src, callback)
         },
         function (buffer, callback) {
+          let { architecture } = params.lambda.config
           lambda.updateFunctionCode({
             FunctionName,
-            ZipFile: buffer
+            ZipFile: buffer,
+            Architectures: [ architecture ],
           }, callback)
         }
       ],

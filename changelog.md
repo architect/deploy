@@ -7,6 +7,7 @@
 ### Added
 
 - Added support for Python Lambda treeshaking
+- Enable direct deploys to reconfigure Lambda architecture
 
 ---
 
