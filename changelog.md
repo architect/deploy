@@ -2,6 +2,14 @@
 
 ---
 
+## [4.6.1] 2023-08-22
+
+### Changed
+
+- Use CloudFormation `--debug` when in `arc deploy --verbose` mode; thanks @frankleng!
+
+---
+
 ## [4.6.0] 2023-08-01
 
 ### Added
