@@ -11,7 +11,8 @@ module.exports = function deploy (params, callback) {
     '--stack-name', stackname,
     '--s3-bucket', bucket,
     '--capabilities', 'CAPABILITY_IAM CAPABILITY_AUTO_EXPAND',
-    '--region', region
+    '--region', region,
+    '--no-fail-on-empty-changeset'
   ]
   if (tags.length > 0) {
     args.push('--tags')
