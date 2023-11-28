@@ -12,7 +12,7 @@ module.exports = function compat (params, callback) {
     function getApiType (callback) {
       if (inv.http && (!inv.aws.apigateway || inv.aws.apigateway === 'rest')) {
         let deployPlugins = inv.plugins?._methods?.deploy?.start
-        let hasRestPlugin = deployPlugins?.find(({ plugin }) => plugin === 'architect/plugin-rest-api')
+        let hasRestPlugin = deployPlugins?.find(({ _plugin }) => _plugin === 'architect/plugin-rest-api')
 
         // Look for a legacy REST API in the stack; HTTP API resource IDs are simply 'HTTP'
         let resource = toLogicalID(inv.app)
