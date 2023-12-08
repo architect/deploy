@@ -1,6 +1,6 @@
 let test = require('tape')
 let { join } = require('path')
-let mockFs = require('mock-fs')
+let mockTmp = require('mock-tmp')
 let proxyquire = require('proxyquire')
 require('aws-sdk/lib/maintenance_mode_message').suppress = true
 let aws = require('aws-sdk')
@@ -39,23 +39,18 @@ let defaultParams = () => ({
   update: updater('Deploy')
 })
 
-function reset () {
-  mockFs.restore()
-}
+let arc = '@app\nan-app\n@static'
+let content = 'hi there'
+let cwd = mockTmp({
+  'app.arc': arc,
+  public: {
+    'index.html':     content,
+    'something.json': content,
+    'index.js':       content,
+  },
+})
 
 function setup () {
-  let arc = '@app\nan-app\n@static'
-  let html = 'public/index.html'
-  let json = 'public/something.json'
-  let file = 'public/index.js'
-  let content = 'hi there'
-  mockFs({
-    'app.arc': arc,
-    'public': {},
-    [html]: Buffer.from(content),
-    [json]: Buffer.from(content),
-    [file]: Buffer.from(content),
-  })
   putted = undefined
   deleted = undefined
   params = defaultParams()
@@ -63,17 +58,16 @@ function setup () {
 
 test('Set up env', async t => {
   t.plan(2)
-  setup()
-  mockFs.restore()
   t.ok(sut, 'S3 publish module is present')
-  inventory = await _inventory({})
-  t.ok(inventory, 'Got inventory obj')
 
   awsMock.mock('S3', 'headObject', (params, callback) => callback())
   awsMock.mock('S3', 'putObject', (params, callback) => callback())
   awsMock.mock('S3', 'listObjectsV2', (params, callback) => callback())
   awsMock.mock('S3', 'deleteObjects', (params, callback) => callback())
   s3 = new aws.S3()
+
+  inventory = await _inventory({ cwd })
+  t.ok(inventory, 'Got inventory obj')
 })
 
 test('Static asset publishing', t => {
@@ -88,7 +82,6 @@ test('Static asset publishing', t => {
     t.equal(putted.region, params.region, 'Passed region unmutated')
     t.deepEqual(putted.staticManifest, {}, 'Passed empty staticManifest by default')
     t.notOk(deleted, 'No files pruned')
-    reset()
   })
 })
 
@@ -107,7 +100,6 @@ test(`Static asset deletion (deployAction is 'all')`, t => {
     t.equal(deleted.prefix, undefined, 'Passed prefix unmutated')
     t.equal(deleted.region, params.region, 'Passed region setting unmutated')
     t.deepEqual(deleted.staticManifest, {}, 'Passed empty staticManifest by default')
-    reset()
   })
 })
 
@@ -126,13 +118,12 @@ test(`Static asset deletion (deployAction is 'delete')`, t => {
     t.equal(deleted.prefix, undefined, 'Passed prefix unmutated')
     t.equal(deleted.region, params.region, 'Passed region setting unmutated')
     t.deepEqual(deleted.staticManifest, {}, 'Passed empty staticManifest by default')
-    reset()
   })
 })
 
 test('Teardown', t => {
   t.plan(1)
   awsMock.restore()
-  reset()
+  mockTmp.reset()
   t.pass('Done')
 })
