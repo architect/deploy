@@ -1,6 +1,6 @@
 let test = require('tape')
 let { join } = require('path')
-let mockFs = require('mock-fs')
+let mockTmp = require('mock-tmp')
 let proxyquire = require('proxyquire')
 let inventory = require('@architect/inventory')
 let { updater } = require('@architect/utils')
@@ -16,7 +16,6 @@ function publish (params, callback) {
   callback(null, params)
 }
 
-let node_modules = mockFs.load('node_modules', { recursive: true })
 let staticDeployPath = join(process.cwd(), 'src', 'static', 'index.js')
 let staticDeployMod = proxyquire(staticDeployPath, {
   './publish': publish
@@ -42,11 +41,11 @@ function setup () {
 }
 function reset () {
   params = defaultParams()
-  mockFs.restore()
+  mockTmp.reset()
 }
 
-function staticDeploy (t, callback) {
-  inventory({}, function (err, result) {
+function staticDeploy (t, cwd, callback) {
+  inventory({ cwd }, function (err, result) {
     if (err) t.fail(err)
     else {
       params.inventory = result
@@ -75,8 +74,8 @@ test(`Skip static deploy if @static isn't defined`, t => {
   t.plan(1)
   setup()
   let arc = '@app\n an-app'
-  mockFs({ 'app.arc': arc })
-  staticDeploy(t, err => {
+  let cwd = mockTmp({ 'app.arc': arc })
+  staticDeploy(t, cwd, err => {
     if (err) t.fail(err)
     t.notOk(published, 'Publish not called')
   })
@@ -86,8 +85,8 @@ test(`Static deploy exits gracefully if @http is defined, but public/ folder is 
   t.plan(1)
   setup()
   let arc = '@app\n an-app\n @http'
-  mockFs({ 'app.arc': arc, node_modules })
-  staticDeploy(t, err => {
+  let cwd = mockTmp({ 'app.arc': arc })
+  staticDeploy(t, cwd, err => {
     if (err) t.fail(err)
     t.notOk(published, 'Publish not called')
   })
@@ -97,12 +96,11 @@ test(`Publish static deploy if @static is defined`, t => {
   t.plan(4)
   setup()
   let arc = '@app\n an-app\n @static'
-  mockFs({
+  let cwd = mockTmp({
     'app.arc': arc,
     'public': {},
-    node_modules
   })
-  staticDeploy(t, err => {
+  staticDeploy(t, cwd, err => {
     if (err) t.fail(err)
     t.equal(published.Bucket, params.bucket, 'Bucket is unchanged')
     t.equal(published.prefix, null, 'Prefix set to null by default')
@@ -115,12 +113,8 @@ test(`Publish static deploy if @http is defined and public/ folder is present`, 
   t.plan(1)
   setup()
   let arc = '@app\n an-app\n @http'
-  mockFs({
-    'app.arc': arc,
-    'public': {},
-    node_modules
-  })
-  staticDeploy(t, err => {
+  let cwd = mockTmp({ 'app.arc': arc, 'public': {} })
+  staticDeploy(t, cwd, err => {
     if (err) t.fail(err)
     t.ok(published, 'Publish was called')
   })
@@ -130,13 +124,9 @@ test(`Respect prune param`, t => {
   t.plan(1)
   setup()
   let arc = '@app\n an-app\n @static'
-  mockFs({
-    'app.arc': arc,
-    'public': {},
-    node_modules
-  })
+  let cwd = mockTmp({ 'app.arc': arc, 'public': {} })
   params.prune = true
-  staticDeploy(t, err => {
+  staticDeploy(t, cwd, err => {
     if (err) t.fail(err)
     t.ok(published.prune, 'Prune is unchaged')
   })
@@ -146,12 +136,8 @@ test(`Respect prune setting in project manifest`, t => {
   t.plan(1)
   setup()
   let arc = '@app\n an-app\n @static\n prune true'
-  mockFs({
-    'app.arc': arc,
-    'public': {},
-    node_modules
-  })
-  staticDeploy(t, err => {
+  let cwd = mockTmp({ 'app.arc': arc, 'public': {} })
+  staticDeploy(t, cwd, err => {
     if (err) t.fail(err)
     t.ok(published.prune, 'Prune is enabled')
   })
@@ -161,13 +147,9 @@ test(`Respect prefix param`, t => {
   t.plan(1)
   setup()
   let arc = '@app\n an-app\n @static'
-  mockFs({
-    'app.arc': arc,
-    'public': {},
-    node_modules
-  })
+  let cwd = mockTmp({ 'app.arc': arc, 'public': {} })
   params.prefix = 'some-prefix'
-  staticDeploy(t, err => {
+  staticDeploy(t, cwd, err => {
     if (err) t.fail(err)
     t.equal(published.prefix, 'some-prefix', 'Prefix is unchanged')
   })
@@ -177,12 +159,8 @@ test(`Respect prefix setting in project manifest`, t => {
   t.plan(1)
   setup()
   let arc = '@app\n an-app\n @static\n prefix some-prefix'
-  mockFs({
-    'app.arc': arc,
-    'public': {},
-    node_modules
-  })
-  staticDeploy(t, err => {
+  let cwd = mockTmp({ 'app.arc': arc, 'public': {} })
+  staticDeploy(t, cwd, err => {
     if (err) t.fail(err)
     t.equal(published.prefix, 'some-prefix', 'Got correct prefix setting')
   })
