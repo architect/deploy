@@ -1,5 +1,5 @@
 let test = require('tape')
-let mockFs = require('mock-fs')
+let mockTmp = require('mock-tmp')
 let proxyquire = require('proxyquire')
 let { join, sep } = require('path')
 require('aws-sdk/lib/maintenance_mode_message').suppress = true
@@ -7,10 +7,12 @@ let aws = require('aws-sdk')
 let awsMock = require('aws-sdk-mock')
 let crypto = require('crypto')
 let { pathToUnix } = require('@architect/utils')
+let cwd = process.cwd()
 
 let headObjCalls = []
 let putObjCalls = []
 let CacheControl
+let s3, tmp
 
 function createFileData (diff) {
   return {
@@ -22,20 +24,21 @@ function createFileData (diff) {
 }
 // Benchmark file data to compare against in headObject calls
 let fileData = createFileData()
-let files = Object.keys(fileData).map(f => f.replace('/', sep))
+let files = []
 let update = () => {}
 update.raw = () => {}
 
-let params = {
+let params = () => ({
   Bucket: 'a-bucket',
   files,
   fingerprint: false,
   publicDir: 'public',
   prefix: undefined,
   region: 'us-west-1',
+  s3,
   staticManifest: {},
   update,
-}
+})
 
 let _putParams = ({ Bucket, Key, Body }) => ({
   Bucket, Key, Body,
@@ -50,11 +53,13 @@ function setup (data) {
   headObjCalls = []
   putObjCalls = []
   CacheControl = undefined
-  mockFs(data)
+  tmp = mockTmp(data)
+  files = Object.keys(data).map(f => f.replace('/', sep))
+  process.chdir(tmp)
 }
-
 function reset () {
-  mockFs.restore()
+  mockTmp.reset()
+  process.chdir(cwd)
 }
 
 test('Set up env', t => {
@@ -71,15 +76,14 @@ test('Set up env', t => {
     putObjCalls.push(params)
     callback()
   })
-  params.s3 = new aws.S3()
+  s3 = new aws.S3()
 })
 
 test('Basic publish test', t => {
   t.plan(4)
   setup(createFileData(true)) // True mutates file contents, causing an upload
 
-  putParams(params, (err, uploaded, notModified) => {
-    reset() // Must be reset before any tape tests are resolved because mock-fs#201
+  putParams(params(), (err, uploaded, notModified) => {
     if (err) t.fail(err)
     let headCallsAreGood =  (headObjCalls.length === files.length) &&
                             files.every(f => headObjCalls.some(h => h.Key === pathToUnix(f)))
@@ -97,8 +101,7 @@ test('Skip publishing files that have not been updated', t => {
   t.plan(4)
   setup(createFileData())
 
-  putParams(params, (err, uploaded, notModified) => {
-    reset() // Must be reset before any tape tests are resolved because mock-fs#201
+  putParams(params(), (err, uploaded, notModified) => {
     if (err) t.fail(err)
     let headCallsAreGood =  (headObjCalls.length === files.length) &&
                             files.every(f => headObjCalls.some(h => h.Key === pathToUnix(f)))
@@ -115,8 +118,7 @@ test('Re-publish files if cache-control header does not match', t => {
   setup(createFileData())
 
   CacheControl = 'foo'
-  putParams({ fingerprint: 'external', ...params }, (err, uploaded, notModified) => {
-    reset() // Must be reset before any tape tests are resolved because mock-fs#201
+  putParams({ fingerprint: 'external', ...params() }, (err, uploaded, notModified) => {
     if (err) t.fail(err)
     let headCallsAreGood =  (headObjCalls.length === files.length) &&
                             files.every(f => headObjCalls.some(h => h.Key === pathToUnix(f)))
@@ -126,12 +128,12 @@ test('Re-publish files if cache-control header does not match', t => {
     t.ok(putCallsAreGood, 'S3.putObject called once for each file')
     t.equal(notModified, 0, 'Returned correct quantity of skipped files')
     t.equal(putObjCalls.length, uploaded, 'Returned correct quantity of published files')
+    reset()
   })
 })
 
 test('Teardown', t => {
   t.plan(1)
   awsMock.restore()
-  reset()
   t.pass('Done')
 })
