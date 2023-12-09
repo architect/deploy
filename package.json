@@ -55,7 +55,6 @@
     "aws-sdk-mock": "~5.8.0",
     "cross-env": "~7.0.3",
     "eslint": "~8.55.0",
-    "mock-fs": "~5.2.0",
     "mock-tmp": "~0.0.2",
     "nyc": "~15.1.0",
     "proxyquire": "~2.1.3",
