@@ -1,6 +1,27 @@
 let { statSync } = require('fs')
 let minimist = require('minimist')
 
+let allowedFlags = [
+  '_',
+  'direct',
+  'dirty',
+  'debug',
+  'd',
+  'dry-run',
+  'eject',
+  'help',
+  'h',
+  'hydrate',
+  'no-hydrate',
+  'production',
+  'p',
+  'prune',
+  'static',
+  's',
+  'verbose',
+  'v',
+]
+
 /**
  * Read CLI flags and populate userland options
  */
@@ -13,11 +34,13 @@ module.exports = function getFlags () {
     tag:        [ 'tags', 't' ],
     debug:      [ 'd' ],
     verbose:    [ 'v' ],
+    help:       [ 'h' ],
   }
-  let boolean = [ 'direct', 'debug', 'dry-run', 'eject', 'no-hydrate', 'production', 'static', 'verbose' ]
+  let boolean = [ 'direct', 'debug', 'dry-run', 'eject', 'help', 'no-hydrate', 'production', 'static', 'verbose' ]
   let def = { hydrate: true }
   let args = minimist(process.argv.slice(2), { alias, boolean, default: def })
   if (args._[0] === 'deploy') args._.splice(0, 1)
+  let unknownFlags = Object.keys(args).filter(key => !allowedFlags.includes(key))
 
   // Log levels
   let logLevel = 'normal'
@@ -38,6 +61,9 @@ module.exports = function getFlags () {
     isDryRun:       args['dry-run'] || args.eject,
     isStatic:       args.static,
     shouldHydrate:  args.hydrate,
+    help:           args.help,
+    unknownFlags:   unknownFlags,
+    unknownArgs:    args._,
   }
 }
 
