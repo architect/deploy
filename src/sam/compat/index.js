@@ -1,4 +1,3 @@
-let aws = require('aws-sdk')
 let { toLogicalID } = require('@architect/utils')
 let series = require('run-series')
 
@@ -6,7 +5,7 @@ let series = require('run-series')
  * Check current infra for compatibility
  */
 module.exports = function compat (params, callback) {
-  let { inv, stackname } = params
+  let { aws, inv, stackname } = params
   let result = {}
 
   series([
@@ -17,7 +16,7 @@ module.exports = function compat (params, callback) {
 
         // Look for a legacy REST API in the stack; HTTP API resource IDs are simply 'HTTP'
         let resource = toLogicalID(inv.app)
-        getResources(resource, stackname, callback, resources => {
+        getResources(aws, resource, stackname, callback, resources => {
           let api = resources[0] && resources[0].ResourceType
           if (api === 'AWS::ApiGateway::RestApi' && !hasRestPlugin) {
             let msg = 'Architect REST APIs are now supported via `@architect/plugin-rest-api`; please install that plugin and add `apigateway rest` to your @aws pragma'
@@ -34,7 +33,7 @@ module.exports = function compat (params, callback) {
       if (inv.ws) {
         // Look for older (pre Arc 8.3) WebSocket resources in the stack
         let resource = 'WebsocketDefaultRoute'
-        getResources(resource, stackname, callback, resources => {
+        getResources(aws, resource, stackname, callback, resources => {
           result.foundEarlierWS = resources.length ? true : false
           callback()
         })
@@ -46,7 +45,7 @@ module.exports = function compat (params, callback) {
       if (inv.events) {
         // Look for older (pre Arc 8.3) WebSocket resources in the stack
         let resource = `${toLogicalID(inv.events[0].name)}TopicParam`
-        getResources(resource, stackname, callback, resources => {
+        getResources(aws, resource, stackname, callback, resources => {
           result.foundEarlierEvents = resources.length ? true : false
           callback()
         })
@@ -57,7 +56,7 @@ module.exports = function compat (params, callback) {
     function getBucket (callback) {
       if (inv.static) {
         let resource = 'StaticBucket'
-        getResources(resource, stackname, callback, resources => {
+        getResources(aws, resource, stackname, callback, resources => {
           result.hasStaticBucket = resources.length ? true : false
           callback()
         })
@@ -72,17 +71,18 @@ module.exports = function compat (params, callback) {
 }
 
 // Reusable CloudFormation resource getter: feed it a resource ID and stand back
-function getResources (LogicalResourceId, StackName, callback, next) {
-  let cfn = new aws.CloudFormation()
+function getResources (aws, LogicalResourceId, StackName, callback, next) {
   // Prefer describeStackResources against multiple specific known LogicalResourceIds
   // (as opposed to paginating & searching)
-  cfn.describeStackResources({
+  aws.cloudformation.DescribeStackResources({
     StackName,
     LogicalResourceId
-  }, function done (err, stack) {
-    // First run (until they change the error message, anyway)
-    if (err && err.message === `Stack with id ${StackName} does not exist`) callback()
-    else if (err) callback(err)
-    else next(stack.StackResources)
   })
+    .then(stack => next(stack.StackResources))
+    .catch(err => {
+      // First run (until they change the error message, anyway)
+      if (err.message.includes(`Stack with id ${StackName} does not exist`)) callback()
+      else callback(err)
+
+    })
 }

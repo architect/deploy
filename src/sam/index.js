@@ -26,6 +26,7 @@ let after = require('./02-after')
  */
 module.exports = function samDeploy (params, callback) {
   let {
+    aws,
     inventory,
     eject,
     isDryRun = false,
@@ -80,7 +81,7 @@ module.exports = function samDeploy (params, callback) {
 
     // Check to see if we're working with a legacy API (and any other compatibility checks)
     function compatCheck (callback) {
-      _compat({ inv, stackname }, (err, result) => {
+      _compat({ aws, inv, stackname }, (err, result) => {
         if (err) callback(err)
         else {
           compat = result
@@ -158,7 +159,7 @@ module.exports = function samDeploy (params, callback) {
       else {
         if (bucket) callback()
         else {
-          getBucket({ appname, region, update }, (err, result) => {
+          getBucket({ appname, aws, region, update }, (err, result) => {
             if (err) callback(err)
             else {
               bucket = result
@@ -188,7 +189,7 @@ module.exports = function samDeploy (params, callback) {
 
     // Maybe pre-deploy static assets
     function preDeployStatic (callback){
-      let params = { compat, eject, inventory, isDryRun, production, prune, region, stackname, verbose, update }
+      let params = { aws, compat, eject, inventory, isDryRun, production, prune, region, stackname, verbose, update }
       staticDeploy(params, true, callback)
     },
 
@@ -230,7 +231,7 @@ module.exports = function samDeploy (params, callback) {
 
     // Post-deploy static assets
     function postDeployStatic (callback){
-      let params = { compat, eject, inventory, isDryRun, production, prune, region, stackname, verbose, update }
+      let params = { aws, compat, eject, inventory, isDryRun, production, prune, region, stackname, verbose, update }
       staticDeploy(params, false, callback)
     },
 
@@ -246,6 +247,7 @@ module.exports = function samDeploy (params, callback) {
       }
       else {
         let params = {
+          aws,
           bucket,
           compat,
           eject,

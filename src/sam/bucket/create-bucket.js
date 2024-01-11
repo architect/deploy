@@ -1,8 +1,7 @@
-let aws = require('aws-sdk')
 let crypto = require('crypto')
 let series = require('run-series')
 
-module.exports = function createDeployBucket ({ appname, region, update }, callback) {
+module.exports = function createDeployBucket ({ appname, aws, region, update }, callback) {
   // Quick validation for S3 bucket naming requirements
   let bucketName = appname
     .replace(/_/g, '-')
@@ -21,10 +20,10 @@ module.exports = function createDeployBucket ({ appname, region, update }, callb
 
   series([
     function createBucket (callback) {
-      let s3 = new aws.S3()
       let params = {
         Bucket: bucket,
-        ACL: 'private' // Only the bucket owner has access rights
+        ACL: 'private', // Only the bucket owner has access rights
+        CreateBucketConfiguration: {}
       }
       // us-east-1 is default; specifying it as a location constraint will fail
       if (region !== 'us-east-1') {
@@ -33,17 +32,19 @@ module.exports = function createDeployBucket ({ appname, region, update }, callb
         }
       }
       update.status(`Creating new private deployment bucket: ${bucket}`)
-      s3.createBucket(params, callback)
+      aws.s3.CreateBucket(params)
+        .then(() => callback())
+        .catch(callback)
     },
     function updateSSM (callback) {
-      let ssm = new aws.SSM({ region })
-      let params = {
+      aws.ssm.PutParameter({
         Name: `/${appname}/deploy/bucket`,
         Value: bucket,
         Type: 'SecureString',
         Overwrite: true
-      }
-      ssm.putParameter(params, callback)
+      })
+        .then(() => callback())
+        .catch(callback)
     }
   ], function done (err) {
     if (err) {
