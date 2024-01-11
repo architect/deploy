@@ -7,6 +7,7 @@ let putParams = require('./put-params')
 
 module.exports = function putFiles (params, callback) {
   let {
+    aws,
     Bucket,
     files,
     fingerprint,
@@ -14,7 +15,6 @@ module.exports = function putFiles (params, callback) {
     publicDir,
     prefix,
     region,
-    s3,
     staticManifest,
     update,
     verbose,
@@ -40,23 +40,14 @@ module.exports = function putFiles (params, callback) {
       // Get the formatted Key for this file, based on various settings
       let Key = formatKey({ file, fingerprint, publicDir, prefix, staticManifest })
 
-      // Check to ensure we even need to upload the file
-      s3.headObject({ Bucket, Key }, function _headObject (err, headData) {
-        if (err && err.code !== 'NotFound') {
-          // Swallow error (but warn)
-          update.error('Error on S3 metadata request:')
-          update.error(err)
-          callback()
-        }
-        else if (err && err.code === 'AccessDenied') {
-          callback(Error('access_denied'))
-        }
-        else {
-          let url = `https://${Bucket}.s3.${region}.amazonaws.com/${Key}`
+      // Get the params for the file to be (maybe) uploaded
+      let params = putParams({ Bucket, Key, Body, file, fingerprint, inventory })
+      let url = `https://${Bucket}.s3.${region}.amazonaws.com/${Key}`
 
-          // Get the params for the file to be (maybe) uploaded
-          let params = putParams({ Bucket, Key, Body, file, fingerprint, inventory })
-          let hash = crypto.createHash('md5').update(params.Body).digest('hex')
+      // Check to ensure we even need to upload the file
+      aws.s3.HeadObject({ Bucket, Key })
+        .then(headData => {
+          let hash = crypto.createHash('md5').update(Body).digest('hex')
 
           // Upload if the file was modified since last upload
           let etag = headData && headData.ETag && headData.ETag.replace(/['"]/g, '')
@@ -67,33 +58,50 @@ module.exports = function putFiles (params, callback) {
           let headerDiff = cacheHeader !== params.CacheControl
 
           if (!headData || fileDiff || headerDiff) {
-            s3.putObject(params, function _putObj (err) {
-              if (err && err.code === 'AccessDenied') {
-                callback(Error('access_denied'))
-              }
-              else if (err) {
-                // Swallow error (but warn)
-                update.error('Error on S3 put:')
-                update.error(err)
-                callback()
-              }
-              else {
-                uploaded++
-                update.raw(`${chalk.blue('[  Uploaded  ]')} ${chalk.underline.cyan(url)}`)
-                tooBig()
-                callback()
-              }
-            })
+            put()
           }
           else {
             notModified++
-            if (verbose)
+            if (verbose) {
               update.raw(`${chalk.gray('[Not modified]')} ${chalk.underline.cyan(url)}`)
+            }
             tooBig()
             callback()
           }
-        }
-      })
+        })
+        .catch(err => {
+          if (err.code === 'AccessDenied') {
+            callback(Error('access_denied'))
+          }
+          else if (err.code !== 'NotFound') {
+            // Swallow error (but warn)
+            update.error('Error on S3 metadata request:')
+            update.error(err)
+            callback()
+          }
+          else put()
+        })
+
+      function put () {
+        aws.s3.PutObject(params)
+          .then(() => {
+            uploaded++
+            update.raw(`${chalk.blue('[  Uploaded  ]')} ${chalk.underline.cyan(url)}`)
+            tooBig()
+            callback()
+          })
+          .catch(err => {
+            if (err.code === 'AccessDenied') {
+              callback(Error('access_denied'))
+            }
+            else {
+              // Swallow error (but warn)
+              update.error('Error on S3 put:')
+              update.error(err)
+              callback()
+            }
+          })
+      }
     }
   })
 

@@ -37,6 +37,8 @@
     "@architect/inventory": "~4.0.0-RC.0",
     "@architect/package": "~9.0.0-RC.0",
     "@architect/utils": "~4.0.0-RC.2",
+    "@aws-lite/client": "~0.14.0",
+    "@aws-lite/s3": "~0.1.10",
     "chalk": "4.1.2",
     "fs-extra": "~11.2.0",
     "get-folder-size": "2.0.1",

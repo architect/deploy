@@ -1,7 +1,7 @@
 let chalk = require('chalk')
 
 module.exports = function bulkDelete (params, callback) {
-  let { Bucket, items, log, region, s3, update } = params
+  let { aws, Bucket, items, log, region, update } = params
 
   // Re-filter just for Keys jic; extra properties will blow up the request
   let objects = items.map(({ Key }) => ({ Key }))
@@ -9,18 +9,10 @@ module.exports = function bulkDelete (params, callback) {
   function deleteItems () {
     let deleteParams = {
       Bucket,
-      Delete: {
-        Objects: objects.splice(0, 1000),
-        Quiet: false
-      }
+      Delete: { Objects: objects.splice(0, 1000) }
     }
-    s3.deleteObjects(deleteParams, function (err, data) {
-      if (err) {
-        update.error('Deleting objects on S3 failed')
-        update.error(err)
-        callback()
-      }
-      else {
+    aws.s3.DeleteObjects(deleteParams)
+      .then(data => {
         if (log) {
           data.Deleted.forEach(function (deletedFile) {
             let last = `https://${Bucket}.s3.${region}.amazonaws.com/${deletedFile.Key}`
@@ -29,8 +21,12 @@ module.exports = function bulkDelete (params, callback) {
         }
         if (objects.length) deleteItems()
         else callback()
-      }
-    })
+      })
+      .catch(err => {
+        update.error('Deleting objects on S3 failed')
+        update.error(err)
+        callback()
+      })
   }
   deleteItems()
 }

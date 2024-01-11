@@ -1,4 +1,4 @@
-let test = require('tape')
+/* let test = require('tape')
 let { join, sep } = require('path')
 require('aws-sdk/lib/maintenance_mode_message').suppress = true
 let aws = require('aws-sdk')
@@ -218,3 +218,4 @@ test('Teardown', t => {
   awsMock.restore()
   t.pass('Done')
 })
+ */

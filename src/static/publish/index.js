@@ -14,13 +14,13 @@ let files, staticManifest
 
 module.exports = function publishStaticAssets (params, callback) {
   let {
+    aws,
     Bucket,
     deployAction,
     inventory,
     prefix,
     prune,
     region,
-    s3,
     update,
     verbose,
   } = params
@@ -42,6 +42,7 @@ module.exports = function publishStaticAssets (params, callback) {
   // Second-pass, post-deploy, static asset pruning-only operation
   if (files && prune && deployAction === 'delete') {
     return deleteFiles({
+      aws,
       Bucket,
       files,
       fingerprint,
@@ -50,7 +51,6 @@ module.exports = function publishStaticAssets (params, callback) {
       inventory,
       prefix,
       region,
-      s3,
       staticManifest,
       update,
     }, done)
@@ -104,6 +104,7 @@ module.exports = function publishStaticAssets (params, callback) {
       }
 
       putFiles({
+        aws,
         Bucket,
         files,
         fingerprint,
@@ -111,7 +112,6 @@ module.exports = function publishStaticAssets (params, callback) {
         publicDir,
         prefix,
         region,
-        s3,
         staticManifest,
         update,
         verbose,
@@ -125,6 +125,7 @@ module.exports = function publishStaticAssets (params, callback) {
 
       if (deleting) {
         deleteFiles({
+          aws,
           Bucket,
           files,
           fingerprint,
@@ -133,7 +134,6 @@ module.exports = function publishStaticAssets (params, callback) {
           inventory,
           prefix,
           region,
-          s3,
           staticManifest,
           update,
         }, callback)

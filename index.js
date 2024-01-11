@@ -1,4 +1,5 @@
 let _inventory = require('@architect/inventory')
+let awsLite = require('@aws-lite/client')
 let { updater } = require('@architect/utils')
 let cleanup = require('./src/utils/cleanup')
 
@@ -30,18 +31,28 @@ function run (mod) {
     }
 
     // Entered via CLI (or something that supplied inventory)
-    if (options.inventory) mod(options, clean)
+    if (options.inventory) {
+      go(options.region || options.inventory.inv.aws.region)
+
+    }
     else {
-      // Get inventory, but don't fetch env vars if it's a dry-run
-      _inventory({ env: true }, function (err, inv) {
+      _inventory({ env: true }, function (err, inventory) {
         if (err) callback(err)
         else {
-          options.update = updater('Deploy')
-          options.region = options.region || inv.inv.aws.region
-          options.inventory = inv
-          mod(options, clean)
+          options.inventory = inventory
+          go(options.region || inventory.inv.aws.region)
         }
       })
+    }
+
+    function go (region) {
+      let params = { region }
+      if (options.credentials) params.credentials = options.credentials
+      awsLite(params)
+        .then(aws => {
+          mod({ ...options, aws, region, update: updater('Deploy') }, clean)
+        })
+        .catch(callback)
     }
 
     return promise

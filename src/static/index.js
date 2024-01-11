@@ -1,8 +1,7 @@
-let aws = require('aws-sdk')
 let { join, sep } = require('path')
 let { existsSync } = require('fs')
 let series = require('run-series')
-let { toLogicalID, updater } = require('@architect/utils')
+let { toLogicalID } = require('@architect/utils')
 let publish = require('./publish')
 let getResources = require('../utils/get-cfn-resources')
 
@@ -19,8 +18,8 @@ let Bucket
  */
 module.exports = function deployStatic (params, callback) {
   let {
+    aws,
     bucket,
-    credentials,
     eject,
     inventory,
     isDryRun = false,
@@ -37,7 +36,6 @@ module.exports = function deployStatic (params, callback) {
     // `all` also prevents duplicate static manifest operations that could impact state
     deployAction = 'all',
   } = params
-  if (!update) update = updater('Deploy')
   let { inv } = inventory
   let appname = inv.app
   let folder = inv.static?.folder
@@ -89,8 +87,12 @@ module.exports = function deployStatic (params, callback) {
       // Get the bucket PhysicalResourceId if not supplied
       function (callback) {
         if (!Bucket) {
-          getResources({ credentials, region, stackname }, function (err, resources) {
+          getResources({ aws, stackname }, function (err, resources) {
             if (err) callback(err)
+            else if (!resources) {
+              let err = new ReferenceError('Static bucket not found!')
+              callback(err)
+            }
             else {
               let find = i => i.ResourceType === 'AWS::S3::Bucket' && i.LogicalResourceId === 'StaticBucket'
               Bucket = resources.find(find).PhysicalResourceId
@@ -102,18 +104,14 @@ module.exports = function deployStatic (params, callback) {
       },
 
       function (callback) {
-        let config = { region }
-        if (credentials) config.credentials = credentials
-        let s3 = new aws.S3(config)
-
         publish({
+          aws,
           Bucket,
           inventory,
           deployAction,
           prefix,
           prune,
           region,
-          s3,
           update,
           verbose,
         }, callback)

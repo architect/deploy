@@ -1,24 +1,8 @@
 module.exports = function getAllS3Files (params, callback) {
-  let { Bucket, Prefix, s3 } = params
-  let files = []
-
-  function getObjects (ContinuationToken) {
-    let getParams = { Bucket }
-    if (ContinuationToken) getParams.ContinuationToken = ContinuationToken
-    if (Prefix) getParams.Prefix = Prefix
-
-    s3.listObjectsV2(getParams, function _listObjects (err, result) {
-      if (err) callback(err)
-      else {
-        let { Contents, NextContinuationToken } = result
-        if (Contents.length) {
-          files.push(...Contents)
-          if (NextContinuationToken) getObjects(NextContinuationToken)
-          else callback(null, files)
-        }
-        else callback(null, files)
-      }
-    })
-  }
-  getObjects()
+  let { aws, Bucket, Prefix } = params
+  let getParams = { Bucket, paginate: true }
+  if (Prefix) getParams.Prefix = Prefix
+  aws.s3.ListObjectsV2(getParams)
+    .then(result => callback(null, result.Contents || []))
+    .catch(callback)
 }

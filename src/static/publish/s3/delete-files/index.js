@@ -6,6 +6,7 @@ let getS3ItemKey = ({ Key }) => ({ Key })
 
 module.exports = function deleteFiles (params, callback) {
   let {
+    aws,
     Bucket,
     files,
     fingerprint,
@@ -14,17 +15,14 @@ module.exports = function deleteFiles (params, callback) {
     inventory,
     prefix,
     region,
-    s3,
     staticManifest,
     update,
   } = params
 
-  // If prefix is enabled, we must ignore everything else in the bucket (or risk pruning all contents)
-  let listParams = { Bucket, s3 }
-  if (prefix) listParams.Prefix = prefix
   let cwd = inventory.inv._project.cwd
 
-  getAllS3Files(listParams, function _listObjects (err, filesOnS3) {
+  // If prefix is enabled, we must ignore everything else in the bucket (or risk pruning all contents)
+  getAllS3Files({ aws, Bucket, Prefix: prefix }, function _listObjects (err, filesOnS3) {
     if (err) {
       update.error('Listing objects for deletion in S3 failed')
       update.error(err)
@@ -58,11 +56,11 @@ module.exports = function deleteFiles (params, callback) {
       if (leftovers.length) {
         update.status(`Pruning ${leftovers.length} orphaned static assets...`)
         bulkDelete({
+          aws,
           Bucket,
           items: leftovers,
           log: true,
           region,
-          s3,
           update,
         }, callback)
       }
