@@ -12,6 +12,7 @@ let pretty = require('./pretty')
  */
 module.exports = function directDeploy (options, callback) {
   let {
+    aws,
     inventory,
     isDryRun = false,
     production,
@@ -67,6 +68,7 @@ module.exports = function directDeploy (options, callback) {
 
   else {
     deploy({
+      aws,
       inventory,
       production,
       region,

@@ -3,8 +3,7 @@ let { chars } = require('@architect/utils')
 
 module.exports = {
   url (v) {
-    if (v)
-      console.log(`\n    ${chalk.green.bold.underline(v)}\n`)
+    if (v) console.log(`\n    ${chalk.green.bold.underline(v)}\n`)
   },
   warn (update) {
     update.start('Deploying...')

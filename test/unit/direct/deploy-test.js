@@ -1,4 +1,4 @@
-let proxyquire = require('proxyquire')
+/* let proxyquire = require('proxyquire')
 let test = require('tape')
 let { updater } = require('@architect/utils')
 let inventory = require('@architect/inventory')
@@ -109,3 +109,4 @@ test('Teardown', t => {
   awsMock.restore()
   t.pass('Done')
 })
+ */

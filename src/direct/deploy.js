@@ -1,4 +1,3 @@
-let aws = require('aws-sdk')
 let { getLambdaName, toLogicalID } = require('@architect/utils')
 let parallel = require('run-parallel')
 let waterfall = require('run-waterfall')
@@ -9,6 +8,7 @@ let getResources = require('../utils/get-cfn-resources')
 
 module.exports = function deploySAM (params, callback) {
   let {
+    aws,
     inventory,
     production,
     region,
@@ -23,7 +23,7 @@ module.exports = function deploySAM (params, callback) {
   waterfall([
 
     function readResources (callback) {
-      getResources({ region, stackname }, function (err, resources) {
+      getResources({ aws, stackname }, function (err, resources) {
         if (err) callback(err)
         else {
           let find = i => i.ResourceType === 'AWS::Lambda::Function'
@@ -80,6 +80,7 @@ module.exports = function deploySAM (params, callback) {
             let FunctionName = found.PhysicalResourceId
             update.status(`Deploying directly to: ${name} (${dir})`)
             updateLambda({
+              aws,
               FunctionName,
               env,
               lambda,
@@ -105,21 +106,19 @@ module.exports = function deploySAM (params, callback) {
     },
 
     function readURL (callback) {
-      let cloudformation = new aws.CloudFormation({ region })
-      cloudformation.describeStacks({
-        StackName: stackname
-      },
-      function done (err, data) {
-        if (err) console.log(err)
-        else if (Array.isArray(data.Stacks)) {
-          let outs = data.Stacks[0].Outputs
-          let maybe = outs.find(o => o.OutputKey === 'API')
-          if (maybe)
-            pretty.url(maybe.OutputValue)
-        }
-        callback()
-      })
+      aws.cloudformation.DescribeStacks({ StackName: stackname })
+        .then(data => {
+          if (Array.isArray(data.Stacks)) {
+            let outs = data.Stacks[0].Outputs
+            let maybe = outs.find(o => o.OutputKey === 'API')
+            if (maybe) pretty.url(maybe.OutputValue)
+          }
+          callback()
+        })
+        .catch(err => {
+          if (err) console.log(err)
+          callback()
+        })
     }
-
   ], callback)
 }
