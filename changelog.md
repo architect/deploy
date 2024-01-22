@@ -9,6 +9,13 @@
 - Transitioned from `aws-sdk` to [`aws-lite`](https://aws-lite.org)
 - Added Node.js 20.x to test matrix
 - Breaking change: removed support for Node.js 14.x (now EOL, and no longer available to created in AWS Lambda)
+- Added some status messages to CDN operations
+- Combined CDN invalidation into post-deploy app apex ops
+
+
+### Fixed
+
+- Fixed issues surrounding correctly toggling `@cdn` as enabled or disabled
 
 ---
 

@@ -5,11 +5,11 @@ let enable = require('./cloudfront-enable')
 let destroy = require('./cloudfront-destroy')
 
 module.exports = function getAppApex (params, callback) {
-  let { inventory, pretty, region, stackname, stage, ts, update } = params
+  let { aws, inventory, pretty, stackname, stage, ts, update } = params
   let { inv } = inventory
   let arc = inv._project.arc // TODO cut this code path over to Inventory
   reads({
-    region,
+    aws,
     stackname,
     stage
   },
@@ -39,71 +39,112 @@ module.exports = function getAppApex (params, callback) {
       // Added whitespace after URLs
       console.log()
 
-      // Allow users to disable Architect's CDN checks so they can configure / manage their own via Macros
-      if (!inv.cdn) callback()
-      else {
-        // create cdns if cdn is defined
-        let creatingS3 = arc.static && arc.cdn && s3 === false
-        let creatingApiGateway = arc.http && arc.cdn && apigateway === false
+      // Allow users to disable Architect's CDN checks so they can configure / manage their own
+      let cdnEnabled = arc.cdn?.[0] === true
 
-        // enabling (in the event someone destroyed and then changed their mind)
-        let enablingS3 = arc.static && arc.cdn && s3.enabled === false
-        let enablingApiGateway = arc.http && arc.cdn && apigateway.enabled === false
+      // create cdns if cdn is defined
+      let creatingS3 = arc.static && cdnEnabled && s3 === false
+      let creatingApiGateway = arc.http && cdnEnabled && apigateway === false
 
-        // destroy (to the best of our ability) cdns if cdn is not defined
-        let destroyingS3 = typeof arc.cdn === 'undefined' && s3
-        let destroyingApiGateway = typeof arc.cdn === 'undefined' && apigateway
+      // enabling (in the event someone destroyed and then changed their mind)
+      let enablingS3 = arc.static && cdnEnabled && s3.enabled === false
+      let enablingApiGateway = arc.http && cdnEnabled && apigateway.enabled === false
 
-        series([
-          function createS3 (callback) {
-            if (creatingS3) {
-              create({
-                domain: bucketDomain,
-                // When S3 buckets are configured as static sites, they are http/80
-                // TODO To fix this, we may want conditional static site configuration when S3 isn't the only thing being shipped
-                insecure: true,
-                inventory,
-              }, callback)
-            }
-            else {
-              callback()
-            }
-          },
-          function enableS3 (callback) {
-            if (enablingS3) enable(s3, callback)
-            else callback()
-          },
-          function destroyS3 (callback) {
-            if (destroyingS3) destroy(s3, callback)
-            else callback()
-          },
-          function createApiGateway (callback) {
-            if (creatingApiGateway) {
-              create({
-                domain: apiDomain,
-                inventory,
-                stage,
-              }, callback)
-            }
-            else {
-              callback()
-            }
-          },
-          function enableApiGateway (callback) {
-            if (enablingApiGateway) enable(apigateway, callback)
-            else callback()
-          },
-          function destroyApiGateway (callback) {
-            if (destroyingApiGateway) destroy(apigateway, callback)
-            else callback()
+      // destroy (to the best of our ability) cdns if cdn is not defined
+      let destroyingS3 = !cdnEnabled && s3
+      let destroyingApiGateway = !cdnEnabled && apigateway
+
+      series([
+        function createS3 (callback) {
+          if (creatingS3) {
+            update.status('Creating static asset (S3) CDN distribution')
+            create({
+              aws,
+              domain: bucketDomain,
+              // When S3 buckets are configured as static sites, they are http/80
+              // TODO To fix this, we may want conditional static site configuration when S3 isn't the only thing being shipped
+              insecure: true,
+              inventory,
+            }, callback)
           }
-        ],
-        function done (err) {
-          if (err) callback(err)
           else callback()
-        })
-
-      }
+        },
+        function enableS3 (callback) {
+          if (enablingS3) {
+            update.status('Enabling static asset (S3) CDN distribution')
+            enable(aws, s3, callback)
+          }
+          else callback()
+        },
+        function destroyS3 (callback) {
+          if (destroyingS3) {
+            update.status('Destroying static asset (S3) CDN distribution')
+            destroy(aws, s3, callback)
+          }
+          else callback()
+        },
+        function invalidateS3 (callback) {
+          if (s3 && !creatingS3 && !enablingS3 && !destroyingS3) {
+            update.status('Invalidating static asset (S3) CDN distribution cache')
+            aws.cloudfront.CreateInvalidation({
+              Id: s3.id,
+              InvalidationBatch: '/*',
+              CallerReference: Date.now() + '',
+            })
+              .then(() => callback())
+              .catch(callback)
+          }
+          else callback()
+        },
+        function createApiGateway (callback) {
+          if (creatingS3 && creatingApiGateway) {
+            update.status('Skipping creating API Gateway CDN distribution until static asset distribution creation has completed')
+          }
+          else if (creatingApiGateway) {
+            update.status('Creating API Gateway CDN distribution')
+            create({
+              aws,
+              domain: apiDomain,
+              inventory,
+              stage,
+            }, callback)
+          }
+          else {
+            callback()
+          }
+        },
+        function enableApiGateway (callback) {
+          if (enablingApiGateway) {
+            update.status('Enabling API Gateway CDN distribution')
+            enable(apigateway, callback)
+          }
+          else callback()
+        },
+        function destroyApiGateway (callback) {
+          if (destroyingApiGateway) {
+            update.status('Destroying API Gateway CDN distribution')
+            destroy(aws, apigateway, callback)
+          }
+          else callback()
+        },
+        function invalidateApiGateway (callback) {
+          if (apigateway && !creatingApiGateway && !enablingApiGateway && !destroyingApiGateway) {
+            update.status('Invalidating API Gateway CDN distribution cache')
+            aws.cloudfront.CreateInvalidation({
+              Id: apigateway.id,
+              InvalidationBatch: '/*',
+              CallerReference: Date.now() + '',
+            })
+              .then(() => callback())
+              .catch(callback)
+          }
+          else callback()
+        },
+      ],
+      function done (err) {
+        if (err) callback(err)
+        else callback()
+      })
     }
   })
 }

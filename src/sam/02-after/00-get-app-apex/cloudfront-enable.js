@@ -1,24 +1,20 @@
-let aws = require('aws-sdk')
 let waterfall = require('run-waterfall')
 
-module.exports = function enableCloudFrontDistribution ({ id }, callback) {
-  let cf = new aws.CloudFront
+module.exports = function enableCloudFrontDistribution (aws, { id: Id }, callback) {
   waterfall([
     function (callback) {
-      cf.getDistributionConfig({
-        Id: id
-      }, callback)
+      aws.cloudfront.GetDistributionConfig({ Id })
+        .then(result => callback(null, result))
+        .catch(callback)
     },
     function (result, callback) {
       let ETag = result.ETag
       let DistributionConfig = result.DistributionConfig
       if (DistributionConfig.Enabled == false) {
         DistributionConfig.Enabled = true
-        cf.updateDistribution({
-          Id: id,
-          DistributionConfig,
-          IfMatch: ETag,
-        }, callback)
+        aws.cloudfront.UpdateDistribution({ Id, DistributionConfig, IfMatch: ETag })
+          .then(result => callback(null, result))
+          .catch(callback)
       }
       else {
         callback()

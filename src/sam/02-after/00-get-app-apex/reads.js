@@ -1,5 +1,4 @@
 let parallel = require('run-parallel')
-let aws = require('aws-sdk')
 let list = require('./cloudfront-list')
 
 /**
@@ -9,25 +8,23 @@ let list = require('./cloudfront-list')
  * @param {String} params.stackname - the name of the currently deployed stack
  * @param {Function} callback - node errback (err, {url, s3, apigateway})=>
  */
-module.exports = function reads ({ region, stackname, stage }, callback){
+module.exports = function reads ({ aws, stackname, stage }, callback){
 
   let clean = str => str.replace(`/${stage}`, '').replace('http://', '').replace('https://', '')
 
   parallel({
     cfn (callback) {
-      let cloudformation = new aws.CloudFormation({ region })
-      cloudformation.describeStacks({
-        StackName: stackname
-      }, callback)
+      aws.cloudformation.DescribeStacks({ StackName: stackname })
+        .then(cfn => callback(null, cfn))
+        .catch(callback)
     },
     cf (callback) {
-      list(callback)
+      list(aws, callback)
     }
   },
   function done (err, { cfn, cf }) {
     if (err) callback(err)
     else {
-
       let outs = cfn.Stacks[0].Outputs
       let cdn = o => o.OutputKey === 'CDN'
       let api = o => o.OutputKey === 'API'

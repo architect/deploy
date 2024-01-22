@@ -1,14 +1,5 @@
-let aws = require('aws-sdk')
-
 module.exports = function createCloudFrontDistribution (params, callback) {
-  let cf = new aws.CloudFront
-  let config = createConfig(params)
-  cf.createDistribution(config, callback)
-}
-
-function createConfig (params) {
-  let { domain: DomainName, insecure, inventory, stage } = params
-  let legacyAPI = inventory.inv.aws.apigateway === 'rest'
+  let { aws, domain: DomainName, insecure, inventory, stage } = params
 
   let CallerReference = `edge-${Date.now()}`
 
@@ -30,13 +21,13 @@ function createConfig (params) {
   }
 
   // Add origin path for REST APIs
+  let legacyAPI = inventory.inv.aws.apigateway === 'rest'
   if (legacyAPI) {
     origin.OriginPath = `/${stage}`
   }
 
-  return {
+  let config = {
     DistributionConfig: {
-
       CallerReference,
       Comment: `Created ${new Date(Date.now()).toISOString()}`,
       Enabled: true,
@@ -99,4 +90,8 @@ function createConfig (params) {
       },
     }
   }
+
+  aws.cloudfront.CreateDistribution(config)
+    .then(result => callback(null, result))
+    .catch(callback)
 }
