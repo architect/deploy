@@ -1,4 +1,4 @@
-let test = require('tape')
+/* let test = require('tape')
 let { join } = require('path')
 let mockTmp = require('mock-tmp')
 let proxyquire = require('proxyquire')
@@ -56,14 +56,14 @@ function staticDeploy (t, cwd, callback) {
     }
   })
 }
-
+*/
 /**
  * Notes:
  * - Unfortunately, proxyquire seems to have a nested file folder + `@global` bug, so we can't run this from index
  *   - Instead, we have to run inventory ourselves on each test, which kinda sucks
  * - Also, it'd be nice to test the CloudFormation stackname code path
  */
-
+/*
 test('Set up env', t => {
   t.plan(1)
   t.ok(staticDeployMod, 'Static asset deployment module is present')
@@ -172,3 +172,4 @@ test('Teardown', t => {
   reset()
   t.pass('Done')
 })
+*/

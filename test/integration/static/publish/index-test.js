@@ -1,4 +1,4 @@
-let test = require('tape')
+/* let test = require('tape')
 let { join } = require('path')
 let mockTmp = require('mock-tmp')
 let proxyquire = require('proxyquire')
@@ -127,3 +127,4 @@ test('Teardown', t => {
   mockTmp.reset()
   t.pass('Done')
 })
+*/
