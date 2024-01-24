@@ -4,9 +4,17 @@
 
 ## [5.0.0] 2024-01-09
 
+### Added
+
+- Added proper debug output level
+
+
 ### Changed
 
 - Transitioned from `aws-sdk` to [`aws-lite`](https://aws-lite.org)
+- Deploy also no longer needs the AWS CLI
+- Deploy no longer writes `sam.json` + `sam.yaml` files upon each deploy
+  - However, if you do want to see the `sam.json` being deployed, use the `--dry-run` or `--debug|-d` CLI flags
 - Added Node.js 20.x to test matrix
 - Breaking change: removed support for Node.js 14.x (now EOL, and no longer available to created in AWS Lambda)
 - Added some status messages to CDN operations

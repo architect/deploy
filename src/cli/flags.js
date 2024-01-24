@@ -26,8 +26,9 @@ module.exports = function getFlags () {
 
   // TODO tidy up these properties
   return {
+    debug:          logLevel === 'debug',
     prune:          args.prune,
-    verbose:        logLevel === 'verbose',
+    verbose:        logLevel === 'verbose' || logLevel === 'debug',
     production:     args.production,
     deployStage:    args.production ? 'production' : 'staging',
     eject:          args.eject,

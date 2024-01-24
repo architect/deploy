@@ -27,14 +27,15 @@ let after = require('./02-after')
 module.exports = function samDeploy (params, callback) {
   let {
     aws,
-    inventory,
+    debug = false,
     eject,
+    inventory,
     isDryRun = false,
-    shouldHydrate = true,
     name,
     production,
     prune,
     region,
+    shouldHydrate = true,
     tags,
     update,
     verbose,
@@ -53,7 +54,7 @@ module.exports = function samDeploy (params, callback) {
   let dryRun = isDryRun || eject || false // General dry run flag for plugins
   let deployTargetPlugins = inventory.inv.plugins?._methods?.deploy?.target
   let plural = deployTargetPlugins?.length > 1 ? 's' : ''
-  let compat, finalCloudFormation
+  let compat, finalCloudFormation, template
 
   if (name) {
     stackname += toLogicalID(name)
@@ -182,13 +183,14 @@ module.exports = function samDeploy (params, callback) {
 
     // Pre-deploy ops
     function beforeDeploy (callback) {
-      let params = { sam: finalCloudFormation, bucket, pretty, update, isDryRun }
+      let params = { aws, bucket, debug, inventory, isDryRun, pretty, sam: finalCloudFormation, update }
       // this will write sam.json/yaml files out
       before(params, callback)
     },
 
     // Maybe pre-deploy static assets
-    function preDeployStatic (callback){
+    function preDeployStatic (_template, callback){
+      template = _template
       let params = { aws, compat, eject, inventory, isDryRun, production, prune, region, stackname, verbose, update }
       staticDeploy(params, true, callback)
     },
@@ -210,16 +212,8 @@ module.exports = function samDeploy (params, callback) {
         callback()
       }
       else {
-        // leverages the previously-written-out sam.json/yaml files
-        deploy({
-          appname,
-          stackname,
-          bucket,
-          pretty,
-          region,
-          update,
-          tags,
-        }, callback)
+        let params = { aws, bucket, debug, region, stackname, tags, template, update, verbose }
+        deploy(params, callback)
       }
     },
 
@@ -247,21 +241,8 @@ module.exports = function samDeploy (params, callback) {
       }
       else {
         let params = {
-          aws,
-          bucket,
-          compat,
-          eject,
-          inventory,
-          isDryRun,
-          pretty,
-          production,
-          prune,
-          region,
-          stackname,
-          stage,
-          ts,
-          update,
-          verbose,
+          aws, bucket, compat, eject, inventory, isDryRun, pretty,
+          production, prune, region, stackname, stage, ts, update, verbose,
         }
         after(params, callback)
       }

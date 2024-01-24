@@ -39,7 +39,7 @@
     "@architect/utils": "~4.0.0-RC.2",
     "@aws-lite/apigatewayv2": "~0.0.2",
     "@aws-lite/client": "~0.14.2",
-    "@aws-lite/cloudformation": "~0.0.2",
+    "@aws-lite/cloudformation": "~0.0.3",
     "@aws-lite/cloudfront": "~0.0.6",
     "@aws-lite/lambda": "~0.0.3",
     "@aws-lite/s3": "~0.1.12",

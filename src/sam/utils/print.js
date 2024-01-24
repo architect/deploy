@@ -1,25 +1,8 @@
 let chalk = require('chalk')
 let { chars } = require('@architect/utils')
-let b = chalk.green.bold
-let d = chalk.green.dim
-let g = chalk.green
 
 module.exports = function pretty ({ log, verbose }) {
   return {
-    spawn (cmd, args) {
-      if (verbose) {
-        let first = args.shift() + ' ' + args.shift()
-        console.log(b('  ' + cmd + ' ' + first))
-        if (args % 2) {
-          let last = args.pop()
-          args[args.length - 1] += ' ' + last
-        }
-        for (let i = 0; i < args.length; i += 2 ) {
-          console.log(d(args[i].padStart(24, ' ')), g(args[i + 1]))
-        }
-        console.log('')
-      }
-    },
     stdout (data) {
       if (!log)
         return
