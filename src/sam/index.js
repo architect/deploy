@@ -29,6 +29,7 @@ module.exports = function samDeploy (params, callback) {
     aws,
     debug = false,
     eject,
+    fast = false,
     inventory,
     isDryRun = false,
     name,
@@ -183,7 +184,7 @@ module.exports = function samDeploy (params, callback) {
 
     // Pre-deploy ops
     function beforeDeploy (callback) {
-      let params = { aws, bucket, debug, inventory, isDryRun, pretty, sam: finalCloudFormation, update }
+      let params = { aws, bucket, debug, eject, inventory, isDryRun, sam: finalCloudFormation, update }
       // this will write sam.json/yaml files out
       before(params, callback)
     },
@@ -200,7 +201,7 @@ module.exports = function samDeploy (params, callback) {
       if (eject) {
         let cmd = `aws cloudformation deploy --template-file sam.json --stack-name ${stackname} --s3-bucket ${bucket} --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND --region ${region}`
         if (tags.length) cmd += ` --tags ${tags.join(' ')}`
-        update.status(`Successfully generated sam.json. Deploy it to AWS by running:`, cmd)
+        update.status(`Successfully generated sam.json. Deploy it with the AWS CLI by running:`, cmd)
         callback()
       }
       else if (isDryRun) {
@@ -212,7 +213,7 @@ module.exports = function samDeploy (params, callback) {
         callback()
       }
       else {
-        let params = { aws, bucket, debug, region, stackname, tags, template, update, verbose }
+        let params = { aws, bucket, debug, fast, region, stackname, tags, template, update, verbose }
         deploy(params, callback)
       }
     },
@@ -241,7 +242,7 @@ module.exports = function samDeploy (params, callback) {
       }
       else {
         let params = {
-          aws, bucket, compat, eject, inventory, isDryRun, pretty,
+          aws, bucket, compat, eject, fast, inventory, isDryRun, pretty,
           production, prune, region, stackname, stage, ts, update, verbose,
         }
         after(params, callback)

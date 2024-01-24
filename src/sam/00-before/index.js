@@ -35,7 +35,7 @@ let resourceTypes = {
  * Then publish to S3 as necessary
  */
 module.exports = function beforeDeploy (params, callback) {
-  let { aws, bucket, debug, isDryRun, inventory, sam, update } = params
+  let { aws, bucket, debug, eject, isDryRun, inventory, sam, update } = params
   let templateKey
 
   function writeSAM () {
@@ -44,7 +44,7 @@ module.exports = function beforeDeploy (params, callback) {
     writeFileSync(path, JSON.stringify(sam, null, 2))
   }
 
-  if (isDryRun) {
+  if (isDryRun || eject) {
     writeSAM()
     update.status('Skipping CloudFormation deployment')
     return callback(null, 'dry-run')

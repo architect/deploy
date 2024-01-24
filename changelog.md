@@ -6,6 +6,7 @@
 
 ### Added
 
+- Added experimental `--fast` flag, which ships project to AWS without waiting around to determine if the deployment completed successfully. Use with care!
 - Added proper debug output level
 
 

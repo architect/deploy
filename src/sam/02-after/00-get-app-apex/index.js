@@ -5,7 +5,7 @@ let enable = require('./cloudfront-enable')
 let destroy = require('./cloudfront-destroy')
 
 module.exports = function getAppApex (params, callback) {
-  let { aws, inventory, pretty, stackname, stage, ts, update } = params
+  let { aws, fast, inventory, pretty, stackname, stage, ts, update } = params
   let { inv } = inventory
   let arc = inv._project.arc // TODO cut this code path over to Inventory
   reads({
@@ -16,7 +16,9 @@ module.exports = function getAppApex (params, callback) {
   function done (err, result) {
     if (err) callback(err)
     else {
-      update.done('Deployed & built infrastructure')
+      if (!fast) {
+        update.done('Deployed & built infrastructure')
+      }
       pretty.success(ts)
       let { url, wssURL, bucketDomain, apiDomain, s3, apigateway, httpDomain } = result
       let type = wssURL ? 'HTTP' : undefined

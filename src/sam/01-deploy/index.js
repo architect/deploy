@@ -26,7 +26,7 @@ let failStates = [
 // 'DELETE_COMPLETE', 'DELETE_FAILED', 'DELETE_IN_PROGRESS', 'IMPORT_COMPLETE', 'IMPORT_IN_PROGRESS', 'IMPORT_ROLLBACK_COMPLETE', 'IMPORT_ROLLBACK_FAILED', 'IMPORT_ROLLBACK_IN_PROGRESS', 'REVIEW_IN_PROGRESS'
 
 module.exports = function deploy (params, callback) {
-  let { aws, debug, bucket, region, stackname: StackName, update, tags, template } = params
+  let { aws, bucket, debug, fast, region, stackname: StackName, update, tags, template } = params
   update.done('Generated CloudFormation deployment')
   update.start('Deploying & building infrastructure...')
 
@@ -66,6 +66,11 @@ module.exports = function deploy (params, callback) {
   let tenMins = 1000 * 60 * 10
   let timeout = start + tenMins
   function checkStatus () {
+    if (fast) {
+      update.status('Deploying in fast mode! Please refer to the CloudFormation console for deployment status')
+      return callback()
+    }
+
     checks++
     if (Date.now() > timeout) {
       update.error(`Deployment timed out after 10 minutes; check stack ${StackName} status in AWS console`)
