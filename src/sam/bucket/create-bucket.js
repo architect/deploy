@@ -23,13 +23,13 @@ module.exports = function createDeployBucket ({ appname, aws, region, update }, 
       let params = {
         Bucket: bucket,
         ACL: 'private', // Only the bucket owner has access rights
-        CreateBucketConfiguration: {}
+        CreateBucketConfiguration: { LocationConstraint: region },
       }
-      // us-east-1 is default; specifying it as a location constraint will fail
-      if (region !== 'us-east-1') {
-        params.CreateBucketConfiguration = {
-          LocationConstraint: region
-        }
+      // CreateBucketConfiguration.LocationConstraint cannot be 'us-east-1'. Ok!
+      // However, CreateBucketConfiguration also cannot be empty
+      // Thus, contrary to the spec, CreateBucketConfiguration, a required option, must be omitted if it does not contain other options when creating a bucket in 'us-east-1'
+      if (region === 'us-east-1') {
+        delete params.CreateBucketConfiguration
       }
       update.status(`Creating new private deployment bucket: ${bucket}`)
       aws.s3.CreateBucket(params)

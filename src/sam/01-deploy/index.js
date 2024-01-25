@@ -30,7 +30,7 @@ module.exports = function deploy (params, callback) {
   update.done('Generated CloudFormation deployment')
   update.start('Deploying & building infrastructure...')
 
-  let TemplateURL = `https://${bucket}.s3-${region}.amazonaws.com/${template}`
+  let TemplateURL = `https://${bucket}.s3.${region}.amazonaws.com/${template}`
 
   let stack = {
     StackName,
