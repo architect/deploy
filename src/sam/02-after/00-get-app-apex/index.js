@@ -41,8 +41,10 @@ module.exports = function getAppApex (params, callback) {
       // Added whitespace after URLs
       console.log()
 
-      // Allow users to disable Architect's CDN checks so they can configure / manage their own
+      // Allow users to opt into or out of Architect's CDN
+      // Assume the lack of presence of @cdn means we should ignore any related existing CF distros, as they may be managed outside Architect
       let cdnEnabled = arc.cdn?.[0] === true
+      let cdnDisabled = arc.cdn?.[0] === false
 
       // create cdns if cdn is defined
       let creatingS3 = arc.static && cdnEnabled && s3 === false
@@ -52,9 +54,9 @@ module.exports = function getAppApex (params, callback) {
       let enablingS3 = arc.static && cdnEnabled && s3.enabled === false
       let enablingApiGateway = arc.http && cdnEnabled && apigateway.enabled === false
 
-      // destroy (to the best of our ability) cdns if cdn is not defined
-      let destroyingS3 = !cdnEnabled && s3
-      let destroyingApiGateway = !cdnEnabled && apigateway
+      // destroy (to the best of our ability) cdns if cdn is disabled, thus nominated for deletion
+      let destroyingS3 = cdnDisabled && s3
+      let destroyingApiGateway = cdnDisabled && apigateway
 
       series([
         function createS3 (callback) {

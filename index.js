@@ -32,7 +32,7 @@ function run (mod) {
 
     // Entered via CLI (or something that supplied inventory)
     if (options.inventory) {
-      go(options.region || options.inventory.inv.aws.region)
+      go(options)
 
     }
     else {
@@ -40,14 +40,16 @@ function run (mod) {
         if (err) callback(err)
         else {
           options.inventory = inventory
-          go(options.region || inventory.inv.aws.region)
+          go(options)
         }
       })
     }
 
-    function go (region) {
+    function go (options) {
+      let region = options.region || options.inventory.inv.aws.region
       let params = { region }
       if (options.credentials) params.credentials = options.credentials
+      if (options.inventory.inv?.aws?.profile) params.profile = options.inventory.inv.aws.profile
       awsLite(params)
         .then(aws => {
           mod({ ...options, aws, region, update: updater('Deploy') }, clean)
