@@ -47,7 +47,15 @@ function run (mod) {
 
     function go (options) {
       let region = options.region || options.inventory.inv.aws.region
-      let params = { region }
+      let plugins = [
+        import('@aws-lite/apigatewayv2'),
+        import('@aws-lite/cloudformation'),
+        import('@aws-lite/cloudfront'),
+        import('@aws-lite/lambda'),
+        import('@aws-lite/s3'),
+        import('@aws-lite/ssm'),
+      ]
+      let params = { region, plugins }
       if (options.credentials) params.credentials = options.credentials
       if (options.inventory.inv?.aws?.profile) params.profile = options.inventory.inv.aws.profile
       awsLite(params)
