@@ -60,6 +60,10 @@ module.exports = function putFiles (params, callback) {
           if (!headData || fileDiff || headerDiff) {
             put()
           }
+          else if (Key === 'static.json') {
+            // if static json isn't modified neither are any other static files
+            callback() 
+          }
           else {
             notModified++
             if (verbose) {
