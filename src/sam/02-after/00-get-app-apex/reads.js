@@ -33,7 +33,7 @@ module.exports = function reads ({ aws, stackname, stage }, callback){
       let http = o => o.OutputKey === 'HTTP'
 
       let apigateway = cf.find(function (distro) {
-        let origin = outs.find(api)
+        let origin = outs?.find(api)
         if (!origin) return false
         let dist = distro.origin
         let orig = clean(origin.OutputValue)
@@ -41,21 +41,21 @@ module.exports = function reads ({ aws, stackname, stage }, callback){
       }) || false
 
       let s3 = cf.find(function (distro) {
-        let origin = outs.find(bucket)
+        let origin = outs?.find(bucket)
         if (!origin) return false
         let dist = distro.origin
         let orig = clean(origin.OutputValue)
         return dist === orig
       }) || false
 
-      let cdnURL = outs.find(cdn) ? outs.find(cdn).OutputValue : false
-      let apiURL = outs.find(api) ? outs.find(api).OutputValue : false
-      let wssURL = outs.find(wss) ? outs.find(wss).OutputValue : false
-      let bucketURL = outs.find(bucket) ? outs.find(bucket).OutputValue : false
-      let url =  cdnURL || apiURL || bucketURL
+      let cdnURL = outs?.find(cdn)?.OutputValue || false
+      let apiURL = outs?.find(api)?.OutputValue || false
+      let wssURL = outs?.find(wss)?.OutputValue || false
+      let bucketURL = outs?.find(bucket)?.OutputValue || false
+      let url = cdnURL || apiURL || bucketURL
       let apiDomain = apiURL ? clean(apiURL) : false
       let bucketDomain = bucketURL ? clean(bucketURL) : false
-      let httpDomain = outs.find(http) ? outs.find(http).OutputValue : false
+      let httpDomain = outs?.find(http)?.OutputValue || false
 
       callback(null, { url, wssURL, apiDomain, bucketDomain, apigateway, s3, httpDomain })
     }
