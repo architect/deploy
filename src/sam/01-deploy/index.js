@@ -92,6 +92,7 @@ module.exports = function deploy (params, callback) {
           callback()
         }
         else if (failStates.includes(StackStatus)) {
+          update.error(`Bad deployment state found: ${StackStatus}`)
           let err = new Error(`Deployment failed`)
           callback(err)
         }
