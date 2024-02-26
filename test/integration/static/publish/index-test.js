@@ -1,10 +1,8 @@
-/* let test = require('tape')
+let test = require('tape')
+let awsLite = require('@aws-lite/client')
 let { join } = require('path')
 let mockTmp = require('mock-tmp')
 let proxyquire = require('proxyquire')
-require('aws-sdk/lib/maintenance_mode_message').suppress = true
-let aws = require('aws-sdk')
-let awsMock = require('aws-sdk-mock')
 let _inventory = require('@architect/inventory')
 let { updater } = require('@architect/utils')
 
@@ -28,44 +26,46 @@ let sut = proxyquire(filePath, {
   './s3/delete-files': deleteFiles
 })
 
-let s3
+let aws
 let defaultParams = () => ({
+  aws,
   Bucket: 'a-bucket',
   folder: 'public',
   inventory,
   prune: false,
   region: 'us-west-1',
-  s3,
   update: updater('Deploy')
 })
 
 let arc = '@app\nan-app\n@static'
 let content = 'hi there'
-let cwd = mockTmp({
-  'app.arc': arc,
-  public: {
-    'index.html':     content,
-    'something.json': content,
-    'index.js':       content,
-  },
-})
 
 function setup () {
   putted = undefined
   deleted = undefined
   params = defaultParams()
+  awsLite.testing.mock('S3.HeadObject', '')
+  awsLite.testing.mock('S3.PutObject', '')
+  awsLite.testing.mock('S3.ListObjectsV2', '')
+  awsLite.testing.mock('S3.DeleteObjects', '')
 }
 
 test('Set up env', async t => {
-  t.plan(2)
+  t.plan(3)
   t.ok(sut, 'S3 publish module is present')
 
-  awsMock.mock('S3', 'headObject', (params, callback) => callback())
-  awsMock.mock('S3', 'putObject', (params, callback) => callback())
-  awsMock.mock('S3', 'listObjectsV2', (params, callback) => callback())
-  awsMock.mock('S3', 'deleteObjects', (params, callback) => callback())
-  s3 = new aws.S3()
+  aws = await awsLite({ region: 'us-west-2', plugins: [ import('@aws-lite/s3') ] })
+  awsLite.testing.enable()
+  t.ok(awsLite.testing.isEnabled(), 'AWS client testing enabled')
 
+  let cwd = mockTmp({
+    'app.arc': arc,
+    public: {
+      'index.html':     content,
+      'something.json': content,
+      'index.js':       content,
+    },
+  })
   inventory = await _inventory({ cwd })
   t.ok(inventory, 'Got inventory obj')
 })
@@ -123,8 +123,7 @@ test(`Static asset deletion (deployAction is 'delete')`, t => {
 
 test('Teardown', t => {
   t.plan(1)
-  awsMock.restore()
   mockTmp.reset()
-  t.pass('Done')
+  awsLite.testing.disable()
+  t.notOk(awsLite.testing.isEnabled(), 'Done')
 })
-*/

@@ -1,5 +1,6 @@
-/* let proxyquire = require('proxyquire')
+let proxyquire = require('proxyquire')
 let test = require('tape')
+let awsLite = require('@aws-lite/client')
 let { updater } = require('@architect/utils')
 let inventory = require('@architect/inventory')
 let { join } = require('path')
@@ -8,15 +9,10 @@ let mocks = { resources: [
   { ResourceType: 'AWS::Lambda::Function', LogicalResourceId: 'GetIndexHTTPLambda' },
 ] }
 
-// Necessary to run test solo
-require('aws-sdk/lib/maintenance_mode_message').suppress = true
-let aws = require('aws-sdk')
-let awsMock = require('aws-sdk-mock')
-
 function fakeGetResources (params, callback) {
   callback(null, mocks.resources)
 }
-let didHydrate
+let aws, didHydrate
 function fakeUpdateLambda (params, callback) {
   didHydrate = params.shouldHydrate
   callback()
@@ -43,6 +39,7 @@ function directDeploy (t, rawArc, lambdas, callback) {
   inventory({ rawArc }, function (err, result) {
     if (err) t.fail(err)
     else {
+      params.aws = aws
       params.inventory = result
       params.specificLambdasToDeploy = lambdas
       directDeployMod(params, err => {
@@ -53,14 +50,13 @@ function directDeploy (t, rawArc, lambdas, callback) {
   })
 }
 
-test('Set up env', t => {
-  t.plan(1)
+test('Set up env', async t => {
+  t.plan(2)
   t.ok(directDeployMod, 'Direct deployment module is present')
-
-  awsMock.mock('CloudFormation', 'describeStacks', function (params, callback) {
-    callback(null, { Stacks: false })
-  })
-  new aws.CloudFormation()
+  aws = await awsLite({ region: 'us-west-2', plugins: [ import('@aws-lite/cloudformation') ] })
+  awsLite.testing.enable()
+  awsLite.testing.mock('CloudFormation.DescribeStacks', { Stacks: false })
+  t.ok(awsLite.testing.isEnabled(), 'AWS client testing enabled')
 })
 
 test('Should be able to deploy an HTTP POST function directly when a root handler function is defined', t => {
@@ -106,7 +102,6 @@ if (!process.platform.startsWith('win')) {
 
 test('Teardown', t => {
   t.plan(1)
-  awsMock.restore()
-  t.pass('Done')
+  awsLite.testing.disable()
+  t.notOk(awsLite.testing.isEnabled(), 'Done')
 })
- */
