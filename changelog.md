@@ -4,6 +4,11 @@
 
 ## [5.0.3] 2024-02-13
 
+### Changed
+
+- Updated dependencies
+
+
 ### Fixed
 
 - Fixed issue where entirely custom Lambda-based projects may error when trying to print the project's URL(s) after deploying
