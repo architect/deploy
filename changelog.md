@@ -2,6 +2,14 @@
 
 ---
 
+## [5.0.4] 2024-03-25
+
+### Changed
+
+- Updated dependencies
+
+---
+
 ## [5.0.3] 2024-02-13
 
 ### Changed
