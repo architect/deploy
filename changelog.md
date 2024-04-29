@@ -7,7 +7,7 @@
 ### Changed
 
 - Updated dependencies
-- Updated `package.json` `engines.node` property to reflect changes from vX
+- Updated `package.json` `engines.node` property to reflect changes from v5
 
 
 ### Fixed
