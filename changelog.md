@@ -2,6 +2,20 @@
 
 ---
 
+## [5.0.6] 2024-04-29
+
+### Changed
+
+- Updated dependencies
+- Updated `package.json` `engines.node` property to reflect changes from vX
+
+
+### Fixed
+
+- Fixed REST API plugin check; thanks @jonpacker!
+
+---
+
 ## [5.0.4 - 5.0.5] 2024-03-25
 
 ### Changed
