@@ -1,6 +1,6 @@
 {
   "name": "@architect/deploy",
-  "version": "5.0.5",
+  "version": "5.0.6",
   "description": "Deploys @architect projects",
   "main": "index.js",
   "bin": {
