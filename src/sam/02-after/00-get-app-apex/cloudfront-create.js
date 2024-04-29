@@ -17,7 +17,7 @@ module.exports = function createCloudFrontDistribution (params, callback) {
       },
       OriginReadTimeout: 30,
       OriginKeepaliveTimeout: 5,
-    }
+    },
   }
 
   // Add origin path for REST APIs
@@ -88,7 +88,7 @@ module.exports = function createCloudFrontDistribution (params, callback) {
           Items: [],
         },
       },
-    }
+    },
   }
 
   aws.cloudfront.CreateDistribution(config)

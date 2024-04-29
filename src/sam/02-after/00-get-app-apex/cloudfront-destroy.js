@@ -24,7 +24,7 @@ module.exports = function destroyCloudFrontDistribution (aws, { id: Id }, callba
       aws.cloudfront.DeleteDistribution({ Id, IfMatch: ETag })
         .then(() => callback())
         .catch(callback)
-    }
+    },
   ],
   function noop (err) {
     // If the CF distro isn't yet fully disabled, that's ok

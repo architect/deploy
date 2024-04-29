@@ -143,14 +143,14 @@ test('Prune respects fingerprint setting', t => {
   params.fingerprint = true
   params.staticManifest = {
     'index.html': 'index-df330f3f12.html',
-    'folder/something.json': 'folder/something-df330f3f12.json'
+    'folder/something.json': 'folder/something-df330f3f12.json',
   }
   params.files.pop() // Create a pruning opportunity
   let pruneThis = 'index-df330f3f12.js'
   awsLite.testing.mock('S3.ListObjectsV2', { Contents: [
     { Key: 'index-df330f3f12.html' },
     { Key: 'folder/something-df330f3f12.json' },
-    { Key: pruneThis }
+    { Key: pruneThis },
   ] })
   awsLite.testing.mock('S3.DeleteObjects', s3DeleteObjects)
   sut(params, err => {
@@ -173,14 +173,14 @@ test('Prune respects both prefix & fingerprint settings together', t => {
   params.fingerprint = true
   params.staticManifest = {
     'index.html': 'index-df330f3f12.html',
-    'folder/something.json': 'folder/something-df330f3f12.json'
+    'folder/something.json': 'folder/something-df330f3f12.json',
   }
   params.files.pop() // Create a pruning opportunity
   let pruneThis = `${prefix}/index-df330f3f12.js`
   awsLite.testing.mock('S3.ListObjectsV2', { Contents: [
-    { Key: `${prefix}/index-df330f3f12.html`, },
+    { Key: `${prefix}/index-df330f3f12.html` },
     { Key: `${prefix}/folder/something-df330f3f12.json` },
-    { Key: pruneThis }
+    { Key: pruneThis },
   ] })
   awsLite.testing.mock('S3.DeleteObjects', s3DeleteObjects)
   sut(params, err => {
@@ -207,13 +207,13 @@ test('Prune respects both prefix & fingerprint settings together in nested folde
   params.fingerprint = true
   params.staticManifest = {
     'index.html': 'index-df330f3f12.html',
-    'a-folder/something.json': 'a-folder/something-df330f3f12.json'
+    'a-folder/something.json': 'a-folder/something-df330f3f12.json',
   }
   let pruneThis = `${prefix}/a-folder/index-df330f3f12.js`
   awsLite.testing.mock('S3.ListObjectsV2', { Contents: [
-    { Key: `${prefix}/index-df330f3f12.html`, },
+    { Key: `${prefix}/index-df330f3f12.html` },
     { Key: `${prefix}/a-folder/something-df330f3f12.json` },
-    { Key: pruneThis }
+    { Key: pruneThis },
   ] })
   awsLite.testing.mock('S3.DeleteObjects', s3DeleteObjects)
   sut(params, err => {

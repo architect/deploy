@@ -190,7 +190,7 @@ module.exports = function samDeploy (params, callback) {
     },
 
     // Maybe pre-deploy static assets
-    function preDeployStatic (_template, callback){
+    function preDeployStatic (_template, callback) {
       template = _template
       let params = { aws, compat, eject, inventory, isDryRun, production, prune, region, stackname, verbose, update }
       staticDeploy(params, true, callback)
@@ -225,7 +225,7 @@ module.exports = function samDeploy (params, callback) {
     },
 
     // Post-deploy static assets
-    function postDeployStatic (callback){
+    function postDeployStatic (callback) {
       let params = { aws, compat, eject, inventory, isDryRun, production, prune, region, stackname, verbose, update }
       staticDeploy(params, false, callback)
     },

@@ -19,7 +19,7 @@ module.exports = function enableCloudFrontDistribution (aws, { id: Id }, callbac
       else {
         callback()
       }
-    }
+    },
   ],
   function noop (err) {
     if (err) console.log(err)

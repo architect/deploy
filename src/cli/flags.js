@@ -53,6 +53,6 @@ function getSrcDirs (list) {
       }
       return acc
     }
-    catch (e) { return acc }
+    catch { return acc }
   }, [])
 }

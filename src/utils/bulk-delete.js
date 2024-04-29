@@ -9,7 +9,7 @@ module.exports = function bulkDelete (params, callback) {
   function deleteItems () {
     let deleteParams = {
       Bucket,
-      Delete: { Objects: objects.splice(0, 1000) }
+      Delete: { Objects: objects.splice(0, 1000) },
     }
     aws.s3.DeleteObjects(deleteParams)
       .then(data => {

@@ -4,14 +4,14 @@ let plugins = require('../../../../src/sam/plugins')
 function one (params) {
   let { cloudformation } = params
   cloudformation.Resources['OneSNS'] = {
-    Type: 'AWS::SNS'
+    Type: 'AWS::SNS',
   }
   return cloudformation
 }
 function two (params) {
   let { cloudformation } = params
   cloudformation.Resources['TwoSQS'] = {
-    Type: 'AWS::SQS'
+    Type: 'AWS::SQS',
   }
   return cloudformation
 }
@@ -22,14 +22,14 @@ let inventory = {
     _project: { arc: [] },
     plugins: {
       _methods: { deploy: {
-        start: [ one, two ]
-      } }
-    }
-  }
+        start: [ one, two ],
+      } },
+    },
+  },
 }
 
 let fakeCfn = {
-  Resources: []
+  Resources: [],
 }
 
 test('deploy.start should be able to modify CloudFormation', t => {

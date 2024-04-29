@@ -11,7 +11,7 @@ module.exports = function getAppApex (params, callback) {
   reads({
     aws,
     stackname,
-    stage
+    stage,
   },
   function done (err, result) {
     if (err) callback(err)

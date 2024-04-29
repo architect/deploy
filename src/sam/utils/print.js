@@ -25,6 +25,6 @@ module.exports = function pretty ({ log, verbose }) {
       let msg = chalk.grey('Success!')
       let time = chalk.green(`Deployed app in ${(Date.now() - ts) / 1000} seconds\n`)
       console.log(check, msg, time)
-    }
+    },
   }
 }

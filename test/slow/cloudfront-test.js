@@ -5,7 +5,7 @@ let destroy = require('../../src/sam/02-after/00-get-app-apex/cloudfront-destroy
 
 let mock = {
   api: { domain: 'brian.io', path: '/staging' },
-  s3: { domain: 'arc.codes' }
+  s3: { domain: 'arc.codes' },
 }
 
 let distros

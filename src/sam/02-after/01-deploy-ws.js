@@ -25,7 +25,7 @@ module.exports = function deployOldWebSocketAPI (params, callback) {
               ApiId = api.OutputValue.split('.')[0].replace('wss://', '')
               callback()
             }
-            catch (err) {
+            catch {
               callback(ReferenceError('Cannot find WebSocket API in CloudFormation stack'))
             }
           })
@@ -49,7 +49,7 @@ module.exports = function deployOldWebSocketAPI (params, callback) {
       function deploy (callback) {
         aws.apigatewayv2.CreateDeployment({
           ApiId,
-          Description: 'arc_apig_cfn_patch'
+          Description: 'arc_apig_cfn_patch',
         })
           .then(result => {
             if (!result?.DeploymentId) {
@@ -67,11 +67,11 @@ module.exports = function deployOldWebSocketAPI (params, callback) {
         aws.apigatewayv2.UpdateStage({
           ApiId,
           StageName,
-          DeploymentId
+          DeploymentId,
         })
           .then(() => callback())
           .catch(callback)
-      }
+      },
     ], function done (err) {
       if (err && err === 'cancel') callback()
       else if (err) callback(err)

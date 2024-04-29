@@ -6,7 +6,7 @@ module.exports = function getBucket (params, callback) {
   // First: see if this app has a deploy bucket specified in SSM already
   aws.ssm.GetParametersByPath({
     Path: `/${appname}/deploy`,
-    WithDecryption: true
+    WithDecryption: true,
   })
     .then(result => {
       let vars = result.Parameters

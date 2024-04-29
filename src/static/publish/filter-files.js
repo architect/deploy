@@ -12,7 +12,7 @@ module.exports = function filterFiles (params, callback) {
     '.DS_Store',
     'node_modules',
     'readme.md',
-    'static.json'
+    'static.json',
   ])
 
   // Find non-ignored files;

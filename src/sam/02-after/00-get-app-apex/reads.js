@@ -8,7 +8,7 @@ let list = require('./cloudfront-list')
  * @param {String} params.stackname - the name of the currently deployed stack
  * @param {Function} callback - node errback (err, {url, s3, apigateway})=>
  */
-module.exports = function reads ({ aws, stackname, stage }, callback){
+module.exports = function reads ({ aws, stackname, stage }, callback) {
 
   let clean = str => str.replace(`/${stage}`, '').replace('http://', '').replace('https://', '')
 
@@ -20,7 +20,7 @@ module.exports = function reads ({ aws, stackname, stage }, callback){
     },
     cf (callback) {
       list(aws, callback)
-    }
+    },
   },
   function done (err, { cfn, cf }) {
     if (err) callback(err)

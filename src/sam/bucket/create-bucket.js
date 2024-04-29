@@ -41,11 +41,11 @@ module.exports = function createDeployBucket ({ appname, aws, region, update }, 
         Name: `/${appname}/deploy/bucket`,
         Value: bucket,
         Type: 'SecureString',
-        Overwrite: true
+        Overwrite: true,
       })
         .then(() => callback())
         .catch(callback)
-    }
+    },
   ], function done (err) {
     if (err) {
       update.error('Deployment bucket creation error')

@@ -23,7 +23,7 @@ function deleteFiles (params, callback) {
 let filePath = join(process.cwd(), 'src', 'static', 'publish', 'index.js')
 let sut = proxyquire(filePath, {
   './s3/put-files': putFiles,
-  './s3/delete-files': deleteFiles
+  './s3/delete-files': deleteFiles,
 })
 
 let aws
@@ -34,7 +34,7 @@ let defaultParams = () => ({
   inventory,
   prune: false,
   region: 'us-west-1',
-  update: updater('Deploy')
+  update: updater('Deploy'),
 })
 
 let arc = '@app\nan-app\n@static'

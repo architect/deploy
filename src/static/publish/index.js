@@ -86,7 +86,7 @@ module.exports = function publishStaticAssets (params, callback) {
         ignore: ignored,
         inventory,
         publishing,
-        publicDir
+        publicDir,
       }, callback)
     },
 
@@ -139,7 +139,7 @@ module.exports = function publishStaticAssets (params, callback) {
         }, callback)
       }
       else callback()
-    }
+    },
   ], done)
 
   function done (err) {

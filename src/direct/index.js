@@ -55,7 +55,7 @@ module.exports = function directDeploy (options, callback) {
   update.warn('Direct deployments should be considered temporary, and will be overwritten')
   update.status(
     'Initializing direct deployment',
-    `Stack ... ${stackname}`
+    `Stack ... ${stackname}`,
   )
   pretty.warn(update)
 
@@ -76,7 +76,7 @@ module.exports = function directDeploy (options, callback) {
       specificLambdasToDeploy,
       stackname,
       ts,
-      update
+      update,
     }, callback)
   }
 }

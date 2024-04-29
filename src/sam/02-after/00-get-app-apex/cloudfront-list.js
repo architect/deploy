@@ -10,7 +10,7 @@ module.exports = function listCloudfrontDistributions (aws, callback) {
         domain: distro.DomainName,
         status: distro.Status,
         origin: distro.Origins.Items[0].DomainName,
-        enabled: distro.Enabled
+        enabled: distro.Enabled,
       })
       callback(null, DistributionList.Items.map(fmt))
     })

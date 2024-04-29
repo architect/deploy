@@ -115,7 +115,7 @@ module.exports = function deployStatic (params, callback) {
           update,
           verbose,
         }, callback)
-      }
+      },
     ],
     function done (err) {
       if (err) callback(err)

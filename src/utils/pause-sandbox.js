@@ -11,7 +11,7 @@ module.exports = {
         writeFileSync(pauseFile, '\n')
       }
     }
-    catch (err) { /* noop */ }
+    catch { /* noop */ }
   },
   unpause: () => {
     try {
@@ -20,6 +20,6 @@ module.exports = {
         unlinkSync(pauseFile)
       }
     }
-    catch (err) { /* noop */ }
-  }
+    catch { /* noop */ }
+  },
 }

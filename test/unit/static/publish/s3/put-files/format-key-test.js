@@ -12,7 +12,7 @@ let defaultParams = () => ({
   fingerprint: false,
   publicDir: 'public',
   prefix: undefined,
-  staticManifest: {}
+  staticManifest: {},
 })
 
 test('Module is present', t => {
@@ -59,7 +59,7 @@ test('Fingerprint key', t => {
   params.file = 'static.json'
   params.fingerprint = true
   params.staticManifest = {
-    'index.html': 'index-a1b2c.html'
+    'index.html': 'index-a1b2c.html',
   }
   let Key = formatKey(params)
   t.equal(Key, 'static.json', 'Did not fingerprint static.json')
@@ -67,7 +67,7 @@ test('Fingerprint key', t => {
   params = defaultParams()
   params.fingerprint = true
   params.staticManifest = {
-    'index.html': 'index-a1b2c.html'
+    'index.html': 'index-a1b2c.html',
   }
   Key = formatKey(params)
   t.equal(Key, 'index-a1b2c.html', 'Fingerprinted filename')
@@ -85,7 +85,7 @@ test('Prefix key', t => {
   params.prefix = 'some-folder'
   params.fingerprint = true
   params.staticManifest = {
-    'index.html': 'index-a1b2c.html'
+    'index.html': 'index-a1b2c.html',
   }
   Key = formatKey(params)
   t.equal(Key, 'some-folder/index-a1b2c.html', `Prepended prefix to fingerprinted filename: ${Key}`)

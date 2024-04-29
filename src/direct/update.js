@@ -71,7 +71,7 @@ module.exports = function updateLambda (params, callback) {
           })
             .then(() => callback())
             .catch(callback)
-        }
+        },
       ],
       function done (err) {
         update.done('Published code to Lambda')
@@ -102,7 +102,7 @@ module.exports = function updateLambda (params, callback) {
             aws.lambda.GetFunctionConfiguration({ FunctionName })
               .then(config => {
                 args.Environment = {
-                  Variables: { ...config.Environment.Variables, ...env }
+                  Variables: { ...config.Environment.Variables, ...env },
                 }
                 update.done('Updated Lambda env vars')
                 callback()
@@ -140,9 +140,9 @@ module.exports = function updateLambda (params, callback) {
                 .catch(callback)
             })
           }
-        }
+        },
       ], callback)
-    }
+    },
   ],
   function done (err) {
     if (err) callback(err)

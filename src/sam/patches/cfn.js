@@ -3,7 +3,6 @@
  * - For clearer identification and to eliminate the possibility of name conflicts
  * - Various services' CFN impls had issues, so this corrects them for existing apps
  */
-// eslint-disable-next-line
 module.exports = async function oldResources (params, callback) {
   let { cloudformation: cfn, inventory, compat } = params
   let { inv } = inventory
@@ -15,7 +14,7 @@ module.exports = async function oldResources (params, callback) {
     cfn.Resources.WebsocketDeployment.DependsOn = [
       'WebsocketConnectRoute',
       'WebsocketDefaultRoute',
-      'WebsocketDisconnectRoute'
+      'WebsocketDisconnectRoute',
     ]
     Object.entries(cfn.Resources).forEach(([ resource, value ]) => {
       if (resource.endsWith('WSRoute')) {

@@ -7,10 +7,6 @@ let direct = require('./src/direct')
 let sam = require('./src/sam')
 let _static = require('./src/static')
 
-// eslint-disable-next-line
-try { require('aws-sdk/lib/maintenance_mode_message').suppress = true }
-catch { /* Noop */ }
-
 function run (mod) {
   return function (options, callback) {
     let promise
@@ -72,5 +68,5 @@ function run (mod) {
 module.exports = {
   direct: run(direct),
   sam:    run(sam),
-  static: run(_static)
+  static: run(_static),
 }

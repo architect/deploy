@@ -15,7 +15,7 @@ test('File filtering', t => {
   let globbed = [
     'public/index.html',
     'public/static.json',
-    'public/something.json'
+    'public/something.json',
   ]
   let ignore = []
 

@@ -13,7 +13,7 @@ function publish (params, callback) {
 
 let staticDeployPath = join(process.cwd(), 'src', 'static', 'index.js')
 let staticDeployMod = proxyquire(staticDeployPath, {
-  './publish': publish
+  './publish': publish,
 })
 
 let defaultParams = () => ({
@@ -27,7 +27,7 @@ let defaultParams = () => ({
   verbose: undefined,
   // `@static` settings
   prefix: undefined,
-  prune: false
+  prune: false,
 })
 let params = defaultParams()
 

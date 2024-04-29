@@ -76,7 +76,7 @@ function getResources (aws, LogicalResourceId, StackName, callback, next) {
   // (as opposed to paginating & searching)
   aws.cloudformation.DescribeStackResources({
     StackName,
-    LogicalResourceId
+    LogicalResourceId,
   })
     .then(stack => next(stack.StackResources))
     .catch(err => {

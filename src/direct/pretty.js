@@ -14,5 +14,5 @@ module.exports = {
     let msg = chalk.grey('Success!')
     let time = chalk.green(`Deployed in ${(Date.now() - ts) / 1000} seconds`)
     console.log(check, msg, time)
-  }
+  },
 }

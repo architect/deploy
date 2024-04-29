@@ -10,7 +10,7 @@ let filePath = join(process.cwd(), 'src', 'static', 'publish', 's3', 'put-files'
 let putParams = proxyquire(filePath, {
   './put-params': ({ Bucket, Key, Body }) => ({
     Bucket, Key, Body,
-  })
+  }),
 })
 
 let aws, tmp

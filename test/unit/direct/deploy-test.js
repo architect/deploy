@@ -28,7 +28,7 @@ let defaultParams = () => ({
   stackname: undefined,
   shouldHydrate: true,
   ts: new Date(),
-  update: updater('Deploy')
+  update: updater('Deploy'),
 })
 let params = defaultParams()
 function reset () {

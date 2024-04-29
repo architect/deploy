@@ -21,10 +21,10 @@ module.exports = function servicesPlugins (params, callback) {
                 Type: 'String',
                 Name: { 'Fn::Sub': [
                   '/${AWS::StackName}/${pluginName}/${key}',
-                  { pluginName, key }
+                  { pluginName, key },
                 ] },
-                Value
-              }
+                Value,
+              },
             }
           })
         }

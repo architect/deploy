@@ -119,6 +119,6 @@ module.exports = function deploySAM (params, callback) {
           if (err) console.log(err)
           callback()
         })
-    }
+    },
   ], callback)
 }
