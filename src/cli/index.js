@@ -2,7 +2,6 @@
 let deploy = require('../../')
 let _inventory = require('@architect/inventory')
 let { banner, updater } = require('@architect/utils')
-let validate = require('./validate')
 let _flags = require('./flags')
 let { version } = require('../../package.json')
 let pauser = require('../utils/pause-sandbox')
@@ -28,9 +27,6 @@ async function main (/* opts = {} */) {
   let { deployStage } = flags
   // Ignore Inventory if passed, and re-Inventory with deployStage set
   let inventory = await _inventory({ deployStage, env: true })
-
-  // Validate for expected env and args and check for potential creds issues
-  validate()
 
   // Populate options, read args into `prune`, `verbose`, `production`, `tags`, `name`, etc.
   let options = {
