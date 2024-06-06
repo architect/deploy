@@ -1,5 +1,11 @@
 # Architect Deploy changelog
 
+## [5.0.8] 2024-06-06
+
+### Fixed
+
+- Handle CDN invalidations only if CDN explicitly enabled
+
 ---
 
 ## [5.0.7] 2024-04-30

@@ -88,7 +88,7 @@ module.exports = function getAppApex (params, callback) {
           else callback()
         },
         function invalidateS3 (callback) {
-          if (s3 && !creatingS3 && !enablingS3 && !destroyingS3) {
+          if (cdnEnabled && s3 && !creatingS3 && !enablingS3 && !destroyingS3) {
             update.status('Invalidating static asset (S3) CDN distribution cache')
             aws.cloudfront.CreateInvalidation({
               Id: s3.id,
@@ -132,7 +132,7 @@ module.exports = function getAppApex (params, callback) {
           else callback()
         },
         function invalidateApiGateway (callback) {
-          if (apigateway && !creatingApiGateway && !enablingApiGateway && !destroyingApiGateway) {
+          if (cdnEnabled && apigateway && !creatingApiGateway && !enablingApiGateway && !destroyingApiGateway) {
             update.status('Invalidating API Gateway CDN distribution cache')
             aws.cloudfront.CreateInvalidation({
               Id: apigateway.id,
