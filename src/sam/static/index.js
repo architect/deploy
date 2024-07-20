@@ -6,7 +6,7 @@ module.exports = function staticDeploy (params, preDeploy, callback) {
 
   // It is safe to publish static assets pre-deploy if:
   // - Fingerprinting is enabled (including `external`, which we will assume was done properly)
-  if (preDeploy && compat.hasStaticBucket && inv.static?.fingerprint) {
+  if (preDeploy && compat.hasStaticBucket && inv.static) {
     ran = true
     _static({ deployAction: 'put', ...params }, callback)
   }
