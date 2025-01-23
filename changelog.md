@@ -2,6 +2,15 @@
 
 ---
 
+## [5.0.8] 2025-01-23
+
+### Changed
+
+- Added `stackName` property to Deploy plugin params
+- Improved error handling during Lambda direct updates
+
+---
+
 ## [5.0.7] 2024-04-30
 
 ### Fixed
