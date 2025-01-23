@@ -4,7 +4,7 @@ let { deepFrozenCopy } = require('@architect/utils')
  * deploy.start plugins
  */
 module.exports = function startPlugins (params, callback) {
-  let { cloudformation, dryRun, stage } = params
+  let { cloudformation, dryRun, stackName, stage } = params
   let deployStartPlugins = params.inventory.inv.plugins?._methods?.deploy?.start
   if (deployStartPlugins) {
     let inventory = deepFrozenCopy(params.inventory)
@@ -15,7 +15,7 @@ module.exports = function startPlugins (params, callback) {
         let result
         // Plugins accept an option object
         if (_type === 'plugin') {
-          result = await plugin({ arc, cloudformation, dryRun, inventory, stage })
+          result = await plugin({ arc, cloudformation, dryRun, inventory, stackName, stage })
         }
         // Legacy macros use ordered args
         if (_type === 'macro') {

@@ -60,6 +60,8 @@ module.exports = function samDeploy (params, callback) {
   if (name) {
     stackname += toLogicalID(name)
   }
+  // For plugins
+  let stackName = stackname
 
   if (eject) {
     update = updater('Deploy [eject]')
@@ -105,12 +107,12 @@ module.exports = function samDeploy (params, callback) {
 
     // deploy.start plugins
     function runStartPlugins (cloudformation, callback) {
-      plugins.start({ cloudformation, dryRun, inventory, stage }, callback)
+      plugins.start({ cloudformation, dryRun, inventory, stackName, stage }, callback)
     },
 
     // deploy.services plugins
     function runServicesPlugins (cloudformation, callback) {
-      plugins.services({ cloudformation, dryRun, inventory, stage }, callback)
+      plugins.services({ cloudformation, dryRun, inventory, stackName, stage }, callback)
     },
 
     // Fingerprint static assets + ensure ASAP has static.json
@@ -221,7 +223,7 @@ module.exports = function samDeploy (params, callback) {
     // deploy.target plugins
     function runTargetPlugins (callback) {
       let cloudformation = finalCloudFormation
-      plugins.target({ cloudformation, dryRun, inventory, stage }, callback)
+      plugins.target({ cloudformation, dryRun, inventory, stackName, stage }, callback)
     },
 
     // Post-deploy static assets
@@ -252,7 +254,7 @@ module.exports = function samDeploy (params, callback) {
     // deploy.end plugins
     function runEndPlugins (callback) {
       let cloudformation = finalCloudFormation
-      plugins.end({ cloudformation, dryRun, inventory, stage }, callback)
+      plugins.end({ cloudformation, dryRun, inventory, stackName, stage }, callback)
     },
   ], callback)
 }
