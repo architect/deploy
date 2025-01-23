@@ -29,16 +29,21 @@ module.exports = function updateLambda (params, callback) {
   } = params
 
   // Check the Lambda lifecycle state after each mutation to prevent async update issues
+  // 40x checks every 250ms = 10s
   function checkin (count, callback) {
-    if (count === 10) {
+    if (count === 40) {
       callback(Error('Timed out waiting to perform Lambda update'))
     }
     else {
       aws.lambda.GetFunctionConfiguration({ FunctionName })
         .then(config => {
-          if (config?.LastUpdateStatus !== 'Successful') {
+          if (config?.LastUpdateStatus === 'InProgress') {
             setTimeout(() => checkin(++count, callback), 250)
           }
+          else if (config?.LastUpdateStatus === 'Failed') {
+            callback(Error('Lambda update error'))
+          }
+          // Only three states: InProgress, Failed, or Successful
           else callback()
         })
         .catch(callback)
