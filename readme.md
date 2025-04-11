@@ -4,7 +4,7 @@
 
 > Architect serverless framework module for deploying applications to cloud infrastructure
 
-[![GitHub CI status](https://github.com/architect/deploy/workflows/Node%20CI/badge.svg)](https://github.com/architect/deploy/actions?query=workflow%3A%22Node+CI%22)
+[![GitHub CI status](https://github.com/architect/deploy/actions/workflows/build.yml/badge.svg?branch=main)](https://github.com/architect/deploy/actions?query=workflow%3A%22Node+CI%22+branch%3Amain)
 
 
 ## Installation
