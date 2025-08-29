@@ -11,23 +11,10 @@ test('Set up env', async t => {
 
 test('deploy.sam credentials accepted', async t => {
   t.plan(1)
-
-  // Mock all the AWS service calls that deploy.sam might make
-  awsLite.testing.mock('S3.HeadBucket', {})
-  awsLite.testing.mock('S3.CreateBucket', {})
-  awsLite.testing.mock('S3.PutObject', {})
-  awsLite.testing.mock('SSM.GetParametersByPath', { Parameters: [] })
-  awsLite.testing.mock('SSM.PutParameter', {})
-  awsLite.testing.mock('CloudFormation.DescribeStacks', { Stacks: [] })
-  awsLite.testing.mock('CloudFormation.CreateStack', { StackId: 'test-stack' })
-
-  // Create a test inventory
   let inv = await inventory({
     rawArc: '@app\ntest-app\n@http\nget /',
     deployStage: 'staging',
   })
-
-  // Test: Call deploy.sam with STS credentials
   try {
     await deploy.sam({
       credentials: {
