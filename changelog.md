@@ -2,6 +2,15 @@
 
 ---
 
+## [5.0.9] 2025-08-29
+
+## Fixed
+
+- When Credentials are passed as an argument `credentials` they need to be flattened when passed to AWS-lite.
+- Some test mocks were updated because a patch version of @architect/inventory broke the tests.
+
+---
+
 ## [5.0.8] 2025-01-23
 
 ### Changed

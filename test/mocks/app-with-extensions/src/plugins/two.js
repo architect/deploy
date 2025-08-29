@@ -1,6 +1,8 @@
 module.exports = {
-  package: function ({ cloudformation }) {
-    cloudformation.pluginTwo = true
-    return cloudformation
+  deploy: {
+    start: function ({ cloudformation }) {
+      cloudformation.pluginTwo = true
+      return cloudformation
+    }
   }
 }
