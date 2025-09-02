@@ -13,8 +13,17 @@ let mockAwsLite = (args) => {
   })
 }
 
+// Mock the SAM module directly to prevent sam.json file creation
+let mockSam = proxyquire('../../src/sam', {
+  './00-before': (params, callback) => {
+    // Skip file writing, just call callback with dry-run result
+    callback(null, 'dry-run')
+  },
+})
+
 let deploy = proxyquire('../../', {
   '@aws-lite/client': mockAwsLite,
+  './src/sam': mockSam,
 })
 
 test('deploy.sam credentials accepted', async t => {
@@ -22,6 +31,7 @@ test('deploy.sam credentials accepted', async t => {
   let inv = await inventory({
     rawArc: '@app\ntest-app\n@static',
     deployStage: 'staging',
+    shouldHydrate: false,
   })
   await deploy.sam({
     credentials: {
