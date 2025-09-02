@@ -7,7 +7,7 @@
     "arc-deploy": "src/cli/index.js"
   },
   "scripts": {
-    "test": "npm run lint && npm run test:integration && npm run coverage && npm run test:unit",
+    "test": "npm run lint && npm run test:integration && npm run coverage",
     "test:nolint": "npm run test:integration && npm run coverage",
     "test:unit": "cross-env AWS_ACCESS_KEY_ID=\"blah\" AWS_SECRET_ACCESS_KEY=\"blah\" tape 'test/unit/**/*-test.js' | tap-arc",
     "test:slow": "cross-env tape 'test/slow/**/*-test.js' | tap-arc",
