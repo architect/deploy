@@ -16,17 +16,19 @@ module.exports = function directDeploy (options, callback) {
     inventory,
     isDryRun = false,
     production,
+    quiet = false,
     region,
     shouldHydrate = true,
     srcDirs = [],
     update,
   } = options
-  if (!update) update = updater('Deploy')
+  let updateOptions = quiet ? { quiet } : {}
+  if (!update) update = updater('Deploy', updateOptions)
   let { inv } = inventory
 
   // update console output
   if (isDryRun) {
-    update = updater('Deploy [dry-run]')
+    update = updater('Deploy [dry-run]', updateOptions)
     update.status('Starting dry run!')
   }
 
@@ -71,6 +73,7 @@ module.exports = function directDeploy (options, callback) {
       aws,
       inventory,
       production,
+      quiet,
       region,
       shouldHydrate,
       specificLambdasToDeploy,

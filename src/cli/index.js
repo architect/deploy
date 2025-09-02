@@ -5,7 +5,7 @@ let { banner, updater } = require('@architect/utils')
 let _flags = require('./flags')
 let { version } = require('../../package.json')
 let pauser = require('../utils/pause-sandbox')
-let update = updater('Deploy')
+// Initialized later with quiet flag
 
 /**
  * `arc deploy`
@@ -17,16 +17,20 @@ let update = updater('Deploy')
  * -d|--direct|direct ........... direct deploy a specific function code/config
  * -s|--static|static ........... direct deploys /public to static s3 bucket
  * -v|--verbose|verbose ......... prints all output to console
+ * -q|--quiet|quiet ............ suppresses most console output
  * -t|--tags|tags ............... add tags
  * -n|--name|name ............... customize stack name
  * --prune ...................... remove files that exist in static s3 bucket but do not exist in local /public folder
  * --dry-run .................... assemble CloudFormation sam.json but do not deploy remotely (useful for testing)
  */
-async function main (/* opts = {} */) {
+async function main(opts = {}) {
   let flags = _flags()
-  let { deployStage } = flags
-  // Ignore Inventory if passed, and re-Inventory with deployStage set
-  let inventory = await _inventory({ deployStage, env: true })
+  let { deployStage, quiet } = flags
+  // Use provided inventory or create new one
+  let inventory = opts.inventory || await _inventory({ deployStage, env: true })
+
+  // Use provided updater or create new one
+  let update = opts.update || updater('Deploy', { quiet })
 
   // Populate options, read args into `prune`, `verbose`, `production`, `tags`, `name`, etc.
   let options = {
@@ -62,15 +66,26 @@ module.exports = main
 // Allow direct invoke
 if (require.main === module) {
   (async function () {
+    let update
     try {
+      let flags = _flags()
       let inventory = await _inventory({})
       banner({ inventory, version: `Deploy ${version}` })
-      await main({ inventory })
+      // Create updater at this level so it's accessible in catch block
+      update = updater('Deploy', { quiet: flags.quiet })
+      await main({ inventory, update })
     }
     catch (err) {
       // Unpause the Sandbox watcher
       pauser.unpause()
-      update.error(err)
+      // Reuse the same updater instance to preserve any internal state
+      if (update) {
+        update.error(err)
+      } else {
+        // Fallback if updater wasn't created yet
+        let flags = _flags()
+        updater('Deploy', { quiet: flags.quiet }).error(err)
+      }
       process.exit(1)
     }
   })()

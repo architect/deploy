@@ -25,14 +25,15 @@ You need to have the `sam` command-line utility available on your `$PATH`. Check
 Deploys function code directly to one or more staging (or production) environment Lambdas _by ommitting CloudFormation and directly updating code payloads_. This is very useful for live debugging; changes made with direct deploys should be considered temporary.
 
 
-### `deploy.sam({ verbose, production }, callback)`
+
+### `deploy.sam({ quiet, verbose, production }, callback)`
 
 Deploys all infrastructure associated to your @architect app.
 
-Set `verbose` to truthy to enable chatty mode. By default will only push to the staging environment unless `production` is truthy.
+Set `quiet` to truthy to suppress deployment progress and status messages (from the updater system). Set `verbose` to truthy to enable detailed output including CloudFormation logs, file operation details, and deployment artifact information. By default will only push to the staging environment unless `production` is truthy.
 
 
-### `deploy.static({ bucket, credentials, fingerprint, prefix, prune, region, verbose, production }, callback)`
+### `deploy.static({ bucket, credentials, fingerprint, prefix, prune, quiet, region, verbose, production }, callback)`
 
 All parameters are optional.
 

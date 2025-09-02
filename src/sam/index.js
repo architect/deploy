@@ -35,6 +35,7 @@ module.exports = function samDeploy (params, callback) {
     name,
     production,
     prune,
+    quiet = false,
     region,
     shouldHydrate = true,
     tags,
@@ -42,7 +43,8 @@ module.exports = function samDeploy (params, callback) {
     verbose,
   } = params
   let { inv, get } = inventory
-  if (!update) update = updater('Deploy')
+  let updateOptions = quiet ? { quiet } : {}
+  if (!update) update = updater('Deploy', updateOptions)
 
   let stage = production ? 'production' : 'staging'
   let ts = Date.now()
@@ -64,11 +66,11 @@ module.exports = function samDeploy (params, callback) {
   let stackName = stackname
 
   if (eject) {
-    update = updater('Deploy [eject]')
+    update = updater('Deploy [eject]', updateOptions)
     update.status('Preparing to eject Architect app')
   }
   else if (isDryRun) {
-    update = updater('Deploy [dry-run]')
+    update = updater('Deploy [dry-run]', updateOptions)
     update.status('Starting dry run!')
   }
 
