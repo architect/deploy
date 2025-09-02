@@ -23,7 +23,7 @@ let pauser = require('../utils/pause-sandbox')
  * --prune ...................... remove files that exist in static s3 bucket but do not exist in local /public folder
  * --dry-run .................... assemble CloudFormation sam.json but do not deploy remotely (useful for testing)
  */
-async function main(opts = {}) {
+async function main (opts = {}) {
   let flags = _flags()
   let { deployStage, quiet } = flags
   // Use provided inventory or create new one
@@ -81,7 +81,8 @@ if (require.main === module) {
       // Reuse the same updater instance to preserve any internal state
       if (update) {
         update.error(err)
-      } else {
+      }
+      else {
         // Fallback if updater wasn't created yet
         let flags = _flags()
         updater('Deploy', { quiet: flags.quiet }).error(err)
