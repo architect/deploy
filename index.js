@@ -52,7 +52,7 @@ function run (mod) {
         import('@aws-lite/ssm'),
       ]
       let params = { region, plugins }
-      if (options.credentials) params.credentials = options.credentials
+      if (options.credentials) params = { ...options.credentials, ...params }
       if (options.inventory.inv?.aws?.profile) params.profile = options.inventory.inv.aws.profile
       awsLite(params)
         .then(aws => {
