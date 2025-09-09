@@ -7,12 +7,12 @@ let direct = require('./src/direct')
 let sam = require('./src/sam')
 let _static = require('./src/static')
 
-function run (mod) {
+function run(mod) {
   return function (options, callback) {
     let promise
     if (!callback) {
-      promise = new Promise(function ugh (res, rej) {
-        callback = function errback (err, result) {
+      promise = new Promise(function ugh(res, rej) {
+        callback = function errback(err, result) {
           if (err) rej(err)
           else res(result)
         }
@@ -20,7 +20,7 @@ function run (mod) {
     }
 
     // Always attempt to clean up after ourselves before exiting
-    function clean (err, result) {
+    function clean(err, result) {
       cleanup()
       if (err) callback(err)
       else callback(null, result)
@@ -41,7 +41,7 @@ function run (mod) {
       })
     }
 
-    function go (options) {
+    function go(options) {
       let region = options.region || options.inventory.inv.aws.region
       let plugins = [
         import('@aws-lite/apigatewayv2'),
@@ -57,7 +57,6 @@ function run (mod) {
       awsLite(params)
         .then(aws => {
           let updateOptions = options.quiet ? { quiet: options.quiet } : {}
-          // Extract quiet from options since it's only for the updater, not AWS operations
           mod({ ...options, aws, region, update: updater('Deploy', updateOptions) }, clean)
         })
         .catch(callback)

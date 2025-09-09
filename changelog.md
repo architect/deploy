@@ -2,6 +2,17 @@
 
 ---
 
+## [5.1.0] 2025-09-09
+
+### Added
+
+- Added `quiet` option for direct invocation methods (`deploy.sam`, `deploy.direct`, `deploy.static`)
+  - Suppresses `@architect/utils` updater output when set to `true`
+  - Only affects programmatic usage, not CLI commands
+  - Example: `deploy.sam({ inventory, quiet: true })` runs silently
+
+---
+
 ## [5.0.9] 2025-08-29
 
 ## Fixed
