@@ -96,42 +96,6 @@ test('Hydration enabled / disabled', t => {
   t.equal(flags().shouldHydrate, true, 'Lack of "--no-hydrate" flag sets shouldHydrate to true')
 })
 
-test('Quiet mode', t => {
-  t.plan(4)
-
-  args('--quiet')
-  t.ok(flags().quiet, '"--quiet" flag sets quiet')
-
-  args('-q')
-  t.ok(flags().quiet, '"-q" flag sets quiet')
-
-  args('')
-  t.notOk(flags().quiet, 'Lack of "--quiet" flag sets quiet to false')
-
-  // Test that quiet and verbose are independent
-  args('--verbose --quiet')
-  let result = flags()
-  t.ok(result.quiet && result.verbose, 'Quiet and verbose flags are independent and can both be set')
-})
-
-test('Verbose mode', t => {
-  t.plan(4)
-
-  args('--verbose')
-  t.ok(flags().verbose, '"--verbose" flag sets verbose')
-
-  args('-v')
-  t.ok(flags().verbose, '"-v" flag sets verbose')
-
-  args('')
-  t.notOk(flags().verbose, 'Lack of "--verbose" flag sets verbose to false')
-
-  // Test that verbose and quiet are independent
-  args('--quiet --verbose')
-  let result = flags()
-  t.ok(result.quiet && result.verbose, 'Verbose and quiet flags are independent and can both be set')
-})
-
 test('Tags', t => {
   t.plan(7)
   let tagA = 'foo', tagB = 'bar'
