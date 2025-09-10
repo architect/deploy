@@ -56,7 +56,8 @@ function run (mod) {
       if (options.inventory.inv?.aws?.profile) params.profile = options.inventory.inv.aws.profile
       awsLite(params)
         .then(aws => {
-          mod({ ...options, aws, region, update: updater('Deploy') }, clean)
+          let updateOptions = options.quiet ? { quiet: options.quiet } : {}
+          mod({ ...options, aws, region, update: updater('Deploy', updateOptions) }, clean)
         })
         .catch(callback)
     }
