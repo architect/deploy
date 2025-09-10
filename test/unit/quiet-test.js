@@ -54,12 +54,21 @@ let mockUpdater = (name, options = {}) => {
   return originalUpdater(name, options)
 }
 
+// Mock fs.writeFileSync to prevent sam.json creation
+let mocked00Before = proxyquire('../../src/sam/00-before', {
+  'fs': {
+    ...require('fs'),
+    writeFileSync: () => { }, // No-op during tests
+  },
+})
+
+let mockSam = proxyquire('../../src/sam', {
+  './00-before': mocked00Before,
+})
+
 let deploy = proxyquire('../../', {
   '@aws-lite/client': mockAwsLite,
-  // Mock sam/00-before to prevent file creation
-  './src/sam/00-before': (params, callback) => {
-    callback(null, 'dry-run')
-  },
+  './src/sam': mockSam,
   '@architect/utils': {
     ...require('@architect/utils'),
     updater: mockUpdater,

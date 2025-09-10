@@ -68,6 +68,6 @@ function run (mod) {
 
 module.exports = {
   direct: run(direct),
-  sam: run(sam),
+  sam:    run(sam),
   static: run(_static),
 }
