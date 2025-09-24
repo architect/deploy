@@ -1,4 +1,4 @@
-let series = require('run-series')
+let series = require('@architect/utils/run-series')
 let appApex  = require('./00-get-app-apex')
 let deployWS = require('./01-deploy-ws')
 let prune = require('../../static')

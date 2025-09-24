@@ -1,6 +1,4 @@
-let { getLambdaName, toLogicalID } = require('@architect/utils')
-let parallel = require('run-parallel')
-let waterfall = require('run-waterfall')
+let { getLambdaName, toLogicalID, parallel, waterfall } = require('@architect/utils')
 
 let updateLambda = require('./update')
 let pretty = require('./pretty')

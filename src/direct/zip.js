@@ -1,8 +1,8 @@
-var series = require('run-waterfall')
-var { globSync } = require('glob')
+var { globSync } = require('@architect/utils/glob')
+let { series, pathToUnix } = require('@architect/utils')
+
 var zipit = require('zipit')
 var zipdir = require('zip-dir')
-let { pathToUnix } = require('@architect/utils')
 
 /**
  * @param {String} pathIn - path to zip

@@ -1,4 +1,4 @@
-let sort = require('path-sort')
+let sort = require('@architect/utils/path-sort')
 
 /**
  * Filter based on default and user-specified @static ignore rules

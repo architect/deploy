@@ -1,5 +1,5 @@
-let folderSize = require('get-folder-size')
-let series = require('run-series')
+let folderSize = require('./get-folder-size')
+let series = require('@architect/utils/run-series')
 
 module.exports = function sizeReport (params, callback) {
   let { lambdas, inventory, update } = params

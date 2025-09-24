@@ -1,7 +1,9 @@
 let { join } = require('path')
 let { writeFileSync } = require('fs')
 let crypto = require('crypto')
-let series = require('run-series')
+
+let series = require('@architect/utils/run-series')
+
 let upload = require('./upload')
 
 // SAM to CloudFormation resource property types pulled from:

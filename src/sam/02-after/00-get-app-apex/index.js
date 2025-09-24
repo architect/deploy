@@ -1,5 +1,6 @@
+let series = require('@architect/utils/run-series')
+
 let reads = require('./reads')
-let series = require('run-series')
 let create = require('./cloudfront-create')
 let enable = require('./cloudfront-enable')
 let destroy = require('./cloudfront-destroy')

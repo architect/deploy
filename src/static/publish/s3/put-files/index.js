@@ -1,7 +1,8 @@
 let { readFileSync } = require('fs')
 let crypto = require('crypto')
-let chalk = require('chalk')
-let series = require('run-series')
+
+let { series, chalk } = require('@architect/utils')
+
 let formatKey = require('./format-key')
 let putParams = require('./put-params')
 

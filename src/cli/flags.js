@@ -1,5 +1,5 @@
 let { statSync } = require('fs')
-let minimist = require('minimist')
+let minimist = require('@architect/utils/minimist')
 
 /**
  * Read CLI flags and populate userland options

@@ -1,4 +1,4 @@
-let series = require('run-series')
+let series = require('@architect/utils/run-series')
 
 /**
  * API Gateway / CFN bug!

@@ -1,4 +1,4 @@
-let waterfall = require('run-waterfall')
+let waterfall = require('@architect/utils/run-waterfall')
 
 module.exports = function destroyCloudFrontDistribution (aws, { id: Id }, callback) {
   waterfall([

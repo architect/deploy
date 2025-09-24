@@ -1,6 +1,11 @@
 # Architect Deploy changelog
 
 ---
+### [6.0.0] 2025-09-24
+
+- Updated deps and to node > 20
+
+---
 
 ## [5.1.0] 2025-09-09
 

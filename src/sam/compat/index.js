@@ -1,5 +1,4 @@
-let { toLogicalID } = require('@architect/utils')
-let series = require('run-series')
+let { toLogicalID, series } = require('@architect/utils')
 
 /**
  * Check current infra for compatibility

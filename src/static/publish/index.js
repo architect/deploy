@@ -1,8 +1,7 @@
-let chalk = require('chalk')
-let { globSync } = require('glob')
+let { globSync } = require('@architect/utils/glob')
+let { pathToUnix, chalk, waterfall } = require('@architect/utils')
+
 let { join, sep } = require('path')
-let { pathToUnix } = require('@architect/utils')
-let waterfall = require('run-waterfall')
 
 let filterFiles = require('./filter-files')
 let writeStaticManifest = require('./write-static-manifest')

@@ -1,5 +1,4 @@
-let chalk = require('chalk')
-let { chars } = require('@architect/utils')
+let { chars, chalk } = require('@architect/utils')
 
 module.exports = {
   url (v) {
