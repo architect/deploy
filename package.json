@@ -45,10 +45,10 @@
     "@aws-lite/lambda": "~0.1.5",
     "@aws-lite/s3": "~0.2.6",
     "@aws-lite/ssm": "^0.2.3",
-    "fs-extra": "~11.3.0",
-    "mime-types": "~3.0.1",
-    "zip-dir": "~2.0.0",
-    "zipit": "~2.0.0"
+    "fs-extra": "11.3.0",
+    "mime-types": "3.0.1",
+    "zip-dir": "2.0.0",
+    "zipit": "2.0.0"
   },
   "devDependencies": {
     "@architect/eslint-config": "~3.0.0",
