@@ -4,7 +4,8 @@
   "description": "Deploys @architect projects",
   "main": "index.js",
   "bin": {
-    "arc-deploy": "src/cli/index.js"
+    "arc-deploy": "src/cli/index.js",
+    "deploy": "src/cli/index.js"
   },
   "scripts": {
     "test": "npm run lint && npm run test:integration && npm run coverage",
