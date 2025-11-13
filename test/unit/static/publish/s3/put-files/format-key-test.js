@@ -2,7 +2,7 @@ let test = require('tape')
 let { join } = require('path')
 let inventory = require('@architect/inventory')
 let { pathToUnix } = require('@architect/utils')
-let { globSync } = require('glob')
+let { globSync } = require('@architect/utils/glob')
 
 let sut = join(process.cwd(), 'src', 'static', 'publish', 's3', 'put-files', 'format-key.js')
 let formatKey = require(sut)

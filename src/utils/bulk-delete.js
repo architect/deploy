@@ -1,4 +1,4 @@
-let chalk = require('chalk')
+let chalk = require('@architect/utils/chalk')
 
 module.exports = function bulkDelete (params, callback) {
   let { aws, Bucket, items, log, region, update } = params

@@ -1,8 +1,7 @@
+let { toLogicalID, updater, fingerprint, waterfall } = require('@architect/utils')
 let pkg = require('@architect/package')
-let { toLogicalID, updater, fingerprint } = require('@architect/utils')
 let create = require('@architect/create')
 let hydrate = require('@architect/hydrate')
-let waterfall = require('run-waterfall')
 
 let print = require('./utils/print')
 let handlerCheck = require('../utils/handler-check')

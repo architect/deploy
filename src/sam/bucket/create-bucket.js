@@ -1,5 +1,5 @@
 let crypto = require('crypto')
-let series = require('run-series')
+let series = require('@architect/utils/run-series')
 
 module.exports = function createDeployBucket ({ appname, aws, region, update }, callback) {
   // Quick validation for S3 bucket naming requirements

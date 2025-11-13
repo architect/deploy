@@ -1,4 +1,4 @@
-let parallel = require('run-parallel')
+let parallel = require('@architect/utils/run-parallel')
 let list = require('./cloudfront-list')
 
 /**

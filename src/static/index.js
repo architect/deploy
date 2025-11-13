@@ -1,7 +1,8 @@
 let { join, sep } = require('path')
 let { existsSync } = require('fs')
-let series = require('run-series')
-let { toLogicalID } = require('@architect/utils')
+
+let { toLogicalID, series } = require('@architect/utils')
+
 let publish = require('./publish')
 let getResources = require('../utils/get-cfn-resources')
 
