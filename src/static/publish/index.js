@@ -1,4 +1,4 @@
-let { globSync } = require('@architect/utils/glob')
+let { globSync, statSync } = require('node:fs')
 let { pathToUnix, chalk, waterfall } = require('@architect/utils')
 
 let { join, sep } = require('path')
@@ -69,7 +69,16 @@ module.exports = function publishStaticAssets (params, callback) {
     function _globAndFilter (callback) {
       try {
         let path = pathToUnix(publicDir + '/**/*')
-        let globbed = globSync(path, { dot: true, nodir: true, follow: true })
+        let globbed = globSync(path)
+        // Filter out directories (native fs.globSync doesn't have nodir option)
+        globbed = globbed.filter(filePath => {
+          try {
+            return statSync(filePath).isFile()
+          }
+          catch {
+            return false
+          }
+        })
         // Filter based on default and user-specified @static ignore rules
         filterFiles({ globbed, ignore }, callback)
       }

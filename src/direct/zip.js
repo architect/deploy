@@ -1,4 +1,4 @@
-var { globSync } = require('@architect/utils/glob')
+let { globSync } = require('node:fs')
 let { series, pathToUnix } = require('@architect/utils')
 
 var zipit = require('zipit')
@@ -22,7 +22,7 @@ function nixzip (pathToCode, callback) {
     function _read (callback) {
       try {
         let path = pathToUnix(pathToCode + '/*')
-        let files = globSync(path, { dot: true })
+        let files = globSync(path)
         callback(null, files)
       }
       catch (err) {

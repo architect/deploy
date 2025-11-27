@@ -1,8 +1,8 @@
 let test = require('tape')
 let { join } = require('path')
+let { globSync, statSync } = require('node:fs')
 let inventory = require('@architect/inventory')
 let { pathToUnix } = require('@architect/utils')
-let { globSync } = require('@architect/utils/glob')
 
 let sut = join(process.cwd(), 'src', 'static', 'publish', 's3', 'put-files', 'format-key.js')
 let formatKey = require(sut)
@@ -40,7 +40,16 @@ test('Key pathing is correct on each platform', async t => {
   let publicDir = join(cwd, inv.inv.static.folder)
 
   let path = pathToUnix(cwd) + `/${inv.inv.static.folder}/**/*`
-  let files = globSync(path, { dot: true, nodir: true, follow: true })
+  let allPaths = globSync(path)
+  // Filter out directories to match nodir: true behavior
+  let files = allPaths.filter(p => {
+    try {
+      return statSync(p).isFile()
+    }
+    catch {
+      return false
+    }
+  })
   console.log(`Found these assets to derive keys for:`, files)
   t.plan(files.length * 2)
 
