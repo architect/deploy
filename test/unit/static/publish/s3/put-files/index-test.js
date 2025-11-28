@@ -1,20 +1,16 @@
-const { test, before, after } = require('node:test')
+const { test, before } = require('node:test')
 const assert = require('node:assert/strict')
 let awsLite = require('@aws-lite/client')
 const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = require('fs')
 const { tmpdir } = require('os')
-let { join, sep } = require('path')
+let { join, sep, dirname } = require('path')
 let crypto = require('crypto')
 let { pathToUnix } = require('@architect/utils')
 let cwd = process.cwd()
 let filePath = join(process.cwd(), 'src', 'static', 'publish', 's3', 'put-files')
 
-let tmpDirs = []
-
 function createTmpDir (structure) {
   const tmpDir = mkdtempSync(join(tmpdir(), 'arc-test-'))
-  tmpDirs.push(tmpDir)
-  const { dirname } = require('path')
 
   function createStructure (base, obj) {
     for (const [ key, value ] of Object.entries(obj)) {
@@ -35,17 +31,6 @@ function createTmpDir (structure) {
   createStructure(tmpDir, structure)
   return tmpDir
 }
-
-after(() => {
-  tmpDirs.forEach(dir => {
-    try {
-      rmSync(dir, { recursive: true, force: true })
-    }
-    catch {
-      // Ignore cleanup errors
-    }
-  })
-})
 
 // Mock put-params by overriding the require cache
 let Module = require('module')
@@ -107,6 +92,14 @@ function setup (data) {
 }
 function reset () {
   awsLite.testing.reset()
+  if (tmp) {
+    try {
+      rmSync(tmp, { recursive: true, force: true })
+    }
+    catch {
+      // Ignore cleanup errors
+    }
+  }
   process.chdir(cwd)
 }
 

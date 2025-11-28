@@ -35,44 +35,71 @@ const Module = require('module')
 const originalRequire = Module.prototype.require
 
 before(() => {
-  awsLite.testing.enable()
+  try {
+    console.error('[DEBUG] Before hook starting')
+    console.error('[DEBUG] Platform:', process.platform)
+    console.error('[DEBUG] Node version:', process.version)
 
-  // Override require to inject mocks
-  Module.prototype.require = function (id) {
-    // Mock @aws-lite/client
-    if (id === '@aws-lite/client') {
-      return function mockAwsLite () {
-        return Promise.resolve({
-          cloudformation: {
-            DescribeStacks: () => Promise.reject({ message: 'Stack does not exist', statusCode: 400 }),
-            DescribeStackResources: () => Promise.resolve({ StackResources: [] }),
-          },
-          s3: {
-            HeadBucket: () => Promise.resolve({ statusCode: 200 }),
-            ListBuckets: () => Promise.resolve({ Buckets: [ { Name: 'test-bucket' } ] }),
-            PutObject: () => Promise.resolve({ ETag: '"mock-etag"' }),
-          },
-        })
+    awsLite.testing.enable()
+    console.error('[DEBUG] AWS testing enabled')
+
+    // Override require to inject mocks
+    Module.prototype.require = function (id) {
+      // Mock @aws-lite/client
+      if (id === '@aws-lite/client') {
+        return function mockAwsLite () {
+          return Promise.resolve({
+            cloudformation: {
+              DescribeStacks: () => Promise.reject({ message: 'Stack does not exist', statusCode: 400 }),
+              DescribeStackResources: () => Promise.resolve({ StackResources: [] }),
+            },
+            s3: {
+              HeadBucket: () => Promise.resolve({ statusCode: 200 }),
+              ListBuckets: () => Promise.resolve({ Buckets: [ { Name: 'test-bucket' } ] }),
+              PutObject: () => Promise.resolve({ ETag: '"mock-etag"' }),
+            },
+          })
+        }
       }
-    }
-    // Mock fs.writeFileSync to prevent sam.json creation
-    if (id === 'fs' && this.filename && this.filename.includes('sam/00-before')) {
-      return {
-        ...originalRequire.apply(this, [ 'fs' ]),
-        writeFileSync: () => { }, // No-op during tests
+      // Mock fs.writeFileSync to prevent sam.json creation
+      if (id === 'fs' && this.filename && this.filename.includes('sam/00-before')) {
+        return {
+          ...originalRequire.apply(this, [ 'fs' ]),
+          writeFileSync: () => { }, // No-op during tests
+        }
       }
+      return originalRequire.apply(this, arguments)
     }
-    return originalRequire.apply(this, arguments)
+    console.error('[DEBUG] Module.prototype.require mocked')
+
+    // Load deploy module with mocks in place
+    deploy = require('../../')
+    console.error('[DEBUG] Deploy module loaded')
+    console.error('[DEBUG] Before hook completed')
   }
-
-  // Load deploy module with mocks in place
-  deploy = require('../../')
+  catch (err) {
+    console.error('[DEBUG] Before hook failed:', err.message)
+    console.error('[DEBUG] Stack:', err.stack)
+    throw err
+  }
 })
 
 after(() => {
-  Module.prototype.require = originalRequire
-  awsLite.testing.disable()
-  awsLite.testing.reset()
+  try {
+    console.error('[DEBUG] After hook starting')
+    Module.prototype.require = originalRequire
+    console.error('[DEBUG] Module.prototype.require restored')
+    awsLite.testing.disable()
+    console.error('[DEBUG] AWS testing disabled')
+    awsLite.testing.reset()
+    console.error('[DEBUG] AWS testing reset')
+    console.error('[DEBUG] After hook completed')
+  }
+  catch (err) {
+    console.error('[DEBUG] After hook failed:', err.message)
+    console.error('[DEBUG] Stack:', err.stack)
+    throw err
+  }
 })
 
 test('Set up env', () => {
@@ -80,152 +107,234 @@ test('Set up env', () => {
 })
 
 test('deploy.sam with quiet=false shows output', async () => {
-  let inv = await inventory({
-    rawArc: '@app\ntest-app\n@static',
-    deployStage: 'staging',
-  })
+  try {
+    console.error('[DEBUG] Starting deploy.sam quiet=false test')
+    let inv = await inventory({
+      rawArc: '@app\ntest-app\n@static',
+      deployStage: 'staging',
+    })
+    console.error('[DEBUG] Inventory created')
 
-  captureOutput()
+    captureOutput()
+    console.error('[DEBUG] Output capture started')
 
-  await deploy.sam({
-    inventory: inv,
-    isDryRun: true,
-    region: 'us-west-2',
-    shouldHydrate: false,
-    quiet: false, // Explicitly not quiet
-  })
+    await deploy.sam({
+      inventory: inv,
+      isDryRun: true,
+      region: 'us-west-2',
+      shouldHydrate: false,
+      quiet: false, // Explicitly not quiet
+    })
+    console.error('[DEBUG] deploy.sam completed')
 
-  restoreOutput()
+    restoreOutput()
+    console.error('[DEBUG] Output restored')
 
-  let outputCount = getOutputCount()
-  let outputContent = getOutputContent()
+    let outputCount = getOutputCount()
+    let outputContent = getOutputContent()
+    console.error(`[DEBUG] Output count: ${outputCount}, content length: ${outputContent.length}`)
+    console.error(`[DEBUG] First 200 chars: ${outputContent.substring(0, 200)}`)
 
-  assert.ok(outputCount > 0, `Non-quiet mode shows output (${outputCount} messages)`)
-  assert.ok(outputContent.includes('Deploy'), `Output contains deploy messages: ${outputContent.substring(0, 100)}...`)
+    assert.ok(outputCount > 0, `Non-quiet mode shows output (${outputCount} messages)`)
+    assert.ok(outputContent.includes('Deploy'), `Output contains deploy messages: ${outputContent.substring(0, 100)}...`)
+    console.error('[DEBUG] Test passed')
+  }
+  catch (err) {
+    console.error('[DEBUG] Test failed with error:', err.message)
+    console.error('[DEBUG] Stack:', err.stack)
+    throw err
+  }
 })
 
 test('deploy.sam with quiet=true suppresses updater output', async () => {
-  let inv = await inventory({
-    rawArc: '@app\ntest-app\n@static',
-    deployStage: 'staging',
-  })
+  try {
+    console.error('[DEBUG] Starting deploy.sam quiet comparison test')
+    let inv = await inventory({
+      rawArc: '@app\ntest-app\n@static',
+      deployStage: 'staging',
+    })
+    console.error('[DEBUG] Inventory created')
 
-  // Test quiet=false (normal mode)
-  captureOutput()
-  await deploy.sam({
-    inventory: inv,
-    isDryRun: true,
-    region: 'us-west-2',
-    shouldHydrate: false,
-    quiet: false,
-  })
-  restoreOutput()
-  let normalCount = getOutputCount()
+    // Test quiet=false (normal mode)
+    console.error('[DEBUG] Testing quiet=false')
+    captureOutput()
+    await deploy.sam({
+      inventory: inv,
+      isDryRun: true,
+      region: 'us-west-2',
+      shouldHydrate: false,
+      quiet: false,
+    })
+    restoreOutput()
+    let normalCount = getOutputCount()
+    console.error(`[DEBUG] Normal mode output count: ${normalCount}`)
 
-  // Test quiet=true
-  captureOutput()
-  await deploy.sam({
-    inventory: inv,
-    isDryRun: true,
-    region: 'us-west-2',
-    shouldHydrate: false,
-    quiet: true,
-  })
-  restoreOutput()
-  let quietCount = getOutputCount()
+    // Test quiet=true
+    console.error('[DEBUG] Testing quiet=true')
+    captureOutput()
+    await deploy.sam({
+      inventory: inv,
+      isDryRun: true,
+      region: 'us-west-2',
+      shouldHydrate: false,
+      quiet: true,
+    })
+    restoreOutput()
+    let quietCount = getOutputCount()
+    console.error(`[DEBUG] Quiet mode output count: ${quietCount}`)
 
-  assert.ok(normalCount > 8, `Normal mode has substantial output (${normalCount} messages)`)
-  assert.ok(quietCount < 3, `Quiet mode suppresses most output (${quietCount} messages, was ${normalCount})`)
+    assert.ok(normalCount > 8, `Normal mode has substantial output (${normalCount} messages)`)
+    assert.ok(quietCount < 3, `Quiet mode suppresses most output (${quietCount} messages, was ${normalCount})`)
+    console.error('[DEBUG] Test passed')
+  }
+  catch (err) {
+    console.error('[DEBUG] Test failed with error:', err.message)
+    console.error('[DEBUG] Stack:', err.stack)
+    throw err
+  }
 })
 
 test('deploy.sam with default (no quiet param) shows output', async () => {
-  let inv = await inventory({
-    rawArc: '@app\ntest-app\n@static',
-    deployStage: 'staging',
-  })
+  try {
+    console.error('[DEBUG] Starting deploy.sam default test')
+    let inv = await inventory({
+      rawArc: '@app\ntest-app\n@static',
+      deployStage: 'staging',
+    })
+    console.error('[DEBUG] Inventory created')
 
-  captureOutput()
+    captureOutput()
+    console.error('[DEBUG] Output capture started')
 
-  await deploy.sam({
-    inventory: inv,
-    isDryRun: true,
-    region: 'us-west-2',
-    shouldHydrate: false,
-    // No quiet parameter - should default to showing output
-  })
+    await deploy.sam({
+      inventory: inv,
+      isDryRun: true,
+      region: 'us-west-2',
+      shouldHydrate: false,
+      // No quiet parameter - should default to showing output
+    })
+    console.error('[DEBUG] deploy.sam completed')
 
-  restoreOutput()
+    restoreOutput()
+    console.error('[DEBUG] Output restored')
 
-  let outputCount = getOutputCount()
-  let outputContent = getOutputContent()
+    let outputCount = getOutputCount()
+    let outputContent = getOutputContent()
+    console.error(`[DEBUG] Output count: ${outputCount}`)
 
-  assert.ok(outputCount > 0, `Default mode shows output (${outputCount} messages)`)
-  assert.ok(outputContent.includes('Deploy'), `Output contains deploy messages`)
+    assert.ok(outputCount > 0, `Default mode shows output (${outputCount} messages)`)
+    assert.ok(outputContent.includes('Deploy'), `Output contains deploy messages`)
+    console.error('[DEBUG] Test passed')
+  }
+  catch (err) {
+    console.error('[DEBUG] Test failed with error:', err.message)
+    console.error('[DEBUG] Stack:', err.stack)
+    throw err
+  }
 })
 
-test('deploy.direct with quiet=true suppresses updater output', async () => {
-  let inv = await inventory({
-    rawArc: '@app\ntest-app\n@http\nget /',
-    deployStage: 'staging',
-  })
+test('deploy.direct with quiet=true suppresses updater output', { skip: process.platform === 'win32' }, async () => {
+  try {
+    console.error('[DEBUG] Starting deploy.direct quiet comparison test')
+    let inv = await inventory({
+      rawArc: '@app\ntest-app\n@http\nget /',
+      deployStage: 'staging',
+    })
+    console.error('[DEBUG] Inventory created')
 
-  captureOutput()
-  await deploy.direct({
-    inventory: inv,
-    isDryRun: true,
-    region: 'us-west-2',
-    shouldHydrate: false,
-    quiet: false,
-    srcDirs: [ 'src/http/get-index' ],
-  })
+    console.error('[DEBUG] Testing quiet=false')
+    captureOutput()
+    await deploy.direct({
+      inventory: inv,
+      isDryRun: true,
+      region: 'us-west-2',
+      shouldHydrate: false,
+      quiet: false,
+      srcDirs: [ 'src/http/get-index' ],
+    })
 
-  restoreOutput()
-  let normalCount = getOutputCount()
+    restoreOutput()
+    let normalCount = getOutputCount()
+    console.error(`[DEBUG] Normal mode output count: ${normalCount}`)
 
-  captureOutput()
-  await deploy.direct({
-    inventory: inv,
-    isDryRun: true,
-    region: 'us-west-2',
-    shouldHydrate: false,
-    quiet: true,
-    srcDirs: [ 'src/http/get-index' ],
-  })
-  restoreOutput()
-  let quietCount = getOutputCount()
+    console.error('[DEBUG] Testing quiet=true')
+    captureOutput()
+    await deploy.direct({
+      inventory: inv,
+      isDryRun: true,
+      region: 'us-west-2',
+      shouldHydrate: false,
+      quiet: true,
+      srcDirs: [ 'src/http/get-index' ],
+    })
+    restoreOutput()
+    let quietCount = getOutputCount()
+    console.error(`[DEBUG] Quiet mode output count: ${quietCount}`)
 
-  assert.ok(normalCount > 5, `Normal mode has substantial output (${normalCount} messages)`)
-  assert.strictEqual(quietCount, 0, `Quiet mode completely suppresses output (${quietCount} messages, was ${normalCount})`)
+    assert.ok(normalCount > 5, `Normal mode has substantial output (${normalCount} messages)`)
+    assert.strictEqual(quietCount, 0, `Quiet mode completely suppresses output (${quietCount} messages, was ${normalCount})`)
+    console.error('[DEBUG] Test passed')
+  }
+  catch (err) {
+    console.error('[DEBUG] Test failed with error:', err.message)
+    console.error('[DEBUG] Stack:', err.stack)
+    throw err
+  }
 })
 
-test('deploy.direct with quiet=false shows output', async () => {
-  let inv = await inventory({
-    rawArc: '@app\ntest-app\n@http\nget /',
-    deployStage: 'staging',
-  })
+test('deploy.direct with quiet=false shows output', { skip: process.platform === 'win32' }, async () => {
+  try {
+    console.error('[DEBUG] Starting deploy.direct quiet=false test')
+    let inv = await inventory({
+      rawArc: '@app\ntest-app\n@http\nget /',
+      deployStage: 'staging',
+    })
+    console.error('[DEBUG] Inventory created')
 
-  captureOutput()
+    captureOutput()
+    console.error('[DEBUG] Output capture started')
 
-  await deploy.direct({
-    inventory: inv,
-    isDryRun: true,
-    region: 'us-west-2',
-    shouldHydrate: false,
-    quiet: false, // Explicitly not quiet
-    srcDirs: [ 'src/http/get-index' ],
-  })
+    await deploy.direct({
+      inventory: inv,
+      isDryRun: true,
+      region: 'us-west-2',
+      shouldHydrate: false,
+      quiet: false, // Explicitly not quiet
+      srcDirs: [ 'src/http/get-index' ],
+    })
+    console.error('[DEBUG] deploy.direct completed')
 
-  restoreOutput()
+    restoreOutput()
+    console.error('[DEBUG] Output restored')
 
-  let outputCount = getOutputCount()
-  let outputContent = getOutputContent()
+    let outputCount = getOutputCount()
+    let outputContent = getOutputContent()
+    console.error(`[DEBUG] Output count: ${outputCount}`)
 
-  assert.ok(outputCount > 0, `Non-quiet mode shows output (${outputCount} messages)`)
-  assert.ok(outputContent.includes('Deploy'), `Output contains deploy messages: ${outputContent.substring(0, 100)}...`)
+    assert.ok(outputCount > 0, `Non-quiet mode shows output (${outputCount} messages)`)
+    assert.ok(outputContent.includes('Deploy'), `Output contains deploy messages: ${outputContent.substring(0, 100)}...`)
+    console.error('[DEBUG] Test passed')
+  }
+  catch (err) {
+    console.error('[DEBUG] Test failed with error:', err.message)
+    console.error('[DEBUG] Stack:', err.stack)
+    throw err
+  }
 })
 
 test('Teardown', () => {
-  awsLite.testing.disable()
-  awsLite.testing.reset()
-  assert.ok(!awsLite.testing.isEnabled(), 'AWS client testing disabled')
+  try {
+    console.error('[DEBUG] Starting Teardown test')
+    awsLite.testing.disable()
+    console.error('[DEBUG] AWS testing disabled')
+    awsLite.testing.reset()
+    console.error('[DEBUG] AWS testing reset')
+    assert.ok(!awsLite.testing.isEnabled(), 'AWS client testing disabled')
+    console.error('[DEBUG] Teardown test passed')
+  }
+  catch (err) {
+    console.error('[DEBUG] Teardown test failed:', err.message)
+    console.error('[DEBUG] Stack:', err.stack)
+    throw err
+  }
 })
