@@ -1,7 +1,8 @@
-let test = require('tape')
-let { join } = require('path')
-let { mkdirSync, writeFileSync, rmSync, globSync, statSync } = require('node:fs')
-let { pathToUnix } = require('@architect/utils')
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const { join } = require('path')
+const { mkdirSync, writeFileSync, rmSync, globSync, statSync } = require('node:fs')
+const { pathToUnix } = require('@architect/utils')
 
 /**
  * Feature: migrate-to-fs-globsync, Property 1: Directory exclusion correctness
@@ -11,7 +12,7 @@ let { pathToUnix } = require('@architect/utils')
  * all returned paths should be files and not directories
  */
 
-test('Property test: Directory exclusion correctness (100 iterations)', t => {
+test('Property test: Directory exclusion correctness (100 iterations)', () => {
   const iterations = 100
   const testRoot = join(process.cwd(), '.test-property-temp')
 
@@ -119,12 +120,10 @@ test('Property test: Directory exclusion correctness (100 iterations)', t => {
   }
 
   // Report results
-  t.equal(passedIterations, iterations,
+  assert.strictEqual(passedIterations, iterations,
     `All ${iterations} iterations should pass directory exclusion property`)
 
   if (failedIterations.length > 0) {
     console.log('\nFailed iterations:', JSON.stringify(failedIterations, null, 2))
   }
-
-  t.end()
 })
