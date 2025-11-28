@@ -9,10 +9,10 @@
   "scripts": {
     "test": "npm run lint && npm run test:integration && npm run coverage",
     "test:nolint": "npm run test:integration && npm run coverage",
-    "test:unit": "AWS_ACCESS_KEY_ID=\"blah\" AWS_SECRET_ACCESS_KEY=\"blah\" node --test --test-reporter=spec 'test/unit/**/*-test.js'",
+    "test:unit": "node test/run-with-env.js --test --test-reporter=spec \"test/unit/**/*-test.js\"",
     "test:slow": "node --test --test-reporter=spec 'test/slow/**/*-test.js'",
-    "test:integration": "AWS_ACCESS_KEY_ID=\"blah\" AWS_SECRET_ACCESS_KEY=\"blah\" node --test --test-reporter=spec 'test/integration/**/*-test.js'",
-    "coverage": "AWS_ACCESS_KEY_ID=\"blah\" AWS_SECRET_ACCESS_KEY=\"blah\" node --test --experimental-test-coverage --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info 'test/unit/**/*-test.js'",
+    "test:integration": "node test/integration/static/index-test.js && node test/integration/static/publish/index-test.js && node test/run-with-env.js --test --test-reporter=spec test/integration/macros-n-plugins-test.js",
+    "coverage": "mkdir -p coverage && node test/run-with-env.js --test --experimental-test-coverage --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info \"test/unit/**/*-test.js\"",
     "lint": "eslint . --fix",
     "rc": "npm version prerelease --preid RC"
   },
