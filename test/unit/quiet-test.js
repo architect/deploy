@@ -1,7 +1,7 @@
-let test = require('tape')
-let proxyquire = require('proxyquire')
-let awsLite = require('@aws-lite/client')
-let inventory = require('@architect/inventory')
+const { test, before, after } = require('node:test')
+const assert = require('node:assert/strict')
+const awsLite = require('@aws-lite/client')
+const inventory = require('@architect/inventory')
 
 // Store original stdout.write to capture output
 let originalWrite = process.stdout.write
@@ -30,59 +30,56 @@ function getOutputContent () {
   return capturedOutput.join('\n')
 }
 
-// Mock AWS client
-let mockAwsLite = () => {
-  return Promise.resolve({
-    cloudformation: {
-      DescribeStacks: () => Promise.reject({ message: 'Stack does not exist', statusCode: 400 }),
-      DescribeStackResources: () => Promise.resolve({ StackResources: [] }),
-    },
-    s3: {
-      HeadBucket: () => Promise.resolve({ statusCode: 200 }),
-      ListBuckets: () => Promise.resolve({ Buckets: [ { Name: 'test-bucket' } ] }),
-      PutObject: () => Promise.resolve({ ETag: '"mock-etag"' }),
-    },
-  })
-}
+let deploy
+const Module = require('module')
+const originalRequire = Module.prototype.require
 
-// Track all updater instances
-let originalUpdater = require('@architect/utils').updater
-let updaterCalls = []
-
-let mockUpdater = (name, options = {}) => {
-  updaterCalls.push({ name, options })
-  return originalUpdater(name, options)
-}
-
-// Mock fs.writeFileSync to prevent sam.json creation
-let mocked00Before = proxyquire('../../src/sam/00-before', {
-  'fs': {
-    ...require('fs'),
-    writeFileSync: () => { }, // No-op during tests
-  },
-})
-
-let mockSam = proxyquire('../../src/sam', {
-  './00-before': mocked00Before,
-})
-
-let deploy = proxyquire('../../', {
-  '@aws-lite/client': mockAwsLite,
-  './src/sam': mockSam,
-  '@architect/utils': {
-    ...require('@architect/utils'),
-    updater: mockUpdater,
-  },
-})
-
-test('Set up env', async t => {
-  t.plan(1)
+before(() => {
   awsLite.testing.enable()
-  t.ok(awsLite.testing.isEnabled(), 'AWS client testing enabled')
+
+  // Override require to inject mocks
+  Module.prototype.require = function (id) {
+    // Mock @aws-lite/client
+    if (id === '@aws-lite/client') {
+      return function mockAwsLite () {
+        return Promise.resolve({
+          cloudformation: {
+            DescribeStacks: () => Promise.reject({ message: 'Stack does not exist', statusCode: 400 }),
+            DescribeStackResources: () => Promise.resolve({ StackResources: [] }),
+          },
+          s3: {
+            HeadBucket: () => Promise.resolve({ statusCode: 200 }),
+            ListBuckets: () => Promise.resolve({ Buckets: [ { Name: 'test-bucket' } ] }),
+            PutObject: () => Promise.resolve({ ETag: '"mock-etag"' }),
+          },
+        })
+      }
+    }
+    // Mock fs.writeFileSync to prevent sam.json creation
+    if (id === 'fs' && this.filename && this.filename.includes('sam/00-before')) {
+      return {
+        ...originalRequire.apply(this, [ 'fs' ]),
+        writeFileSync: () => { }, // No-op during tests
+      }
+    }
+    return originalRequire.apply(this, arguments)
+  }
+
+  // Load deploy module with mocks in place
+  deploy = require('../../')
 })
 
-test('deploy.sam with quiet=false shows output', async t => {
-  t.plan(2)
+after(() => {
+  Module.prototype.require = originalRequire
+  awsLite.testing.disable()
+  awsLite.testing.reset()
+})
+
+test('Set up env', () => {
+  assert.ok(awsLite.testing.isEnabled(), 'AWS client testing enabled')
+})
+
+test('deploy.sam with quiet=false shows output', async () => {
   let inv = await inventory({
     rawArc: '@app\ntest-app\n@static',
     deployStage: 'staging',
@@ -103,13 +100,11 @@ test('deploy.sam with quiet=false shows output', async t => {
   let outputCount = getOutputCount()
   let outputContent = getOutputContent()
 
-  t.ok(outputCount > 0, `Non-quiet mode shows output (${outputCount} messages)`)
-  t.ok(outputContent.includes('Deploy'), `Output contains deploy messages: ${outputContent.substring(0, 100)}...`)
+  assert.ok(outputCount > 0, `Non-quiet mode shows output (${outputCount} messages)`)
+  assert.ok(outputContent.includes('Deploy'), `Output contains deploy messages: ${outputContent.substring(0, 100)}...`)
 })
 
-test('deploy.sam with quiet=true suppresses updater output', async t => {
-  t.plan(2)
-
+test('deploy.sam with quiet=true suppresses updater output', async () => {
   let inv = await inventory({
     rawArc: '@app\ntest-app\n@static',
     deployStage: 'staging',
@@ -139,12 +134,11 @@ test('deploy.sam with quiet=true suppresses updater output', async t => {
   restoreOutput()
   let quietCount = getOutputCount()
 
-  t.ok(normalCount > 8, `Normal mode has substantial output (${normalCount} messages)`)
-  t.ok(quietCount < 3, `Quiet mode suppresses most output (${quietCount} messages, was ${normalCount})`)
+  assert.ok(normalCount > 8, `Normal mode has substantial output (${normalCount} messages)`)
+  assert.ok(quietCount < 3, `Quiet mode suppresses most output (${quietCount} messages, was ${normalCount})`)
 })
 
-test('deploy.sam with default (no quiet param) shows output', async t => {
-  t.plan(2)
+test('deploy.sam with default (no quiet param) shows output', async () => {
   let inv = await inventory({
     rawArc: '@app\ntest-app\n@static',
     deployStage: 'staging',
@@ -165,13 +159,11 @@ test('deploy.sam with default (no quiet param) shows output', async t => {
   let outputCount = getOutputCount()
   let outputContent = getOutputContent()
 
-  t.ok(outputCount > 0, `Default mode shows output (${outputCount} messages)`)
-  t.ok(outputContent.includes('Deploy'), `Output contains deploy messages`)
+  assert.ok(outputCount > 0, `Default mode shows output (${outputCount} messages)`)
+  assert.ok(outputContent.includes('Deploy'), `Output contains deploy messages`)
 })
 
-test('deploy.direct with quiet=true suppresses updater output', async t => {
-  t.plan(2)
-
+test('deploy.direct with quiet=true suppresses updater output', async () => {
   let inv = await inventory({
     rawArc: '@app\ntest-app\n@http\nget /',
     deployStage: 'staging',
@@ -202,12 +194,11 @@ test('deploy.direct with quiet=true suppresses updater output', async t => {
   restoreOutput()
   let quietCount = getOutputCount()
 
-  t.ok(normalCount > 5, `Normal mode has substantial output (${normalCount} messages)`)
-  t.equal(quietCount, 0, `Quiet mode completely suppresses output (${quietCount} messages, was ${normalCount})`)
+  assert.ok(normalCount > 5, `Normal mode has substantial output (${normalCount} messages)`)
+  assert.strictEqual(quietCount, 0, `Quiet mode completely suppresses output (${quietCount} messages, was ${normalCount})`)
 })
 
-test('deploy.direct with quiet=false shows output', async t => {
-  t.plan(2)
+test('deploy.direct with quiet=false shows output', async () => {
   let inv = await inventory({
     rawArc: '@app\ntest-app\n@http\nget /',
     deployStage: 'staging',
@@ -229,13 +220,12 @@ test('deploy.direct with quiet=false shows output', async t => {
   let outputCount = getOutputCount()
   let outputContent = getOutputContent()
 
-  t.ok(outputCount > 0, `Non-quiet mode shows output (${outputCount} messages)`)
-  t.ok(outputContent.includes('Deploy'), `Output contains deploy messages: ${outputContent.substring(0, 100)}...`)
+  assert.ok(outputCount > 0, `Non-quiet mode shows output (${outputCount} messages)`)
+  assert.ok(outputContent.includes('Deploy'), `Output contains deploy messages: ${outputContent.substring(0, 100)}...`)
 })
 
-test('Teardown', t => {
-  t.plan(1)
+test('Teardown', () => {
   awsLite.testing.disable()
   awsLite.testing.reset()
-  t.notOk(awsLite.testing.isEnabled(), 'AWS client testing disabled')
+  assert.ok(!awsLite.testing.isEnabled(), 'AWS client testing disabled')
 })
