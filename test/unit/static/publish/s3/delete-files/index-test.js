@@ -1,4 +1,5 @@
-let test = require('tape')
+const { test, before } = require('node:test')
+const assert = require('node:assert/strict')
 let awsLite = require('@aws-lite/client')
 let { join, sep } = require('path')
 let cwd = process.cwd()
@@ -37,86 +38,79 @@ function reset () {
   awsLite.testing.reset()
 }
 
-test('Set up env', async t => {
-  t.plan(2)
-  t.ok(sut, 'S3 file delete module is present')
+before(async () => {
+  assert.ok(sut, 'S3 file delete module is present')
 
   aws = await awsLite({ region: 'us-west-2', plugins: [ import('@aws-lite/s3') ] })
   awsLite.testing.enable()
-  t.ok(awsLite.testing.isEnabled(), 'AWS client testing enabled')
+  assert.ok(awsLite.testing.isEnabled(), 'AWS client testing enabled')
 })
 
-test('Do not prune if there is nothing to prune', t => {
-  t.plan(2)
-
+test('Do not prune if there is nothing to prune', (t, done) => {
   let params = defaultParams()
   awsLite.testing.mock('S3.ListObjectsV2', filesOnS3())
   sut(params, err => {
-    if (err) t.fail(err)
+    if (err) assert.fail(err)
     let listObjCalls = awsLite.testing.getAllRequests('S3.ListObjectsV2')
     let delObjCalls = awsLite.testing.getAllRequests('S3.DeleteObjects')
-    t.equal(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
-    t.notOk(delObjCalls, 'S3.DeleteObjects not called')
+    assert.strictEqual(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
+    assert.ok(!delObjCalls, 'S3.DeleteObjects not called')
     reset()
+    done()
   })
 })
 
-test('Prune if there is something to prune', t => {
-  t.plan(3)
-
+test('Prune if there is something to prune', (t, done) => {
   let params = defaultParams()
   params.files.pop() // Create a pruning opportunity
   awsLite.testing.mock('S3.ListObjectsV2', filesOnS3())
   awsLite.testing.mock('S3.DeleteObjects', s3DeleteObjects)
   sut(params, err => {
-    if (err) t.fail(err)
+    if (err) assert.fail(err)
     let listObjCalls = awsLite.testing.getAllRequests('S3.ListObjectsV2')
     let delObjCalls = awsLite.testing.getAllRequests('S3.DeleteObjects')
-    t.equal(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
-    t.equal(delObjCalls.length, 1, 'S3.DeleteObjects called once')
-    t.equal(delObjCalls[0].request.Delete.Objects[0].Key, files[files.length - 1], `Pruned correct file: ${files[files.length - 1]}`)
+    assert.strictEqual(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
+    assert.strictEqual(delObjCalls.length, 1, 'S3.DeleteObjects called once')
+    assert.strictEqual(delObjCalls[0].request.Delete.Objects[0].Key, files[files.length - 1], `Pruned correct file: ${files[files.length - 1]}`)
     reset()
+    done()
   })
 })
 
-test('Prune respects ignore', t => {
-  t.plan(2)
-
+test('Prune respects ignore', (t, done) => {
   let params = defaultParams()
   params.files.pop() // Create a pruning opportunity
   awsLite.testing.mock('S3.ListObjectsV2', filesOnS3())
   params.ignore = [ 'index.js' ]
   sut(params, err => {
-    if (err) t.fail(err)
+    if (err) assert.fail(err)
     let listObjCalls = awsLite.testing.getAllRequests('S3.ListObjectsV2')
     let delObjCalls = awsLite.testing.getAllRequests('S3.DeleteObjects')
-    t.equal(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
-    t.notOk(delObjCalls, 'S3.DeleteObjects not called')
+    assert.strictEqual(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
+    assert.ok(!delObjCalls, 'S3.DeleteObjects not called')
     reset()
+    done()
   })
 })
 
-test('Prune does not prefix if prefix is not set', t => {
-  t.plan(3)
-
+test('Prune does not prefix if prefix is not set', (t, done) => {
   let params = defaultParams()
   params.files.pop() // Create a pruning opportunity
   awsLite.testing.mock('S3.ListObjectsV2', filesOnS3())
   awsLite.testing.mock('S3.DeleteObjects', s3DeleteObjects)
   sut(params, err => {
-    if (err) t.fail(err)
+    if (err) assert.fail(err)
     let listObjCalls = awsLite.testing.getAllRequests('S3.ListObjectsV2')
     let delObjCalls = awsLite.testing.getAllRequests('S3.DeleteObjects')
-    t.equal(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
-    t.notOk(listObjCalls[0].request.Prefix, 'S3.ListObjectsV2 not called with prefix')
-    t.equal(delObjCalls.length, 1, 'S3.DeleteObjects called once')
+    assert.strictEqual(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
+    assert.ok(!listObjCalls[0].request.Prefix, 'S3.ListObjectsV2 not called with prefix')
+    assert.strictEqual(delObjCalls.length, 1, 'S3.DeleteObjects called once')
     reset()
+    done()
   })
 })
 
-test('Prune respects prefix setting', t => {
-  t.plan(4)
-
+test('Prune respects prefix setting', (t, done) => {
   let params = defaultParams()
   let prefix = 'a-prefix'
   params.prefix = prefix
@@ -124,21 +118,20 @@ test('Prune respects prefix setting', t => {
   awsLite.testing.mock('S3.ListObjectsV2', { Contents: files.map(Key => ({ Key: `${prefix}/${Key}` })) })
   awsLite.testing.mock('S3.DeleteObjects', s3DeleteObjects)
   sut(params, err => {
-    if (err) t.fail(err)
+    if (err) assert.fail(err)
     let listObjCalls = awsLite.testing.getAllRequests('S3.ListObjectsV2')
     let delObjCalls = awsLite.testing.getAllRequests('S3.DeleteObjects')
-    t.equal(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
-    t.ok(listObjCalls[0].request.Prefix, 'S3.ListObjectsV2 called with prefix')
-    t.equal(delObjCalls.length, 1, 'S3.DeleteObjects called once')
+    assert.strictEqual(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
+    assert.ok(listObjCalls[0].request.Prefix, 'S3.ListObjectsV2 called with prefix')
+    assert.strictEqual(delObjCalls.length, 1, 'S3.DeleteObjects called once')
     let file = `${prefix}/${files[files.length - 1]}`
-    t.equal(delObjCalls[0].request.Delete.Objects[0].Key, file, `Pruned correct file: ${file}`)
+    assert.strictEqual(delObjCalls[0].request.Delete.Objects[0].Key, file, `Pruned correct file: ${file}`)
     reset()
+    done()
   })
 })
 
-test('Prune respects fingerprint setting', t => {
-  t.plan(3)
-
+test('Prune respects fingerprint setting', (t, done) => {
   let params = defaultParams()
   params.fingerprint = true
   params.staticManifest = {
@@ -154,19 +147,18 @@ test('Prune respects fingerprint setting', t => {
   ] })
   awsLite.testing.mock('S3.DeleteObjects', s3DeleteObjects)
   sut(params, err => {
-    if (err) t.fail(err)
+    if (err) assert.fail(err)
     let listObjCalls = awsLite.testing.getAllRequests('S3.ListObjectsV2')
     let delObjCalls = awsLite.testing.getAllRequests('S3.DeleteObjects')
-    t.equal(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
-    t.equal(delObjCalls.length, 1, 'S3.DeleteObjects called once')
-    t.equal(delObjCalls[0].request.Delete.Objects[0].Key, pruneThis, `Pruned correct file: ${pruneThis}`)
+    assert.strictEqual(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
+    assert.strictEqual(delObjCalls.length, 1, 'S3.DeleteObjects called once')
+    assert.strictEqual(delObjCalls[0].request.Delete.Objects[0].Key, pruneThis, `Pruned correct file: ${pruneThis}`)
     reset()
+    done()
   })
 })
 
-test('Prune respects both prefix & fingerprint settings together', t => {
-  t.plan(3)
-
+test('Prune respects both prefix & fingerprint settings together', (t, done) => {
   let params = defaultParams()
   let prefix = 'a-prefix'
   params.prefix = prefix
@@ -184,19 +176,18 @@ test('Prune respects both prefix & fingerprint settings together', t => {
   ] })
   awsLite.testing.mock('S3.DeleteObjects', s3DeleteObjects)
   sut(params, err => {
-    if (err) t.fail(err)
+    if (err) assert.fail(err)
     let listObjCalls = awsLite.testing.getAllRequests('S3.ListObjectsV2')
     let delObjCalls = awsLite.testing.getAllRequests('S3.DeleteObjects')
-    t.equal(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
-    t.equal(delObjCalls.length, 1, 'S3.DeleteObjects called once')
-    t.equal(delObjCalls[0].request.Delete.Objects[0].Key, pruneThis, `Pruned correct file: ${pruneThis}`)
+    assert.strictEqual(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
+    assert.strictEqual(delObjCalls.length, 1, 'S3.DeleteObjects called once')
+    assert.strictEqual(delObjCalls[0].request.Delete.Objects[0].Key, pruneThis, `Pruned correct file: ${pruneThis}`)
     reset()
+    done()
   })
 })
 
-test('Prune respects both prefix & fingerprint settings together in nested folders', t => {
-  t.plan(3)
-
+test('Prune respects both prefix & fingerprint settings together in nested folders', (t, done) => {
   let params = defaultParams()
   let prefix = 'a-prefix'
   params.prefix = prefix
@@ -217,18 +208,18 @@ test('Prune respects both prefix & fingerprint settings together in nested folde
   ] })
   awsLite.testing.mock('S3.DeleteObjects', s3DeleteObjects)
   sut(params, err => {
-    if (err) t.fail(err)
+    if (err) assert.fail(err)
     let listObjCalls = awsLite.testing.getAllRequests('S3.ListObjectsV2')
     let delObjCalls = awsLite.testing.getAllRequests('S3.DeleteObjects')
-    t.equal(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
-    t.equal(delObjCalls.length, 1, 'S3.DeleteObjects called once')
-    t.equal(delObjCalls[0].request.Delete.Objects[0].Key, pruneThis, `Pruned correct file: ${pruneThis}`)
+    assert.strictEqual(listObjCalls.length, 1, 'S3.ListObjectsV2 called once')
+    assert.strictEqual(delObjCalls.length, 1, 'S3.DeleteObjects called once')
+    assert.strictEqual(delObjCalls[0].request.Delete.Objects[0].Key, pruneThis, `Pruned correct file: ${pruneThis}`)
     reset()
+    done()
   })
 })
 
-test('Teardown', t => {
-  t.plan(1)
+test('Teardown', () => {
   awsLite.testing.disable()
-  t.notOk(awsLite.testing.isEnabled(), 'Done')
+  assert.ok(!awsLite.testing.isEnabled(), 'Done')
 })

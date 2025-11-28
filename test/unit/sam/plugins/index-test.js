@@ -1,15 +1,16 @@
-let test = require('tape')
-let plugins = require('../../../../src/sam/plugins')
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const plugins = require('../../../../src/sam/plugins')
 
 function one (params) {
-  let { cloudformation } = params
+  const { cloudformation } = params
   cloudformation.Resources['OneSNS'] = {
     Type: 'AWS::SNS',
   }
   return cloudformation
 }
 function two (params) {
-  let { cloudformation } = params
+  const { cloudformation } = params
   cloudformation.Resources['TwoSQS'] = {
     Type: 'AWS::SQS',
   }
@@ -17,7 +18,7 @@ function two (params) {
 }
 one._type = two._type = 'plugin'
 
-let inventory = {
+const inventory = {
   inv: {
     _project: { arc: [] },
     plugins: {
@@ -28,21 +29,21 @@ let inventory = {
   },
 }
 
-let fakeCfn = {
+const fakeCfn = {
   Resources: [],
 }
 
-test('deploy.start should be able to modify CloudFormation', t => {
-  t.plan(2)
-  let cloudformation = JSON.parse(JSON.stringify(fakeCfn))
+test('deploy.start should be able to modify CloudFormation', (t, done) => {
+  const cloudformation = JSON.parse(JSON.stringify(fakeCfn))
   plugins.start({ inventory, cloudformation, stage: 'staging' }, (err, result) => {
     if (err) {
       console.error(err)
-      t.fail(err)
+      assert.fail(err)
     }
     else {
-      t.ok(result.Resources.OneSNS, 'first plugin added a resource')
-      t.ok(result.Resources.TwoSQS, 'second plugin added a resource')
+      assert.ok(result.Resources.OneSNS, 'first plugin added a resource')
+      assert.ok(result.Resources.TwoSQS, 'second plugin added a resource')
+      done()
     }
   })
 })
