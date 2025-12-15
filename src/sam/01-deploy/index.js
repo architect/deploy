@@ -1,12 +1,12 @@
-// https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/using-cfn-describing-stacks.html
+// https://docs.aws.amazon.com/cli/latest/reference/cloudformation/describe-stacks.html#output - scroll down to `StackStatus`
 let processingStates = [
   'CREATE_IN_PROGRESS',
+  'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS',
   'UPDATE_IN_PROGRESS',
 ]
 
 let successStates = [
   'CREATE_COMPLETE',
-  'UPDATE_COMPLETE_CLEANUP_IN_PROGRESS',
   'UPDATE_COMPLETE',
 ]
 
