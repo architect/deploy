@@ -1,9 +1,16 @@
 # Architect Deploy changelog
 
 ---
+### [7.0.0] 2025-11-27
+
+- Updated architect dependencies
+- Requires node >= 22
+- Drop glob dependency in favour of native node fs glob
+
+---
 ### [6.0.0] 2025-09-24
 
-- Updated deps and to node > 20
+- Updated deps and to node >= 20
 
 ---
 
