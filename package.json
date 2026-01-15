@@ -35,7 +35,7 @@
   "dependencies": {
     "@architect/create": "~7.0.1",
     "@architect/hydrate": "~6.0.0",
-    "@architect/inventory": "~6.0.0",
+    "@architect/inventory": "~6.1.0",
     "@architect/package": "~11.0.1",
     "@architect/utils": "~6.0.1",
     "@aws-lite/apigatewayv2": "^0.0.9",
