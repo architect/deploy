@@ -1,6 +1,5 @@
 let { join } = require('path')
-let { mkdirSync, readFileSync, writeFileSync } = require('fs')
-let { copySync } = require('fs-extra')
+let { mkdirSync, readFileSync, writeFileSync, cpSync } = require('fs')
 
 // If we're using ASAP + fingerprinting, inject it with static.json
 module.exports = function asapFingerprint (params, callback) {
@@ -18,7 +17,7 @@ module.exports = function asapFingerprint (params, callback) {
     mkdirSync(shared, { recursive: true })
 
     // Handle ASAP
-    copySync(src, tmp)
+    cpSync(src, tmp, { recursive: true })
 
     // Handle static.json
     let staticFolder = inv.static.folder
