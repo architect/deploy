@@ -1,17 +1,53 @@
-let test = require('tape')
+const { test, before } = require('node:test')
+const assert = require('node:assert/strict')
 let awsLite = require('@aws-lite/client')
-let mockTmp = require('mock-tmp')
-let proxyquire = require('proxyquire')
-let { join, sep } = require('path')
+const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = require('fs')
+const { tmpdir } = require('os')
+let { join, sep, dirname } = require('path')
 let crypto = require('crypto')
 let { pathToUnix } = require('@architect/utils')
 let cwd = process.cwd()
 let filePath = join(process.cwd(), 'src', 'static', 'publish', 's3', 'put-files')
-let putParams = proxyquire(filePath, {
-  './put-params': ({ Bucket, Key, Body }) => ({
-    Bucket, Key, Body,
-  }),
-})
+
+function createTmpDir (structure) {
+  const tmpDir = mkdtempSync(join(tmpdir(), 'arc-test-'))
+
+  function createStructure (base, obj) {
+    for (const [ key, value ] of Object.entries(obj)) {
+      const path = join(base, key)
+      if (typeof value === 'object' && value !== null && !Buffer.isBuffer(value)) {
+        mkdirSync(path, { recursive: true })
+        createStructure(path, value)
+      }
+      else {
+        // Ensure parent directory exists for files
+        const dir = dirname(path)
+        mkdirSync(dir, { recursive: true })
+        writeFileSync(path, value || '')
+      }
+    }
+  }
+
+  createStructure(tmpDir, structure)
+  return tmpDir
+}
+
+// Mock put-params by overriding the require cache
+let Module = require('module')
+let originalRequire = Module.prototype.require
+Module.prototype.require = function (id) {
+  if (id.includes('put-params')) {
+    return ({ Bucket, Key, Body }) => ({
+      Bucket, Key, Body,
+    })
+  }
+  return originalRequire.apply(this, arguments)
+}
+
+let putParams = require(filePath)
+
+// Restore original require
+Module.prototype.require = originalRequire
 
 let aws, tmp
 let CacheControl
@@ -50,92 +86,97 @@ function headObject (params) {
 
 function setup (data) {
   CacheControl = undefined
-  tmp = mockTmp(data)
+  tmp = createTmpDir(data)
   files = Object.keys(data).map(f => f.replace('/', sep))
   process.chdir(tmp)
 }
 function reset () {
   awsLite.testing.reset()
-  mockTmp.reset()
+  if (tmp) {
+    try {
+      rmSync(tmp, { recursive: true, force: true })
+    }
+    catch {
+      // Ignore cleanup errors
+    }
+  }
   process.chdir(cwd)
 }
 
-test('Set up env', async t => {
-  t.plan(2)
-  t.ok(putParams, 'S3 file put module is present')
+before(async () => {
+  assert.ok(putParams, 'S3 file put module is present')
 
   aws = await awsLite({ region: 'us-west-2', plugins: [ import('@aws-lite/s3') ] })
   awsLite.testing.enable()
-  t.ok(awsLite.testing.isEnabled(), 'AWS client testing enabled')
+  assert.ok(awsLite.testing.isEnabled(), 'AWS client testing enabled')
 })
 
-test('Basic publish test', t => {
-  t.plan(4)
+test('Basic publish test', (t, done) => {
   setup(createFileData(true)) // True mutates file contents, causing an upload
   awsLite.testing.mock('S3.HeadObject', headObject)
   awsLite.testing.mock('S3.PutObject', {})
 
   putParams(params(), (err, uploaded, notModified) => {
-    if (err) t.fail(err)
+    if (err) assert.fail(err)
     let headObjCalls = awsLite.testing.getAllRequests('S3.HeadObject')
     let putObjCalls = awsLite.testing.getAllRequests('S3.PutObject')
     let headCallsAreGood =  (headObjCalls.length === files.length) &&
                             files.every(f => headObjCalls.some(h => h.request.Key === pathToUnix(f)))
     let putCallsAreGood =   (putObjCalls.length === files.length) &&
                             files.every(f => putObjCalls.some(h => h.request.Key === pathToUnix(f)))
-    t.ok(headCallsAreGood, 'S3.HeadObject called once for each file')
-    t.ok(putCallsAreGood, 'S3.PutObject called once for each file')
-    t.equal(notModified, 0, 'Returned correct quantity of skipped files')
-    t.equal(putObjCalls.length, uploaded, 'Returned correct quantity of published files')
+    assert.ok(headCallsAreGood, 'S3.HeadObject called once for each file')
+    assert.ok(putCallsAreGood, 'S3.PutObject called once for each file')
+    assert.strictEqual(notModified, 0, 'Returned correct quantity of skipped files')
+    assert.strictEqual(putObjCalls.length, uploaded, 'Returned correct quantity of published files')
     reset()
+    done()
   })
 })
 
-test('Skip publishing files that have not been updated', t => {
-  t.plan(4)
+test('Skip publishing files that have not been updated', (t, done) => {
   setup(createFileData())
   awsLite.testing.mock('S3.HeadObject', headObject)
   awsLite.testing.mock('S3.PutObject', {})
 
   putParams(params(), (err, uploaded, notModified) => {
-    if (err) t.fail(err)
+    if (err) assert.fail(err)
     let headObjCalls = awsLite.testing.getAllRequests('S3.HeadObject')
     let putObjCalls = awsLite.testing.getAllRequests('S3.PutObject')
     let headCallsAreGood =  (headObjCalls.length === files.length) &&
                             files.every(f => headObjCalls.some(h => h.request.Key === pathToUnix(f)))
-    t.ok(headCallsAreGood, 'S3.HeadObject called once for each file')
-    t.equal(putObjCalls.length, 0, 'S3.PutObject not called on updated files')
-    t.equal(headObjCalls.length, notModified, 'Returned correct quantity of skipped files')
-    t.equal(putObjCalls.length, uploaded, 'Returned correct quantity of published files')
+    assert.ok(headCallsAreGood, 'S3.HeadObject called once for each file')
+    assert.strictEqual(putObjCalls.length, 0, 'S3.PutObject not called on updated files')
+    assert.strictEqual(headObjCalls.length, notModified, 'Returned correct quantity of skipped files')
+    assert.strictEqual(putObjCalls.length, uploaded, 'Returned correct quantity of published files')
     reset()
+    done()
   })
 })
 
-test('Re-publish files if cache-control header does not match', t => {
-  t.plan(4)
+test('Re-publish files if cache-control header does not match', (t, done) => {
   setup(createFileData())
   awsLite.testing.mock('S3.HeadObject', headObject)
   awsLite.testing.mock('S3.PutObject', {})
 
   CacheControl = 'foo'
   putParams({ fingerprint: 'external', ...params() }, (err, uploaded, notModified) => {
-    if (err) t.fail(err)
+    if (err) assert.fail(err)
     let headObjCalls = awsLite.testing.getAllRequests('S3.HeadObject')
     let putObjCalls = awsLite.testing.getAllRequests('S3.PutObject')
     let headCallsAreGood =  (headObjCalls.length === files.length) &&
                             files.every(f => headObjCalls.some(h => h.request.Key === pathToUnix(f)))
     let putCallsAreGood =   (putObjCalls.length === files.length) &&
                             files.every(f => putObjCalls.some(h => h.request.Key === pathToUnix(f)))
-    t.ok(headCallsAreGood, 'S3.HeadObject called once for each file')
-    t.ok(putCallsAreGood, 'S3.PutObject called once for each file')
-    t.equal(notModified, 0, 'Returned correct quantity of skipped files')
-    t.equal(putObjCalls.length, uploaded, 'Returned correct quantity of published files')
+    assert.ok(headCallsAreGood, 'S3.HeadObject called once for each file')
+    assert.ok(putCallsAreGood, 'S3.PutObject called once for each file')
+    assert.strictEqual(notModified, 0, 'Returned correct quantity of skipped files')
+    assert.strictEqual(putObjCalls.length, uploaded, 'Returned correct quantity of published files')
     reset()
+    done()
   })
 })
 
-test('Teardown', t => {
-  t.plan(1)
+test('Teardown', () => {
   awsLite.testing.disable()
-  t.notOk(awsLite.testing.isEnabled(), 'Done')
+  assert.ok(!awsLite.testing.isEnabled(), 'Done')
 })

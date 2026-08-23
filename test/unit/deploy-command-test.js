@@ -1,13 +1,13 @@
 /*
-let test = require('tape')
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
 let sinon = require('sinon')
 let utils = require('@architect/utils')
 let deploy = require('../../')
 let deployCmd = require('../../cli')
 
-test('deploy command invokes deploy.dirty if specified via options', async t => {
+test('deploy command invokes deploy.dirty if specified via options', async () => {
   let opts = ['dirty', '--dirty', '-d']
-  t.plan(opts.length * 2) // ensuring dirty is called, and sam is not, per opt
   let fakeDirty = sinon.fake.resolves()
   let fakeSam = sinon.fake.resolves()
   let fakeRead = sinon.fake.returns({
@@ -16,23 +16,23 @@ test('deploy command invokes deploy.dirty if specified via options', async t => 
   sinon.replace(deploy, 'dirty', fakeDirty)
   sinon.replace(deploy, 'sam', fakeSam)
   sinon.replace(utils, 'readArc', fakeRead)
-  opts.forEach(async (opt) => {
+
+  for (const opt of opts) {
     fakeDirty.resetHistory()
     fakeSam.resetHistory()
     try {
       await deployCmd([opt])
-      t.ok(fakeDirty.calledOnce, `${opt} invoked deploy.dirty`)
-      t.notOk(fakeSam.calledOnce, `${opt} did not invoke deploy.sam`)
+      assert.ok(fakeDirty.calledOnce, `${opt} invoked deploy.dirty`)
+      assert.ok(!fakeSam.calledOnce, `${opt} did not invoke deploy.sam`)
     } catch (e) {
-      t.fail(e)
+      assert.fail(e)
     }
-  })
+  }
   sinon.restore()
 })
 
-test('deploy command invokes deploy.static if specified via options', async t => {
+test('deploy command invokes deploy.static if specified via options', async () => {
   let opts = ['static', '--static', '-s']
-  t.plan(opts.length * 2) // ensuring static is called, and sam is not, per opt
   let fakeStatic = sinon.fake.resolves()
   let fakeSam = sinon.fake.resolves()
   let fakeRead = sinon.fake.returns({
@@ -41,22 +41,22 @@ test('deploy command invokes deploy.static if specified via options', async t =>
   sinon.replace(deploy, 'static', fakeStatic)
   sinon.replace(deploy, 'sam', fakeSam)
   sinon.replace(utils, 'readArc', fakeRead)
-  opts.forEach(async (opt) => {
+
+  for (const opt of opts) {
     fakeStatic.resetHistory()
     fakeSam.resetHistory()
     try {
       await deployCmd([opt])
-      t.ok(fakeStatic.calledOnce, `${opt} invoked deploy.static`)
-      t.notOk(fakeSam.calledOnce, `${opt} did not invoke deploy.sam`)
+      assert.ok(fakeStatic.calledOnce, `${opt} invoked deploy.static`)
+      assert.ok(!fakeSam.calledOnce, `${opt} did not invoke deploy.sam`)
     } catch (e) {
-      t.fail(e)
+      assert.fail(e)
     }
-  })
+  }
   sinon.restore()
 })
 
-test('deploy command invokes deploy.sam by default', async t => {
-  t.plan(1)
+test('deploy command invokes deploy.sam by default', async () => {
   let fakeSam = sinon.fake.resolves()
   let fakeRead = sinon.fake.returns({
     arc: {aws: [['bucket']]}
@@ -65,9 +65,9 @@ test('deploy command invokes deploy.sam by default', async t => {
   sinon.replace(utils, 'readArc', fakeRead)
   try {
     await deployCmd()
-    t.ok(fakeSam.calledOnce, `lack of options invoked deploy.sam`)
+    assert.ok(fakeSam.calledOnce, `lack of options invoked deploy.sam`)
   } catch (e) {
-    t.fail(e)
+    assert.fail(e)
   }
   sinon.restore()
 })

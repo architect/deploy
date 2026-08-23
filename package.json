@@ -9,10 +9,10 @@
   "scripts": {
     "test": "npm run lint && npm run test:integration && npm run coverage",
     "test:nolint": "npm run test:integration && npm run coverage",
-    "test:unit": "cross-env AWS_ACCESS_KEY_ID=\"blah\" AWS_SECRET_ACCESS_KEY=\"blah\" tape 'test/unit/**/*-test.js' | tap-arc",
-    "test:slow": "cross-env tape 'test/slow/**/*-test.js' | tap-arc",
-    "test:integration": "cross-env AWS_ACCESS_KEY_ID=\"blah\" AWS_SECRET_ACCESS_KEY=\"blah\" tape 'test/integration/**/*-test.js' | tap-arc",
-    "coverage": "nyc --reporter=lcov --reporter=text npm run test:unit",
+    "test:unit": "node test/run-with-env.js --test --test-reporter=spec \"test/unit/**/*-test.js\"",
+    "test:slow": "node --test --test-reporter=spec 'test/slow/**/*-test.js'",
+    "test:integration": "node test/integration/static/index-test.js && node test/integration/static/publish/index-test.js && node test/run-with-env.js --test --test-reporter=spec test/integration/macros-n-plugins-test.js",
+    "coverage": "mkdir -p coverage && node test/run-with-env.js --test --experimental-test-coverage --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=coverage/lcov.info --test-coverage-exclude='test/**/*' \"test/unit/**/*-test.js\"",
     "lint": "eslint . --fix",
     "rc": "npm version prerelease --preid RC"
   },
@@ -33,7 +33,7 @@
   },
   "homepage": "https://github.com/architect/deploy#readme",
   "dependencies": {
-    "@architect/create": "~7.0.0",
+    "@architect/create": "~7.0.1",
     "@architect/hydrate": "~6.0.0",
     "@architect/inventory": "~6.1.0",
     "@architect/package": "~11.0.3",
@@ -52,12 +52,6 @@
   },
   "devDependencies": {
     "@architect/eslint-config": "~3.0.0",
-    "cross-env": "~10.1.0",
-    "eslint": "~9.39.2",
-    "mock-tmp": "~0.0.4",
-    "nyc": "~17.1.0",
-    "proxyquire": "~2.1.3",
-    "tap-arc": "~1.3.2",
-    "tape": "~5.9.0"
+    "eslint": "~9.39.2"
   }
 }

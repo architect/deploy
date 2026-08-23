@@ -1,17 +1,17 @@
-let test = require('tape')
-let { join } = require('path')
-let origDir = process.cwd()
+const { test } = require('node:test')
+const assert = require('node:assert/strict')
+const { join } = require('path')
+const origDir = process.cwd()
 // let sam = require('../../src/sam')
-let inventory = require('@architect/inventory')
+const inventory = require('@architect/inventory')
 // let inv
 
-test('end-to-end sam setup', t => {
-  t.plan(3)
+test('end-to-end sam setup', () => {
   process.chdir(join(__dirname, '..', 'mocks', 'app-with-extensions'))
-  t.pass('chdir to mock app')
+  assert.ok(true, 'chdir to mock app')
   inventory({}, (err, result) => {
-    t.notOk(err, 'no error retrieving inventory from mock app')
-    t.ok(result, 'got some manner of inventory')
+    assert.ok(!err, 'no error retrieving inventory from mock app')
+    assert.ok(result, 'got some manner of inventory')
     // inv = result
   })
 })
@@ -44,8 +44,7 @@ test('(hydrate=true) multiple macro and plugin cfn additions honoured', t => {
   })
 })
  */
-test('end-to-end sam teardown', t => {
-  t.plan(1)
+test('end-to-end sam teardown', () => {
   process.chdir(origDir)
-  t.pass('chdir to original')
+  assert.ok(true, 'chdir to original')
 })

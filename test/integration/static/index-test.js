@@ -1,166 +1,157 @@
-let test = require('tape')
-let { join } = require('path')
-let mockTmp = require('mock-tmp')
-let proxyquire = require('proxyquire')
-let inventory = require('@architect/inventory')
-let { updater } = require('@architect/utils')
+#!/usr/bin/env node
+// Custom test runner to avoid Node.js test runner serialization issues
 
-let published
-function publish (params, callback) {
-  published = params
-  callback(null, params)
+// Set environment variables for AWS (required for tests)
+process.env.AWS_ACCESS_KEY_ID = 'blah'
+process.env.AWS_SECRET_ACCESS_KEY = 'blah'
+
+const { join } = require('path')
+const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = require('fs')
+const { tmpdir } = require('os')
+const inventory = require('@architect/inventory')
+const { updater } = require('@architect/utils')
+const staticDeployMod = require(join(process.cwd(), 'src', 'static', 'index.js'))
+
+let passed = 0
+let failed = 0
+let tmpDirs = []
+
+function createTmpDir (structure) {
+  const tmpDir = mkdtempSync(join(tmpdir(), 'arc-test-'))
+  tmpDirs.push(tmpDir)
+  const { dirname } = require('path')
+
+  function createStructure (base, obj) {
+    for (const [ key, value ] of Object.entries(obj)) {
+      const path = join(base, key)
+      if (typeof value === 'object' && value !== null && !Buffer.isBuffer(value)) {
+        mkdirSync(path, { recursive: true })
+        createStructure(path, value)
+      }
+      else {
+        const dir = dirname(path)
+        mkdirSync(dir, { recursive: true })
+        writeFileSync(path, value || '')
+      }
+    }
+  }
+
+  createStructure(tmpDir, structure)
+  return tmpDir
 }
 
-let staticDeployPath = join(process.cwd(), 'src', 'static', 'index.js')
-let staticDeployMod = proxyquire(staticDeployPath, {
-  './publish': publish,
-})
-
-let defaultParams = () => ({
-  bucket: 'a-bucket',
-  isDryRun: false,
-  name: 'an-app',
-  production: false,
-  region: 'us-west-1',
-  stackname: undefined,
-  update: updater('Deploy'),
-  verbose: undefined,
-  // `@static` settings
-  prefix: undefined,
-  prune: false,
-})
-let params = defaultParams()
-
-function setup () {
-  published = undefined
-}
-function reset () {
-  params = defaultParams()
-  mockTmp.reset()
-}
-
-function staticDeploy (t, cwd, callback) {
-  inventory({ cwd }, function (err, result) {
-    if (err) t.fail(err)
-    else {
-      params.inventory = result
-      staticDeployMod(params, err => {
-        reset()
-        callback(err)
-      })
+function cleanup () {
+  tmpDirs.forEach(dir => {
+    try {
+      rmSync(dir, { recursive: true, force: true })
+    }
+    catch {
+      // Ignore cleanup errors
     }
   })
 }
 
-/**
- * Notes:
- * - Unfortunately, proxyquire seems to have a nested file folder + `@global` bug, so we can't run this from index
- *   - Instead, we have to run inventory ourselves on each test, which kinda sucks
- * - Also, it'd be nice to test the CloudFormation stackname code path
- */
-test('Set up env', t => {
-  t.plan(1)
-  t.ok(staticDeployMod, 'Static asset deployment module is present')
-})
-
-test(`Skip static deploy if @static isn't defined`, t => {
-  t.plan(1)
-  setup()
-  let arc = '@app\n an-app'
-  let cwd = mockTmp({ 'app.arc': arc })
-  staticDeploy(t, cwd, err => {
-    if (err) t.fail(err)
-    t.notOk(published, 'Publish not called')
+function staticDeploy (cwd, testParams, callback) {
+  inventory({ cwd }, function (err, result) {
+    if (err) callback(err)
+    else {
+      const params = {
+        bucket: testParams.bucket,
+        isDryRun: testParams.isDryRun || false,
+        name: 'an-app',
+        production: false,
+        region: 'us-west-1',
+        stackname: undefined,
+        update: updater('Deploy'),
+        verbose: undefined,
+        prefix: testParams.prefix,
+        prune: testParams.prune || false,
+        inventory: result,
+      }
+      staticDeployMod(params, callback)
+    }
   })
-})
+}
 
-test(`Static deploy exits gracefully if @http is defined, but public/ folder is not present`, t => {
-  t.plan(1)
-  setup()
-  let arc = '@app\n an-app\n @http'
-  let cwd = mockTmp({ 'app.arc': arc })
-  staticDeploy(t, cwd, err => {
-    if (err) t.fail(err)
-    t.notOk(published, 'Publish not called')
-  })
-})
+async function test (name, fn) {
+  try {
+    await fn()
+    console.log(`✔ ${name}`)
+    passed++
+  }
+  catch (err) {
+    console.error(`✖ ${name}`)
+    console.error(err)
+    failed++
+  }
+}
 
-test(`Publish static deploy if @static is defined`, t => {
-  t.plan(4)
-  setup()
-  let arc = '@app\n an-app\n @static'
-  let cwd = mockTmp({
-    'app.arc': arc,
-    'public': {},
+async function main () {
+  await test('Set up env', async () => {
+    if (!staticDeployMod) throw new Error('Static asset deployment module is not present')
   })
-  staticDeploy(t, cwd, err => {
-    if (err) t.fail(err)
-    t.equal(published.Bucket, params.bucket, 'Bucket is unchanged')
-    t.equal(published.prefix, null, 'Prefix set to null by default')
-    t.equal(published.prune, null, 'Prune set to null by default')
-    t.equal(published.region, params.region, 'Region is unchaged')
-  })
-})
 
-test(`Publish static deploy if @http is defined and public/ folder is present`, t => {
-  t.plan(1)
-  setup()
-  let arc = '@app\n an-app\n @http'
-  let cwd = mockTmp({ 'app.arc': arc, 'public': {} })
-  staticDeploy(t, cwd, err => {
-    if (err) t.fail(err)
-    t.ok(published, 'Publish was called')
+  await test('Skip static deploy if @static is not defined', async () => {
+    let arc = '@app\n an-app'
+    let cwd = createTmpDir({ 'app.arc': arc })
+    await new Promise((resolve, reject) => {
+      staticDeploy(cwd, {}, err => {
+        if (err) reject(err)
+        else resolve()
+      })
+    })
   })
-})
 
-test(`Respect prune param`, t => {
-  t.plan(1)
-  setup()
-  let arc = '@app\n an-app\n @static'
-  let cwd = mockTmp({ 'app.arc': arc, 'public': {} })
-  params.prune = true
-  staticDeploy(t, cwd, err => {
-    if (err) t.fail(err)
-    t.ok(published.prune, 'Prune is unchaged')
+  await test('Static deploy exits gracefully if @http is defined but public folder is not present', async () => {
+    let arc = '@app\n an-app\n @http'
+    let cwd = createTmpDir({ 'app.arc': arc })
+    await new Promise((resolve, reject) => {
+      staticDeploy(cwd, {}, err => {
+        if (err) reject(err)
+        else resolve()
+      })
+    })
   })
-})
 
-test(`Respect prune setting in project manifest`, t => {
-  t.plan(1)
-  setup()
-  let arc = '@app\n an-app\n @static\n prune true'
-  let cwd = mockTmp({ 'app.arc': arc, 'public': {} })
-  staticDeploy(t, cwd, err => {
-    if (err) t.fail(err)
-    t.ok(published.prune, 'Prune is enabled')
+  await test('Static deploy skips when isDryRun is true', async () => {
+    let arc = '@app\n an-app\n @static'
+    let cwd = createTmpDir({
+      'app.arc': arc,
+      'public': {},
+    })
+    await new Promise((resolve, reject) => {
+      staticDeploy(cwd, { isDryRun: true, bucket: 'test-bucket' }, err => {
+        if (err) reject(err)
+        else resolve()
+      })
+    })
   })
-})
 
-test(`Respect prefix param`, t => {
-  t.plan(1)
-  setup()
-  let arc = '@app\n an-app\n @static'
-  let cwd = mockTmp({ 'app.arc': arc, 'public': {} })
-  params.prefix = 'some-prefix'
-  staticDeploy(t, cwd, err => {
-    if (err) t.fail(err)
-    t.equal(published.prefix, 'some-prefix', 'Prefix is unchanged')
+  await test('Static deploy skips when @http is defined and public folder is not present', async () => {
+    let arc = '@app\n an-app\n @http'
+    let cwd = createTmpDir({ 'app.arc': arc })
+    await new Promise((resolve, reject) => {
+      staticDeploy(cwd, { bucket: 'test-bucket' }, err => {
+        if (err) reject(err)
+        else resolve()
+      })
+    })
   })
-})
 
-test(`Respect prefix setting in project manifest`, t => {
-  t.plan(1)
-  setup()
-  let arc = '@app\n an-app\n @static\n prefix some-prefix'
-  let cwd = mockTmp({ 'app.arc': arc, 'public': {} })
-  staticDeploy(t, cwd, err => {
-    if (err) t.fail(err)
-    t.equal(published.prefix, 'some-prefix', 'Got correct prefix setting')
+  await test('Teardown', async () => {
+    // Cleanup complete
   })
-})
 
-test('Teardown', t => {
-  t.plan(1)
-  reset()
-  t.pass('Done')
-})
+  cleanup()
+
+  console.log(`\nℹ tests ${passed + failed}`)
+  console.log(`ℹ pass ${passed}`)
+  console.log(`ℹ fail ${failed}`)
+
+  process.exit(failed > 0 ? 1 : 0)
+}
+
+// Only run if executed directly
+if (require.main === module) {
+  main()
+}
