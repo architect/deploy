@@ -15,7 +15,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
-        node-version: [ 22.x, 24.x ]
+        node-version: [ 22.x, 24.x, 26.x ]
         os: [ windows-latest, ubuntu-latest, macOS-latest ]
 
     # Go
@@ -75,7 +75,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: 24.x
+          node-version: 26.x
           registry-url: https://registry.npmjs.org/
 
       # Publish to npm
