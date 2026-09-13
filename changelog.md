@@ -1,6 +1,11 @@
 # Architect Deploy changelog
 
 ---
+### [7.0.2] TBD
+
+- chore: drop fs-extra dependency in favour of native node FS APIs, test on node 26 in CI
+
+---
 ### [7.0.1] 2025-12-15
 
 - fix: treat update-cleanup-in-progress CloudFormation stack state as an 'in progress' deploy state. Prevents `deploy` from exiting too early if, as part of a stack update, resources need to be removed.
